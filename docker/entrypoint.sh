@@ -28,4 +28,6 @@ php artisan route:cache
 php artisan view:cache
 php artisan storage:link || true
 
+chown -R www-data:www-data storage bootstrap/cache
+
 exec "$@"
