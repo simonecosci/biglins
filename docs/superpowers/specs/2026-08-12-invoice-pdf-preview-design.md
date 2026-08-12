@@ -76,7 +76,7 @@ return [
 4. Totals block: subtotal, VAT total, total (right-aligned, using the existing `Invoice` accessors).
 5. **Notes section, placed last, after the totals** — only rendered `@if($invoice->note)`.
 
-All labels come from `__('invoice.*')`. The controller sets `App::setLocale($invoice->language)` before rendering so `__()` resolves to the right file; it restores the previous locale afterward (`App::setLocale($previous)`) so the request's own locale isn't leaked to later code.
+All labels come from `__('invoice.*')`. The controller sets `App::setLocale($invoice->language)` before building the view/PDF response so `__()` resolves to the right file. It does **not** restore the previous locale afterward: `view()` renders lazily, so restoring the locale right after the call (before Laravel's response pipeline actually renders the template) would flip the labels back before they're produced. Since both `preview` and `pdf` are terminal, single-response actions and each HTTP request gets a fresh application instance, there's no other code in the same request that could observe the changed locale — leaving it set for the rest of the request is safe and simpler than working around the lazy-render ordering.
 
 ## Controller & routes
 
