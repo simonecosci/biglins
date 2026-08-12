@@ -66,6 +66,24 @@ L'app risponde su `http://localhost:8080` (porta configurabile con `APP_PORT` in
 - `public/images/companies` — loghi delle aziende emittenti caricati dalla UI (**non versionati**, vedi `.gitignore`)
 - `docs/superpowers/` — spec e piani di sviluppo delle feature (workflow interno, non fa parte dell'app)
 
+## Release
+
+Il numero di versione mostrato in UI (sidebar) viene letto da `"version"` in [composer.json](composer.json); il tag dell'immagine Docker viene invece derivato dal tag Git che pusci (vedi [docker-publish.yml](.github/workflows/docker-publish.yml)). Per non farli disallineare, ad ogni release:
+
+```bash
+# 1. Aggiorna "version" in composer.json (es. 1.1.0)
+# 2. Committa la modifica
+git add composer.json
+git commit -m "chore: bump version to 1.1.0"
+git push origin main
+
+# 3. Crea e pusha il tag Git corrispondente (con prefisso v)
+git tag v1.1.0
+git push origin v1.1.0
+```
+
+Il push del tag `vX.Y.Z` fa partire `docker-publish.yml`, che pubblica su Docker Hub `simonecosci/biglins:X.Y.Z`, `simonecosci/biglins:X.Y` e aggiorna `simonecosci/biglins:latest`.
+
 ## Documentazione
 
 - [AGENTS.md](AGENTS.md) — convenzioni per chi (o cosa) contribuisce al codice
