@@ -51,6 +51,7 @@ function formatTotal(total: string | number): string {
 
 function formatDate(date: string): string {
     const [year, month, day] = date.split('-');
+
     return `${day}/${month}/${year}`;
 }
 
