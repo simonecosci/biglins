@@ -337,3 +337,59 @@ test('invoice pdf download sanitizes slashes in the invoice number', function ()
     expect($disposition)->toContain('2026-0001');
     expect($disposition)->not->toContain('2026/0001');
 });
+
+test('invoice create page prefills from a duplicate query param', function () {
+    $user = User::factory()->create();
+    $customer = Customer::factory()->create();
+    $source = Invoice::factory()->create([
+        'customer_id' => $customer->id,
+        'note' => 'Source note',
+        'language' => 'en',
+        'paid' => true,
+    ]);
+    InvoiceRow::factory()->create([
+        'invoice_id' => $source->id,
+        'description' => 'Consulting',
+        'price' => 100,
+        'vat_rate' => 22,
+    ]);
+
+    $response = $this->actingAs($user)->get(route('invoices.create', ['duplicate' => $source->id]));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('invoices/Create')
+        ->where('duplicate.customer_id', $customer->id)
+        ->where('duplicate.note', 'Source note')
+        ->where('duplicate.language', 'en')
+        ->where('duplicate.rows.0.description', 'Consulting')
+        ->where('duplicate.rows.0.price', 100)
+        ->where('duplicate.rows.0.vat_rate', 22)
+        ->missing('duplicate.paid')
+        ->missing('duplicate.rows.0.id')
+    );
+});
+
+test('invoice create page ignores an invalid duplicate id', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get(route('invoices.create', ['duplicate' => 'not-a-real-id']));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('invoices/Create')
+        ->where('duplicate', null)
+    );
+});
+
+test('invoice create page has no duplicate data without the query param', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get(route('invoices.create'));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('invoices/Create')
+        ->where('duplicate', null)
+    );
+});

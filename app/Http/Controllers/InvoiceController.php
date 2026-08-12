@@ -6,6 +6,7 @@ use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\InvoiceRow;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -38,11 +39,27 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
+        $duplicateId = $request->string('duplicate')->trim()->toString();
+
+        $source = $duplicateId !== ''
+            ? Invoice::query()->with('rows')->find($duplicateId)
+            : null;
+
         return Inertia::render('invoices/Create', [
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'nextNumber' => Invoice::nextNumber(),
+            'duplicate' => $source ? [
+                'customer_id' => $source->customer_id,
+                'note' => $source->note,
+                'language' => $source->language,
+                'rows' => $source->rows->map(fn (InvoiceRow $row): array => [
+                    'description' => $row->description,
+                    'price' => $row->price,
+                    'vat_rate' => $row->vat_rate,
+                ])->all(),
+            ] : null,
         ]);
     }
 
