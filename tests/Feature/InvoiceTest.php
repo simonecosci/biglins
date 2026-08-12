@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Company;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceRow;
@@ -12,6 +13,7 @@ test('invoice factory creates an invoice with a uuid primary key', function () {
     expect($invoice->id)->toBeString();
     expect(strlen($invoice->id))->toBe(36);
     expect($invoice->customer)->toBeInstanceOf(Customer::class);
+    expect($invoice->company)->toBeInstanceOf(Company::class);
 });
 
 test('first invoice of the year is numbered 0001', function () {
@@ -122,17 +124,20 @@ test('invoice create page can be rendered', function () {
     $response->assertInertia(fn ($page) => $page
         ->component('invoices/Create')
         ->has('nextNumber')
+        ->has('companies')
     );
 });
 
 test('invoice can be created with rows', function () {
     $user = User::factory()->create();
     $customer = Customer::factory()->create();
+    $company = Company::factory()->create();
 
     $response = $this->actingAs($user)->post(route('invoices.store'), [
         'invoice_date' => '2026-01-15',
         'paid' => false,
         'customer_id' => $customer->id,
+        'company_id' => $company->id,
         'note' => 'Test note',
         'language' => 'en',
         'rows' => [
@@ -147,15 +152,18 @@ test('invoice can be created with rows', function () {
     expect($invoice->rows)->toHaveCount(2);
     expect($invoice->number)->not->toBeNull();
     expect($invoice->language)->toBe('en');
+    expect($invoice->company_id)->toBe($company->id);
 });
 
 test('invoice requires at least one row', function () {
     $user = User::factory()->create();
     $customer = Customer::factory()->create();
+    $company = Company::factory()->create();
 
     $response = $this->actingAs($user)->post(route('invoices.store'), [
         'invoice_date' => '2026-01-15',
         'customer_id' => $customer->id,
+        'company_id' => $company->id,
         'rows' => [],
     ]);
 
@@ -164,10 +172,12 @@ test('invoice requires at least one row', function () {
 
 test('invoice customer_id must reference an existing customer', function () {
     $user = User::factory()->create();
+    $company = Company::factory()->create();
 
     $response = $this->actingAs($user)->post(route('invoices.store'), [
         'invoice_date' => '2026-01-15',
         'customer_id' => (string) Str::uuid(),
+        'company_id' => $company->id,
         'rows' => [
             ['description' => 'Consulting', 'price' => 100, 'vat_rate' => 22],
         ],
@@ -176,15 +186,48 @@ test('invoice customer_id must reference an existing customer', function () {
     $response->assertSessionHasErrors('customer_id');
 });
 
+test('invoice company_id is required', function () {
+    $user = User::factory()->create();
+    $customer = Customer::factory()->create();
+
+    $response = $this->actingAs($user)->post(route('invoices.store'), [
+        'invoice_date' => '2026-01-15',
+        'customer_id' => $customer->id,
+        'rows' => [
+            ['description' => 'Consulting', 'price' => 100, 'vat_rate' => 22],
+        ],
+    ]);
+
+    $response->assertSessionHasErrors('company_id');
+});
+
+test('invoice company_id must reference an existing company', function () {
+    $user = User::factory()->create();
+    $customer = Customer::factory()->create();
+
+    $response = $this->actingAs($user)->post(route('invoices.store'), [
+        'invoice_date' => '2026-01-15',
+        'customer_id' => $customer->id,
+        'company_id' => (string) Str::uuid(),
+        'rows' => [
+            ['description' => 'Consulting', 'price' => 100, 'vat_rate' => 22],
+        ],
+    ]);
+
+    $response->assertSessionHasErrors('company_id');
+});
+
 test('invoice number can be set explicitly and must be unique', function () {
     $user = User::factory()->create();
     $customer = Customer::factory()->create();
+    $company = Company::factory()->create();
     Invoice::factory()->create(['number' => '2026-0050']);
 
     $response = $this->actingAs($user)->post(route('invoices.store'), [
         'number' => '2026-0050',
         'invoice_date' => '2026-01-15',
         'customer_id' => $customer->id,
+        'company_id' => $company->id,
         'rows' => [
             ['description' => 'Consulting', 'price' => 100, 'vat_rate' => 22],
         ],
@@ -209,6 +252,7 @@ test('updating an invoice syncs its rows: adds, updates and removes', function (
         'invoice_date' => $invoice->invoice_date->format('Y-m-d'),
         'paid' => true,
         'customer_id' => $invoice->customer_id,
+        'company_id' => $invoice->company_id,
         'language' => $invoice->language,
         'rows' => [
             ['id' => $keepRow->id, 'description' => 'Updated description', 'price' => 20, 'vat_rate' => 10],
@@ -246,10 +290,12 @@ test('invoice factory produces a valid language', function () {
 test('invoice requires a language', function () {
     $user = User::factory()->create();
     $customer = Customer::factory()->create();
+    $company = Company::factory()->create();
 
     $response = $this->actingAs($user)->post(route('invoices.store'), [
         'invoice_date' => '2026-01-15',
         'customer_id' => $customer->id,
+        'company_id' => $company->id,
         'language' => '',
         'rows' => [
             ['description' => 'Consulting', 'price' => 100, 'vat_rate' => 22],
@@ -262,10 +308,12 @@ test('invoice requires a language', function () {
 test('invoice language must be it, en, or es', function () {
     $user = User::factory()->create();
     $customer = Customer::factory()->create();
+    $company = Company::factory()->create();
 
     $response = $this->actingAs($user)->post(route('invoices.store'), [
         'invoice_date' => '2026-01-15',
         'customer_id' => $customer->id,
+        'company_id' => $company->id,
         'language' => 'fr',
         'rows' => [
             ['description' => 'Consulting', 'price' => 100, 'vat_rate' => 22],
@@ -290,6 +338,7 @@ test('invoice preview renders the invoice as html', function () {
 
     $response->assertOk();
     $response->assertSee($invoice->number);
+    $response->assertSee($invoice->company->name);
     $response->assertSee($invoice->customer->name);
     $response->assertSee('Design work');
     $response->assertSee('Please pay within 30 days');
@@ -341,8 +390,10 @@ test('invoice pdf download sanitizes slashes in the invoice number', function ()
 test('invoice create page prefills from a duplicate query param', function () {
     $user = User::factory()->create();
     $customer = Customer::factory()->create();
+    $company = Company::factory()->create();
     $source = Invoice::factory()->create([
         'customer_id' => $customer->id,
+        'company_id' => $company->id,
         'note' => 'Source note',
         'language' => 'en',
         'paid' => true,
@@ -360,6 +411,7 @@ test('invoice create page prefills from a duplicate query param', function () {
     $response->assertInertia(fn ($page) => $page
         ->component('invoices/Create')
         ->where('duplicate.customer_id', $customer->id)
+        ->where('duplicate.company_id', $company->id)
         ->where('duplicate.note', 'Source note')
         ->where('duplicate.language', 'en')
         ->where('duplicate.rows.0.description', 'Consulting')
@@ -409,6 +461,7 @@ test('a duplicated invoice can be saved as a new invoice', function () {
         'invoice_date' => now()->toDateString(),
         'paid' => false,
         'customer_id' => $duplicate['customer_id'],
+        'company_id' => $duplicate['company_id'],
         'note' => $duplicate['note'] ?? '',
         'language' => $duplicate['language'],
         'rows' => $duplicate['rows'],
@@ -418,7 +471,8 @@ test('a duplicated invoice can be saved as a new invoice', function () {
     $new = Invoice::query()->where('id', '!=', $source->id)->firstOrFail();
     expect($new->number)->not->toBe($source->number)
         ->and($new->paid)->toBeFalse()
-        ->and($new->rows)->toHaveCount(1);
+        ->and($new->rows)->toHaveCount(1)
+        ->and($new->company_id)->toBe($source->company_id);
     expect($source->fresh()->paid)->toBeTrue(); // source untouched
 });
 

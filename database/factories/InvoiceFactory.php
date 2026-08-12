@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Company;
 use App\Models\Customer;
 use App\Models\Invoice;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -23,6 +24,7 @@ class InvoiceFactory extends Factory
             'invoice_date' => fake()->dateTimeBetween('-6 months', 'now')->format('Y-m-d'),
             'paid' => fake()->boolean(),
             'customer_id' => Customer::factory(),
+            'company_id' => Company::factory(),
             'note' => fake()->optional()->sentence(),
             'language' => fake()->randomElement(['it', 'en', 'es']),
         ];

@@ -1,6 +1,6 @@
 @php
-    $logoPath = public_path(config('company.logo'));
-    $logoData = file_exists($logoPath)
+    $logoPath = $invoice->company->logo ? public_path($invoice->company->logo) : null;
+    $logoData = $logoPath && file_exists($logoPath)
         ? 'data:' . mime_content_type($logoPath) . ';base64,' . base64_encode(file_get_contents($logoPath))
         : null;
 @endphp
@@ -41,14 +41,14 @@
         <tr>
             <td>
                 @if($logoData)
-                    <img class="logo" src="{{ $logoData }}" alt="{{ config('company.name') }}">
+                    <img class="logo" src="{{ $logoData }}" alt="{{ $invoice->company->name }}">
                 @endif
                 <div class="company">
-                    <strong>{{ config('company.name') }}</strong><br>
-                    {{ config('company.address') }}<br>
-                    {{ config('company.zip') }} {{ config('company.city') }}, {{ config('company.country') }}<br>
-                    {{ __('invoice.tax_id') }}: {{ config('company.tax_id') }}<br>
-                    {{ config('company.email') }} &mdash; {{ config('company.phone') }}
+                    <strong>{{ $invoice->company->name }}</strong><br>
+                    {{ $invoice->company->address }}<br>
+                    {{ $invoice->company->zip }} {{ $invoice->company->city }}, {{ $invoice->company->country?->name }}<br>
+                    {{ __('invoice.tax_id') }}: {{ $invoice->company->tax_id }}<br>
+                    {{ $invoice->company->email }} &mdash; {{ $invoice->company->phone }}
                 </div>
             </td>
             <td class="customer">

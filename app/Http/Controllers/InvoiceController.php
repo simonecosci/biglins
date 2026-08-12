@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
+use App\Models\Company;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceRow;
@@ -49,9 +50,12 @@ class InvoiceController extends Controller
 
         return Inertia::render('invoices/Create', [
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            'companies' => Company::query()->orderBy('name')->get(['id', 'name']),
+            'defaultCompanyId' => Company::query()->where('is_default', true)->value('id'),
             'nextNumber' => Invoice::nextNumber(),
             'duplicate' => $source ? [
                 'customer_id' => $source->customer_id,
+                'company_id' => $source->company_id,
                 'note' => $source->note,
                 'language' => $source->language,
                 'rows' => $source->rows->map(fn (InvoiceRow $row): array => [
@@ -81,6 +85,7 @@ class InvoiceController extends Controller
         return Inertia::render('invoices/Edit', [
             'invoice' => $invoice->load('rows'),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            'companies' => Company::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -124,7 +129,7 @@ class InvoiceController extends Controller
         App::setLocale($invoice->language);
 
         return view('invoices.template', [
-            'invoice' => $invoice->load(['customer.country', 'rows']),
+            'invoice' => $invoice->load(['customer.country', 'company.country', 'rows']),
         ]);
     }
 
@@ -133,7 +138,7 @@ class InvoiceController extends Controller
         App::setLocale($invoice->language);
 
         return Pdf::loadView('invoices.template', [
-            'invoice' => $invoice->load(['customer.country', 'rows']),
+            'invoice' => $invoice->load(['customer.country', 'company.country', 'rows']),
         ])->download(str_replace(['/', '\\'], '-', $invoice->number).'.pdf');
     }
 }

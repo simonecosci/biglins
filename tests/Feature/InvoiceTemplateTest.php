@@ -9,7 +9,7 @@ function renderInvoiceTemplate(Invoice $invoice): string
     App::setLocale($invoice->language);
 
     return view('invoices.template', [
-        'invoice' => $invoice->load(['customer.country', 'rows']),
+        'invoice' => $invoice->load(['customer.country', 'company.country', 'rows']),
     ])->render();
 }
 
@@ -26,6 +26,7 @@ test('template renders company data, customer data and rows', function () {
 
     expect($html)->toContain('Invoice');
     expect($html)->toContain($invoice->number);
+    expect($html)->toContain($invoice->company->name);
     expect($html)->toContain($invoice->customer->name);
     expect($html)->toContain('Consulting work');
 });

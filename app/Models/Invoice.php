@@ -18,6 +18,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $invoice_date
  * @property bool $paid
  * @property string $customer_id
+ * @property string $company_id
  * @property string|null $note
  * @property string $language
  * @property-read float $subtotal
@@ -26,7 +27,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['number', 'invoice_date', 'paid', 'customer_id', 'note', 'language'])]
+#[Fillable(['number', 'invoice_date', 'paid', 'customer_id', 'company_id', 'note', 'language'])]
 class Invoice extends Model
 {
     /** @use HasFactory<InvoiceFactory> */
@@ -81,6 +82,14 @@ class Invoice extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * @return BelongsTo<Company, $this>
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
     }
 
     /**

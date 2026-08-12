@@ -22,6 +22,7 @@ class StoreInvoiceRequest extends FormRequest
             'invoice_date' => ['required', 'date'],
             'paid' => ['boolean'],
             'customer_id' => ['required', 'uuid', 'exists:customers,id'],
+            'company_id' => ['required', 'uuid', 'exists:companies,id'],
             'note' => ['nullable', 'string'],
             'language' => ['required', 'string', Rule::in(['it', 'en', 'es'])],
             'rows' => ['required', 'array', 'min:1'],
