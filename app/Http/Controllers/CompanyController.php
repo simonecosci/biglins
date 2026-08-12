@@ -40,7 +40,7 @@ class CompanyController extends Controller
 
     public function store(StoreCompanyRequest $request): RedirectResponse
     {
-        DB::transaction(function () use ($request) {
+        $company = DB::transaction(function () use ($request) {
             $isDefault = Company::query()->doesntExist() || $request->boolean('is_default');
 
             $company = Company::query()->create([
@@ -51,7 +51,11 @@ class CompanyController extends Controller
             if ($isDefault) {
                 Company::query()->whereKeyNot($company->id)->update(['is_default' => false]);
             }
+
+            return $company;
         });
+
+        $this->syncLogo($company, $request);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Company created.')]);
 
@@ -81,6 +85,8 @@ class CompanyController extends Controller
             }
         });
 
+        $this->syncLogo($company, $request);
+
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Company updated.')]);
 
         return to_route('companies.index');
@@ -94,10 +100,51 @@ class CompanyController extends Controller
             return to_route('companies.index');
         }
 
+        if ($company->logo) {
+            $this->deleteLogoFile($company->logo);
+        }
+
         $company->delete();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Company deleted.')]);
 
         return to_route('companies.index');
+    }
+
+    private function syncLogo(Company $company, StoreCompanyRequest|UpdateCompanyRequest $request): void
+    {
+        if ($request->hasFile('logo')) {
+            if ($company->logo) {
+                $this->deleteLogoFile($company->logo);
+            }
+
+            $file = $request->file('logo');
+            $directory = public_path('images/companies');
+
+            if (! is_dir($directory)) {
+                mkdir($directory, 0755, true);
+            }
+
+            $filename = $company->id.'.'.$file->extension();
+            $file->move($directory, $filename);
+
+            $company->update(['logo' => 'images/companies/'.$filename]);
+
+            return;
+        }
+
+        if ($request->boolean('remove_logo') && $company->logo) {
+            $this->deleteLogoFile($company->logo);
+            $company->update(['logo' => null]);
+        }
+    }
+
+    private function deleteLogoFile(string $path): void
+    {
+        $fullPath = public_path($path);
+
+        if (file_exists($fullPath)) {
+            unlink($fullPath);
+        }
     }
 }

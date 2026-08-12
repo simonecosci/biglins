@@ -144,3 +144,79 @@ test('a company with invoices cannot be deleted', function () {
     $response->assertRedirect(route('companies.index'));
     expect(Company::query()->find($company->id))->not->toBeNull();
 });
+
+use Illuminate\Http\UploadedFile;
+
+test('company logo can be uploaded and is stored in public/images/companies', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->post(route('companies.store'), [
+        'name' => 'Acme Corp',
+        'logo' => UploadedFile::fake()->image('logo.png'),
+    ]);
+
+    $response->assertSessionHasNoErrors()->assertRedirect(route('companies.index'));
+
+    $company = Company::query()->where('name', 'Acme Corp')->firstOrFail();
+    expect($company->logo)->toBe("images/companies/{$company->id}.png");
+    expect(file_exists(public_path($company->logo)))->toBeTrue();
+
+    unlink(public_path($company->logo));
+});
+
+test('replacing a company logo deletes the previous file', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+
+    $this->actingAs($user)->put(route('companies.update', $company), [
+        'name' => $company->name,
+        'logo' => UploadedFile::fake()->image('first.jpg'),
+    ])->assertSessionHasNoErrors();
+
+    $firstPath = public_path($company->fresh()->logo);
+    expect(file_exists($firstPath))->toBeTrue();
+
+    $this->actingAs($user)->put(route('companies.update', $company), [
+        'name' => $company->name,
+        'logo' => UploadedFile::fake()->image('second.png'),
+    ])->assertSessionHasNoErrors();
+
+    $company->refresh();
+    expect(file_exists($firstPath))->toBeFalse();
+    expect(file_exists(public_path($company->logo)))->toBeTrue();
+    expect($company->logo)->toBe("images/companies/{$company->id}.png");
+
+    unlink(public_path($company->logo));
+});
+
+test('a company logo can be removed without uploading a new one', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+
+    $this->actingAs($user)->put(route('companies.update', $company), [
+        'name' => $company->name,
+        'logo' => UploadedFile::fake()->image('logo.png'),
+    ]);
+    $logoPath = public_path($company->fresh()->logo);
+    expect(file_exists($logoPath))->toBeTrue();
+
+    $response = $this->actingAs($user)->put(route('companies.update', $company), [
+        'name' => $company->name,
+        'remove_logo' => true,
+    ]);
+
+    $response->assertSessionHasNoErrors();
+    expect($company->fresh()->logo)->toBeNull();
+    expect(file_exists($logoPath))->toBeFalse();
+});
+
+test('company logo must be an image', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->post(route('companies.store'), [
+        'name' => 'Acme Corp',
+        'logo' => UploadedFile::fake()->create('not-an-image.pdf', 100),
+    ]);
+
+    $response->assertSessionHasErrors('logo');
+});

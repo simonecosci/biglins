@@ -26,6 +26,8 @@ class UpdateCompanyRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'iban' => ['nullable', 'string', 'max:50'],
+            'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,svg,webp', 'max:2048'],
+            'remove_logo' => ['nullable', 'boolean'],
             'is_default' => ['boolean'],
         ];
     }
