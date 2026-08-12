@@ -2,6 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Plus } from '@lucide/vue';
 import { ref } from 'vue';
+import InvoiceController from '@/actions/App/Http/Controllers/InvoiceController';
 import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -107,7 +108,21 @@ defineOptions({
                             </Badge>
                         </td>
                         <td class="px-4 py-2">{{ formatTotal(invoice.total) }}</td>
-                        <td class="px-4 py-2 text-right">
+                        <td class="px-4 py-2 text-right space-x-3">
+                            <a
+                                :href="InvoiceController.preview(invoice.id).url"
+                                target="_blank"
+                                rel="noopener"
+                                class="text-primary underline-offset-4 hover:underline"
+                            >
+                                Preview
+                            </a>
+                            <a
+                                :href="InvoiceController.pdf(invoice.id).url"
+                                class="text-primary underline-offset-4 hover:underline"
+                            >
+                                PDF
+                            </a>
                             <Link
                                 :href="edit(invoice.id)"
                                 class="text-primary underline-offset-4 hover:underline"

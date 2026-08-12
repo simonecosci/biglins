@@ -112,6 +112,23 @@ function onDelete(): void {
             :description="`Update invoice ${invoice.number}`"
         />
 
+        <div class="flex gap-4">
+            <a
+                :href="InvoiceController.preview(invoice.id).url"
+                target="_blank"
+                rel="noopener"
+                class="text-primary underline-offset-4 hover:underline"
+            >
+                Preview
+            </a>
+            <a
+                :href="InvoiceController.pdf(invoice.id).url"
+                class="text-primary underline-offset-4 hover:underline"
+            >
+                Download PDF
+            </a>
+        </div>
+
         <form class="space-y-4" @submit.prevent="submit">
             <div class="grid grid-cols-2 gap-4">
                 <div class="grid gap-2">
