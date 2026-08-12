@@ -26,8 +26,8 @@ test('template renders company data, customer data and rows', function () {
 
     expect($html)->toContain('Invoice');
     expect($html)->toContain($invoice->number);
-    expect($html)->toContain($invoice->company->name);
-    expect($html)->toContain($invoice->customer->name);
+    expect($html)->toContain(e($invoice->company->name));
+    expect($html)->toContain(e($invoice->customer->name));
     expect($html)->toContain('Consulting work');
 });
 
