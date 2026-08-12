@@ -29,4 +29,12 @@ class Country extends Model
     {
         return $this->hasMany(Customer::class);
     }
+
+    /**
+     * @return HasMany<Company, $this>
+     */
+    public function companies(): HasMany
+    {
+        return $this->hasMany(Company::class);
+    }
 }
