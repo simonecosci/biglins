@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, Globe, LayoutGrid, Receipt, Users } from '@lucide/vue';
+import { BookOpen, Building2, FolderGit2, Globe, LayoutGrid, Receipt, Users } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
@@ -16,6 +16,7 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { index as companiesIndex } from '@/routes/companies';
 import { index as countriesIndex } from '@/routes/countries';
 import { index as customersIndex } from '@/routes/customers';
 import { index as invoicesIndex } from '@/routes/invoices';
@@ -33,6 +34,11 @@ const mainNavItems = computed<NavItem[]>(() => [
         title: 'Customers',
         href: customersIndex().url,
         icon: Users,
+    },
+    {
+        title: 'Companies',
+        href: companiesIndex().url,
+        icon: Building2,
     },
     {
         title: 'Invoices',
