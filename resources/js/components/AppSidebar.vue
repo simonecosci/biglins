@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Building2, FolderGit2, Globe, LayoutGrid, Receipt, Users } from '@lucide/vue';
+import {
+    BookOpen,
+    Building2,
+    FolderGit2,
+    Globe,
+    LayoutGrid,
+    Receipt,
+    Users,
+} from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';

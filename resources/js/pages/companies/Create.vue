@@ -70,19 +70,33 @@ function submit(): void {
         <form class="space-y-4" @submit.prevent="submit">
             <div class="grid gap-2">
                 <Label for="name">Name</Label>
-                <Input id="name" v-model="form.name" required autofocus placeholder="Company name" />
+                <Input
+                    id="name"
+                    v-model="form.name"
+                    required
+                    autofocus
+                    placeholder="Company name"
+                />
                 <InputError :message="form.errors.name" />
             </div>
 
             <div class="grid gap-2">
                 <Label for="tax_id">Tax ID</Label>
-                <Input id="tax_id" v-model="form.tax_id" placeholder="Tax identification number" />
+                <Input
+                    id="tax_id"
+                    v-model="form.tax_id"
+                    placeholder="Tax identification number"
+                />
                 <InputError :message="form.errors.tax_id" />
             </div>
 
             <div class="grid gap-2">
                 <Label for="address">Address</Label>
-                <Input id="address" v-model="form.address" placeholder="Address" />
+                <Input
+                    id="address"
+                    v-model="form.address"
+                    placeholder="Address"
+                />
                 <InputError :message="form.errors.address" />
             </div>
 
@@ -120,19 +134,32 @@ function submit(): void {
 
             <div class="grid gap-2">
                 <Label for="email">Email</Label>
-                <Input id="email" type="email" v-model="form.email" placeholder="Email address" />
+                <Input
+                    id="email"
+                    type="email"
+                    v-model="form.email"
+                    placeholder="Email address"
+                />
                 <InputError :message="form.errors.email" />
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div class="grid gap-2">
                     <Label for="phone">Phone</Label>
-                    <Input id="phone" v-model="form.phone" placeholder="Phone number" />
+                    <Input
+                        id="phone"
+                        v-model="form.phone"
+                        placeholder="Phone number"
+                    />
                     <InputError :message="form.errors.phone" />
                 </div>
                 <div class="grid gap-2">
                     <Label for="iban">IBAN</Label>
-                    <Input id="iban" v-model="form.iban" placeholder="Bank account IBAN" />
+                    <Input
+                        id="iban"
+                        v-model="form.iban"
+                        placeholder="Bank account IBAN"
+                    />
                     <InputError :message="form.errors.iban" />
                 </div>
             </div>
@@ -143,9 +170,9 @@ function submit(): void {
                     id="logo"
                     type="file"
                     accept="image/png,image/jpeg,image/svg+xml,image/webp"
-                    class="border-input dark:bg-input/30 w-full rounded-md border bg-transparent px-3 py-1.5 text-sm shadow-xs file:mr-3 file:rounded-sm file:border-0 file:bg-transparent file:text-sm file:font-medium"
+                    class="w-full rounded-md border border-input bg-transparent px-3 py-1.5 text-sm shadow-xs file:mr-3 file:rounded-sm file:border-0 file:bg-transparent file:text-sm file:font-medium dark:bg-input/30"
                     @change="onLogoChange"
-                >
+                />
                 <InputError :message="form.errors.logo" />
             </div>
 
@@ -156,7 +183,10 @@ function submit(): void {
 
             <div class="flex items-center gap-4 pt-2">
                 <Button :disabled="form.processing" type="submit">Save</Button>
-                <Link :href="index()" class="text-sm text-muted-foreground hover:underline">
+                <Link
+                    :href="index()"
+                    class="text-sm text-muted-foreground hover:underline"
+                >
                     Cancel
                 </Link>
             </div>

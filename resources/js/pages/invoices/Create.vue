@@ -98,12 +98,20 @@ function submit(): void {
             <div class="grid grid-cols-2 gap-4">
                 <div class="grid gap-2">
                     <Label for="number">Number</Label>
-                    <Input id="number" v-model="form.number" placeholder="2026-0001" />
+                    <Input
+                        id="number"
+                        v-model="form.number"
+                        placeholder="2026-0001"
+                    />
                     <InputError :message="form.errors.number" />
                 </div>
                 <div class="grid gap-2">
                     <Label for="invoice_date">Date</Label>
-                    <Input id="invoice_date" v-model="form.invoice_date" type="date" />
+                    <Input
+                        id="invoice_date"
+                        v-model="form.invoice_date"
+                        type="date"
+                    />
                     <InputError :message="form.errors.invoice_date" />
                 </div>
             </div>
@@ -172,7 +180,7 @@ function submit(): void {
                     id="note"
                     v-model="form.note"
                     rows="3"
-                    class="border-input dark:bg-input/30 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm"
+                    class="w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm dark:bg-input/30"
                     placeholder="Optional note"
                 />
                 <InputError :message="form.errors.note" />
@@ -181,7 +189,12 @@ function submit(): void {
             <div class="space-y-3">
                 <div class="flex items-center justify-between">
                     <Label>Rows</Label>
-                    <Button type="button" variant="outline" size="sm" @click="addRow">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        @click="addRow"
+                    >
                         <Plus />
                         Add row
                     </Button>
@@ -194,8 +207,13 @@ function submit(): void {
                     class="grid grid-cols-[1fr_8rem_6rem_2.5rem] items-start gap-2"
                 >
                     <div class="grid gap-1">
-                        <Input v-model="row.description" placeholder="Description" />
-                        <InputError :message="form.errors[`rows.${i}.description`]" />
+                        <Input
+                            v-model="row.description"
+                            placeholder="Description"
+                        />
+                        <InputError
+                            :message="form.errors[`rows.${i}.description`]"
+                        />
                     </div>
                     <div class="grid gap-1">
                         <Input
@@ -216,7 +234,9 @@ function submit(): void {
                             max="100"
                             placeholder="VAT %"
                         />
-                        <InputError :message="form.errors[`rows.${i}.vat_rate`]" />
+                        <InputError
+                            :message="form.errors[`rows.${i}.vat_rate`]"
+                        />
                     </div>
                     <Button
                         type="button"

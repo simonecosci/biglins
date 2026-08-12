@@ -48,6 +48,9 @@ class InvoiceRow extends Model
         return $this->belongsTo(Invoice::class);
     }
 
+    /**
+     * @return Attribute<float, never>
+     */
     protected function total(): Attribute
     {
         return Attribute::make(

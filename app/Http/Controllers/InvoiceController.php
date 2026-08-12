@@ -94,7 +94,7 @@ class InvoiceController extends Controller
         DB::transaction(function () use ($request, $invoice) {
             $invoice->update($request->safe()->except('rows'));
 
-            $rows = collect($request->safe()->input('rows'));
+            $rows = collect($this->rowsInput($request));
             $keepIds = $rows->pluck('id')->filter()->all();
 
             $invoice->rows()->whereNotIn('id', $keepIds)->delete();
@@ -113,6 +113,14 @@ class InvoiceController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Invoice updated.')]);
 
         return to_route('invoices.index');
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function rowsInput(UpdateInvoiceRequest $request): array
+    {
+        return $request->safe()->input('rows');
     }
 
     public function destroy(Invoice $invoice): RedirectResponse

@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Country;
 use App\Models\Customer;
+use Faker\Provider\en_US\Address as EnUsAddress;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -24,7 +25,7 @@ class CustomerFactory extends Factory
             'zip' => fake()->postcode(),
             'city' => fake()->city(),
             'country_id' => Country::factory(),
-            'state' => fake()->state(),
+            'state' => EnUsAddress::state(),
             'email' => fake()->unique()->companyEmail(),
             'web' => fake()->url(),
             'phone' => fake()->phoneNumber(),

@@ -60,10 +60,10 @@ const dashboardUrl = computed(() => dashboard().url);
                         >
                     </h1>
                     <p class="mb-2 text-[#706f6c] dark:text-[#A1A09A]">
-                        Applicazione di fatturazione per liberi
-                        professionisti: anagrafica clienti, emissione fatture
-                        con righe/IVA, numerazione progressiva automatica,
-                        anteprima e generazione PDF, duplicazione fattura.
+                        Applicazione di fatturazione per liberi professionisti:
+                        anagrafica clienti, emissione fatture con righe/IVA,
+                        numerazione progressiva automatica, anteprima e
+                        generazione PDF, duplicazione fattura.
                     </p>
                     <ul class="mb-4 flex flex-col lg:mb-6">
                         <li class="relative flex items-center gap-4 py-2">

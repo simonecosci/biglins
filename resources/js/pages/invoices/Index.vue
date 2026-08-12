@@ -103,14 +103,22 @@ defineOptions({
                             {{ invoice.customer?.name ?? '—' }}
                         </td>
                         <td class="px-4 py-2">
-                            <Badge :variant="invoice.paid ? 'default' : 'secondary'">
+                            <Badge
+                                :variant="
+                                    invoice.paid ? 'default' : 'secondary'
+                                "
+                            >
                                 {{ invoice.paid ? 'Paid' : 'Unpaid' }}
                             </Badge>
                         </td>
-                        <td class="px-4 py-2">{{ formatTotal(invoice.total) }}</td>
-                        <td class="px-4 py-2 text-right space-x-3">
+                        <td class="px-4 py-2">
+                            {{ formatTotal(invoice.total) }}
+                        </td>
+                        <td class="space-x-3 px-4 py-2 text-right">
                             <a
-                                :href="InvoiceController.preview(invoice.id).url"
+                                :href="
+                                    InvoiceController.preview(invoice.id).url
+                                "
                                 target="_blank"
                                 rel="noopener"
                                 class="text-primary underline-offset-4 hover:underline"
@@ -130,7 +138,9 @@ defineOptions({
                                 Edit
                             </Link>
                             <Link
-                                :href="create({ query: { duplicate: invoice.id } })"
+                                :href="
+                                    create({ query: { duplicate: invoice.id } })
+                                "
                                 class="text-primary underline-offset-4 hover:underline"
                             >
                                 Duplica

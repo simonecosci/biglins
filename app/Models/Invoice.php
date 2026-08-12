@@ -34,7 +34,7 @@ class Invoice extends Model
     use HasFactory, HasUuids;
 
     /**
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $appends = ['subtotal', 'vat_total', 'total'];
 
@@ -100,6 +100,9 @@ class Invoice extends Model
         return $this->hasMany(InvoiceRow::class);
     }
 
+    /**
+     * @return Attribute<float, never>
+     */
     protected function subtotal(): Attribute
     {
         return Attribute::make(
@@ -107,6 +110,9 @@ class Invoice extends Model
         );
     }
 
+    /**
+     * @return Attribute<float, never>
+     */
     protected function vatTotal(): Attribute
     {
         return Attribute::make(
@@ -116,6 +122,9 @@ class Invoice extends Model
         );
     }
 
+    /**
+     * @return Attribute<float, never>
+     */
     protected function total(): Attribute
     {
         return Attribute::make(

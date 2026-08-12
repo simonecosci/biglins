@@ -93,9 +93,13 @@ defineOptions({
                     >
                         <td class="px-4 py-2">{{ company.name }}</td>
                         <td class="px-4 py-2">{{ company.city ?? '—' }}</td>
-                        <td class="px-4 py-2">{{ company.country?.name ?? '—' }}</td>
+                        <td class="px-4 py-2">
+                            {{ company.country?.name ?? '—' }}
+                        </td>
                         <td class="px-4 py-2">{{ company.email ?? '—' }}</td>
-                        <td class="px-4 py-2">{{ company.is_default ? 'Yes' : '—' }}</td>
+                        <td class="px-4 py-2">
+                            {{ company.is_default ? 'Yes' : '—' }}
+                        </td>
                         <td class="px-4 py-2 text-right">
                             <Link
                                 :href="edit(company.id)"
@@ -106,7 +110,10 @@ defineOptions({
                         </td>
                     </tr>
                     <tr v-if="companies.data.length === 0">
-                        <td colspan="6" class="px-4 py-6 text-center text-muted-foreground">
+                        <td
+                            colspan="6"
+                            class="px-4 py-6 text-center text-muted-foreground"
+                        >
                             No companies found.
                         </td>
                     </tr>
