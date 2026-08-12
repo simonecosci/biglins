@@ -63,3 +63,20 @@ test('template omits the notes section when the invoice has no note', function (
 
     expect($html)->not->toContain('id="notes"');
 });
+
+test('template renders the quantity column for each row', function () {
+    $invoice = Invoice::factory()->create(['language' => 'en']);
+    InvoiceRow::factory()->create([
+        'invoice_id' => $invoice->id,
+        'description' => 'Consulting',
+        'quantity' => 2,
+        'price' => 100,
+        'vat_rate' => 22,
+    ]);
+
+    $html = renderInvoiceTemplate($invoice);
+
+    expect($html)->toContain('Quantity');
+    expect($html)->toContain('2.00');
+    expect($html)->toContain('244.00');
+});

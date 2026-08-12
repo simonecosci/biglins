@@ -6,6 +6,7 @@ return [
     'date' => 'Date',
     'customer' => 'Customer',
     'description' => 'Description',
+    'quantity' => 'Quantity',
     'price' => 'Price',
     'vat' => 'VAT',
     'subtotal' => 'Subtotal',
