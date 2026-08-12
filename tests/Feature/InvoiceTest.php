@@ -173,8 +173,8 @@ test('invoice can be created with rows', function () {
         'note' => 'Test note',
         'language' => 'en',
         'rows' => [
-            ['description' => 'Consulting', 'price' => 100, 'vat_rate' => 22],
-            ['description' => 'Hosting', 'price' => 50, 'vat_rate' => 22],
+            ['description' => 'Consulting', 'quantity' => 2, 'price' => 100, 'vat_rate' => 22],
+            ['description' => 'Hosting', 'quantity' => 1, 'price' => 50, 'vat_rate' => 22],
         ],
     ]);
 
@@ -185,6 +185,7 @@ test('invoice can be created with rows', function () {
     expect($invoice->number)->not->toBeNull();
     expect($invoice->language)->toBe('en');
     expect($invoice->company_id)->toBe($company->id);
+    expect($invoice->rows->firstWhere('description', 'Consulting')->quantity)->toEqual(2.0);
 });
 
 test('invoice requires at least one row', function () {
@@ -200,6 +201,42 @@ test('invoice requires at least one row', function () {
     ]);
 
     $response->assertSessionHasErrors('rows');
+});
+
+test('invoice row requires a quantity', function () {
+    $user = User::factory()->create();
+    $customer = Customer::factory()->create();
+    $company = Company::factory()->create();
+
+    $response = $this->actingAs($user)->post(route('invoices.store'), [
+        'invoice_date' => '2026-01-15',
+        'customer_id' => $customer->id,
+        'company_id' => $company->id,
+        'language' => 'en',
+        'rows' => [
+            ['description' => 'Consulting', 'price' => 100, 'vat_rate' => 22],
+        ],
+    ]);
+
+    $response->assertSessionHasErrors('rows.0.quantity');
+});
+
+test('invoice row quantity must be greater than zero', function () {
+    $user = User::factory()->create();
+    $customer = Customer::factory()->create();
+    $company = Company::factory()->create();
+
+    $response = $this->actingAs($user)->post(route('invoices.store'), [
+        'invoice_date' => '2026-01-15',
+        'customer_id' => $customer->id,
+        'company_id' => $company->id,
+        'language' => 'en',
+        'rows' => [
+            ['description' => 'Consulting', 'quantity' => 0, 'price' => 100, 'vat_rate' => 22],
+        ],
+    ]);
+
+    $response->assertSessionHasErrors('rows.0.quantity');
 });
 
 test('invoice customer_id must reference an existing customer', function () {
@@ -274,6 +311,7 @@ test('updating an invoice syncs its rows: adds, updates and removes', function (
     $keepRow = InvoiceRow::factory()->create([
         'invoice_id' => $invoice->id,
         'description' => 'Keep me',
+        'quantity' => 1,
         'price' => 10,
         'vat_rate' => 22,
     ]);
@@ -287,8 +325,8 @@ test('updating an invoice syncs its rows: adds, updates and removes', function (
         'company_id' => $invoice->company_id,
         'language' => $invoice->language,
         'rows' => [
-            ['id' => $keepRow->id, 'description' => 'Updated description', 'price' => 20, 'vat_rate' => 10],
-            ['description' => 'New row', 'price' => 30, 'vat_rate' => 4],
+            ['id' => $keepRow->id, 'description' => 'Updated description', 'quantity' => 3, 'price' => 20, 'vat_rate' => 10],
+            ['description' => 'New row', 'quantity' => 1, 'price' => 30, 'vat_rate' => 4],
         ],
     ]);
 
@@ -299,6 +337,7 @@ test('updating an invoice syncs its rows: adds, updates and removes', function (
     expect($invoice->rows)->toHaveCount(2);
     expect(InvoiceRow::query()->find($removeRow->id))->toBeNull();
     expect($keepRow->fresh()->description)->toBe('Updated description');
+    expect($keepRow->fresh()->quantity)->toEqual(3.0);
 });
 
 test('invoice can be deleted and its rows are removed', function () {
@@ -433,6 +472,7 @@ test('invoice create page prefills from a duplicate query param', function () {
     InvoiceRow::factory()->create([
         'invoice_id' => $source->id,
         'description' => 'Consulting',
+        'quantity' => 2,
         'price' => 100,
         'vat_rate' => 22,
     ]);
@@ -447,6 +487,7 @@ test('invoice create page prefills from a duplicate query param', function () {
         ->where('duplicate.note', 'Source note')
         ->where('duplicate.language', 'en')
         ->where('duplicate.rows.0.description', 'Consulting')
+        ->where('duplicate.rows.0.quantity', 2)
         ->where('duplicate.rows.0.price', 100)
         ->where('duplicate.rows.0.vat_rate', 22)
         ->missing('duplicate.paid')

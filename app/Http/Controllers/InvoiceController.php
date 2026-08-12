@@ -60,6 +60,7 @@ class InvoiceController extends Controller
                 'language' => $source->language,
                 'rows' => $source->rows->map(fn (InvoiceRow $row): array => [
                     'description' => $row->description,
+                    'quantity' => $row->quantity,
                     'price' => $row->price,
                     'vat_rate' => $row->vat_rate,
                 ])->all(),
