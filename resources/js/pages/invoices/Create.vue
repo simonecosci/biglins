@@ -66,7 +66,9 @@ const form = useForm({
     company_id: props.duplicate?.company_id ?? props.defaultCompanyId ?? '',
     note: props.duplicate?.note ?? '',
     language: props.duplicate?.language ?? 'es',
-    rows: props.duplicate?.rows ?? [{ description: '', quantity: 1, price: 0, vat_rate: 0 }],
+    rows: props.duplicate?.rows ?? [
+        { description: '', quantity: 1, price: 0, vat_rate: 0 },
+    ],
 });
 
 function addRow(): void {
