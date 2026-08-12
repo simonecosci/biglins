@@ -77,6 +77,6 @@ test('template renders the quantity column for each row', function () {
     $html = renderInvoiceTemplate($invoice);
 
     expect($html)->toContain('Quantity');
-    expect($html)->toContain('2.00');
+    expect($html)->toContain('<td class="num">2.00</td>');
     expect($html)->toContain('244.00');
 });
