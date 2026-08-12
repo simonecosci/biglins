@@ -38,6 +38,7 @@ type Invoice = {
     paid: boolean;
     customer_id: string;
     note: string | null;
+    language: string;
     rows: InvoiceRow[];
 };
 
@@ -67,6 +68,7 @@ const form = useForm({
     paid: props.invoice.paid,
     customer_id: props.invoice.customer_id,
     note: props.invoice.note ?? '',
+    language: props.invoice.language,
     rows: props.invoice.rows.map((row) => ({
         id: row.id,
         description: row.description,
@@ -141,6 +143,21 @@ function onDelete(): void {
                     </SelectContent>
                 </Select>
                 <InputError :message="form.errors.customer_id" />
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="language">Language</Label>
+                <Select v-model="form.language">
+                    <SelectTrigger id="language" class="w-full">
+                        <SelectValue placeholder="Select a language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="it">Italiano</SelectItem>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="es">Español</SelectItem>
+                    </SelectContent>
+                </Select>
+                <InputError :message="form.errors.language" />
             </div>
 
             <div class="flex items-center gap-2">

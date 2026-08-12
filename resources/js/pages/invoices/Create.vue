@@ -49,6 +49,7 @@ const form = useForm({
     paid: false,
     customer_id: '',
     note: '',
+    language: 'es',
     rows: [{ description: '', price: 0, vat_rate: 0 }] as InvoiceRowForm[],
 });
 
@@ -109,6 +110,21 @@ function submit(): void {
                     </SelectContent>
                 </Select>
                 <InputError :message="form.errors.customer_id" />
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="language">Language</Label>
+                <Select v-model="form.language">
+                    <SelectTrigger id="language" class="w-full">
+                        <SelectValue placeholder="Select a language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="it">Italiano</SelectItem>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="es">Español</SelectItem>
+                    </SelectContent>
+                </Select>
+                <InputError :message="form.errors.language" />
             </div>
 
             <div class="flex items-center gap-2">
