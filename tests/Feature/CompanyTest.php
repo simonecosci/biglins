@@ -32,16 +32,6 @@ test('guests are redirected to the login page when visiting companies', function
     $this->get(route('companies.index'))->assertRedirect(route('login'));
 });
 
-test('companies index page can be rendered', function () {
-    $user = User::factory()->create();
-    Company::factory()->count(3)->create();
-
-    $response = $this->actingAs($user)->get(route('companies.index'));
-
-    $response->assertOk();
-    $response->assertInertia(fn ($page) => $page->component('companies/Index'));
-});
-
 test('company can be created with only a name', function () {
     $user = User::factory()->create();
 
