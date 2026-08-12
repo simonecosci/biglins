@@ -53,7 +53,7 @@ New optional prop:
 ```ts
 duplicate: {
     customer_id: string;
-    note: string;
+    note: string | null;
     language: string;
     rows: InvoiceRowForm[];
 } | null;

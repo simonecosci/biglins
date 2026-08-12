@@ -57,6 +57,9 @@ test('invoice create page prefills from a duplicate query param', function () {
         ->where('duplicate.note', 'Source note')
         ->where('duplicate.language', 'en')
         ->where('duplicate.rows.0.description', 'Consulting')
+        // Note: the shipped test uses 100/22 (no `.0`) — AssertableJson::where() uses strict
+        // assertSame, and json_encode() drops the `.0` from whole-number floats before the
+        // assertion sees them, so 100.0/22.0 here would fail. Don't "fix" the shipped literals back to this.
         ->where('duplicate.rows.0.price', 100.0)
         ->where('duplicate.rows.0.vat_rate', 22.0)
         ->missing('duplicate.paid')

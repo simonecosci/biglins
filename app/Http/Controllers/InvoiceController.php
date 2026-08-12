@@ -41,7 +41,7 @@ class InvoiceController extends Controller
 
     public function create(Request $request): Response
     {
-        $duplicateId = $request->string('duplicate')->trim()->toString();
+        $duplicateId = is_string($id = $request->query('duplicate')) ? trim($id) : '';
 
         $source = $duplicateId !== ''
             ? Invoice::query()->with('rows')->find($duplicateId)

@@ -382,6 +382,46 @@ test('invoice create page ignores an invalid duplicate id', function () {
     );
 });
 
+test('invoice create page ignores an array-valued duplicate param', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get('/invoices/create?duplicate[]=x');
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('invoices/Create')
+        ->where('duplicate', null)
+    );
+});
+
+test('a duplicated invoice can be saved as a new invoice', function () {
+    $user = User::factory()->create();
+    $source = Invoice::factory()->create(['language' => 'en', 'paid' => true]);
+    InvoiceRow::factory()->create([
+        'invoice_id' => $source->id, 'description' => 'Consulting', 'price' => 100, 'vat_rate' => 22,
+    ]);
+
+    $page = $this->actingAs($user)->get(route('invoices.create', ['duplicate' => $source->id]));
+    $duplicate = $page->viewData('page')['props']['duplicate'];
+
+    $this->actingAs($user)->post(route('invoices.store'), [
+        'number' => Invoice::nextNumber(),
+        'invoice_date' => now()->toDateString(),
+        'paid' => false,
+        'customer_id' => $duplicate['customer_id'],
+        'note' => $duplicate['note'] ?? '',
+        'language' => $duplicate['language'],
+        'rows' => $duplicate['rows'],
+    ])->assertRedirect(route('invoices.index'))->assertSessionHasNoErrors();
+
+    expect(Invoice::count())->toBe(2);
+    $new = Invoice::query()->where('id', '!=', $source->id)->firstOrFail();
+    expect($new->number)->not->toBe($source->number)
+        ->and($new->paid)->toBeFalse()
+        ->and($new->rows)->toHaveCount(1);
+    expect($source->fresh()->paid)->toBeTrue(); // source untouched
+});
+
 test('invoice create page has no duplicate data without the query param', function () {
     $user = User::factory()->create();
 
