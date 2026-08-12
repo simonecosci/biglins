@@ -73,11 +73,6 @@
                 <h1>{{ __('invoice.title') }}</h1>
                 <div>{{ __('invoice.number') }}: {{ $invoice->number }}</div>
                 <div>{{ __('invoice.date') }}: {{ $invoice->invoice_date->format('d/m/Y') }}</div>
-                <div>
-                    <span class="badge {{ $invoice->paid ? 'badge-paid' : 'badge-unpaid' }}">
-                        {{ $invoice->paid ? __('invoice.paid') : __('invoice.unpaid') }}
-                    </span>
-                </div>
             </td>
         </tr>
     </table>

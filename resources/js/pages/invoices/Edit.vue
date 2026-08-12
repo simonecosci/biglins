@@ -245,6 +245,15 @@ function onDelete(): void {
                 <InputError :message="form.errors.rows" />
 
                 <div
+                    class="grid grid-cols-[1fr_8rem_6rem_2.5rem] gap-2 text-sm text-muted-foreground"
+                >
+                    <span>Description</span>
+                    <span>Price</span>
+                    <span>VAT (%)</span>
+                    <span></span>
+                </div>
+
+                <div
                     v-for="(row, i) in form.rows"
                     :key="row.id ?? `new-${i}`"
                     class="grid grid-cols-[1fr_8rem_6rem_2.5rem] items-start gap-2"
