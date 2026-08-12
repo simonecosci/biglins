@@ -26,8 +26,26 @@ class StoreCompanyRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'iban' => ['nullable', 'string', 'max:50'],
-            'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,svg,webp', 'max:2048'],
+            'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'is_default' => ['boolean'],
         ];
+    }
+
+    /**
+     * The frontend form always submits every optional field, sending an empty
+     * string when the user left it blank. Normalise those to `null` so they are
+     * persisted as `NULL` and never reach the `country_id` foreign key as `''`.
+     */
+    protected function prepareForValidation(): void
+    {
+        $normalized = [];
+
+        foreach (['tax_id', 'address', 'zip', 'city', 'country_id', 'email', 'phone', 'iban'] as $field) {
+            if ($this->has($field)) {
+                $normalized[$field] = $this->input($field) ?: null;
+            }
+        }
+
+        $this->merge($normalized);
     }
 }

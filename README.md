@@ -59,7 +59,7 @@ L'app risponde su `http://localhost:8080` (porta configurabile con `APP_PORT` in
 - `app/Models` — `Customer`, `Invoice`, `InvoiceRow`, `Country`, `User` (chiavi primarie UUID tranne `User`)
 - `app/Actions/Fortify` — azioni di autenticazione (Fortify)
 - `resources/js/pages` — pagine Inertia/Vue
-- `config/company.php` — dati dell'emittente usati nel PDF fattura (file locale, **non versionato**, vedi `.gitignore`)
+- `public/images/companies` — loghi delle aziende emittenti caricati dalla UI (**non versionati**, vedi `.gitignore`)
 - `docs/superpowers/` — spec e piani di sviluppo delle feature (workflow interno, non fa parte dell'app)
 
 ## Documentazione

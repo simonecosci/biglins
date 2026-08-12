@@ -50,4 +50,4 @@ vendor/bin/pint --dirty --format agent
 
 - Don't add speculative abstractions, error handling for scenarios that can't occur, or feature flags for things that could just be changed directly.
 - Don't run tinker or write throwaway verification scripts when a test already proves the behavior.
-- Don't touch `config/company.php` casually — it holds the invoicing entity's real data and is intentionally gitignored.
+- Don't seed or edit `companies` rows casually — they hold the invoicing entities' real data; manage them through the `/companies` UI.

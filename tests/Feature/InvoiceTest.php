@@ -128,6 +128,22 @@ test('invoice create page can be rendered', function () {
     );
 });
 
+test('invoice edit page can be rendered', function () {
+    $user = User::factory()->create();
+    Company::factory()->count(2)->create();
+    $invoice = Invoice::factory()->create();
+
+    $response = $this->actingAs($user)->get(route('invoices.edit', $invoice));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('invoices/Edit')
+        ->has('invoice')
+        ->has('customers')
+        ->has('companies', 3)
+    );
+});
+
 test('invoice can be created with rows', function () {
     $user = User::factory()->create();
     $customer = Customer::factory()->create();

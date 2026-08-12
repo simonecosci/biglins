@@ -5,6 +5,8 @@
 /public/build
 /public/fonts-manifest.dev.json
 /public/hot
+/public/images/companies/*
+!/public/images/companies/.gitkeep
 /public/storage
 /storage/*.key
 /storage/pail
@@ -16,7 +18,6 @@
 .env
 .env.backup
 .env.production
-/config/company.php
 .phpactor.json
 .phpunit.result.cache
 Homestead.json

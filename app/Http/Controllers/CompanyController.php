@@ -9,6 +9,7 @@ use App\Models\Country;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -121,9 +122,7 @@ class CompanyController extends Controller
             $file = $request->file('logo');
             $directory = public_path('images/companies');
 
-            if (! is_dir($directory)) {
-                mkdir($directory, 0755, true);
-            }
+            File::ensureDirectoryExists($directory);
 
             $filename = $company->id.'.'.$file->extension();
             $file->move($directory, $filename);

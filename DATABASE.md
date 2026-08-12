@@ -33,8 +33,19 @@ UUID primary key. Belongs to `countries` (`country_id`, nullable, `nullOnDelete`
 | `address`, `zip`, `city`, `state`, `email`, `web`, `phone`, `nif` | all nullable |
 | `country_id` | FK → `countries.id`, nullable |
 
+### `companies`
+UUID primary key. The invoicing entities (issuers). Belongs to `countries` (`country_id`, nullable, `nullOnDelete`). Managed through the `/companies` UI — don't seed real data.
+
+| Column | Notes |
+|---|---|
+| `name` | required |
+| `tax_id`, `address`, `zip`, `city`, `email`, `phone`, `iban` | all nullable |
+| `country_id` | FK → `countries.id`, nullable |
+| `logo` | nullable path relative to `public/` (`images/companies/{id}.{ext}`), file not versioned |
+| `is_default` | boolean, default `false` — at most one company is the default preselected on new invoices |
+
 ### `invoices`
-UUID primary key. Belongs to `customers` (`customer_id`, `restrictOnDelete` — a customer with invoices can't be deleted).
+UUID primary key. Belongs to `customers` (`customer_id`, `restrictOnDelete` — a customer with invoices can't be deleted) and to `companies` (`company_id`, `restrictOnDelete`).
 
 | Column | Notes |
 |---|---|
@@ -42,6 +53,7 @@ UUID primary key. Belongs to `customers` (`customer_id`, `restrictOnDelete` — 
 | `invoice_date` | date |
 | `paid` | boolean, default `false` |
 | `customer_id` | FK → `customers.id` |
+| `company_id` | FK → `companies.id` — the issuer whose data renders in the PDF header |
 | `note` | nullable text |
 | `language` | 2-letter code, default `es` — drives the PDF locale |
 
@@ -55,10 +67,6 @@ UUID primary key. Belongs to `invoices` (`invoice_id`, `cascadeOnDelete` — del
 | `description` | required |
 | `price` | `decimal(10,2)` |
 | `vat_rate` | `decimal(5,2)`, percentage applied to `price` |
-
-## Not in the database
-
-`config/company.php` holds the invoicing entity's own data (name, tax id, address, IBAN, logo) used to render the PDF header — it's a gitignored config file, not a table, since it's environment-specific and contains real personal/financial data. Copy `config/company.php` from a teammate or recreate it locally before generating PDFs; see `.gitignore`.
 
 ## Factories & seeding
 

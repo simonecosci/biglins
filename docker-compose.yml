@@ -13,8 +13,10 @@ services:
     volumes:
       - storage:/app/storage
       - database:/data
+      - logos:/app/public/images/companies
     restart: unless-stopped
 
 volumes:
   storage:
   database:
+  logos:

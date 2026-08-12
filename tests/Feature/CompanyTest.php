@@ -2,6 +2,18 @@
 
 use App\Models\Company;
 use App\Models\Country;
+use Illuminate\Support\Facades\File;
+
+/**
+ * Logos are written straight into `public/images/companies`, so wipe any file a
+ * test left behind — regardless of whether that test passed. The glob skips the
+ * tracked `.gitkeep`, which `File::cleanDirectory()` would remove.
+ */
+afterEach(function () {
+    foreach (File::glob(public_path('images/companies/*')) as $file) {
+        File::delete($file);
+    }
+});
 
 test('company factory creates a company belonging to a country', function () {
     $company = Company::factory()->create();
@@ -170,15 +182,19 @@ test('company logo can be uploaded and is stored in public/images/companies', fu
     $company = Company::query()->where('name', 'Acme Corp')->firstOrFail();
     expect($company->logo)->toBe("images/companies/{$company->id}.png");
     expect(file_exists(public_path($company->logo)))->toBeTrue();
-
-    unlink(public_path($company->logo));
 });
 
+/**
+ * The Edit page spoofs the method (`POST` + `_method=put`) because browsers can
+ * only send a parsable multipart body on `POST`. These tests must send the same
+ * shape, otherwise they pass against a request the browser never makes.
+ */
 test('replacing a company logo deletes the previous file', function () {
     $user = User::factory()->create();
     $company = Company::factory()->create();
 
-    $this->actingAs($user)->put(route('companies.update', $company), [
+    $this->actingAs($user)->post(route('companies.update', $company), [
+        '_method' => 'put',
         'name' => $company->name,
         'logo' => UploadedFile::fake()->image('first.jpg'),
     ])->assertSessionHasNoErrors();
@@ -186,7 +202,8 @@ test('replacing a company logo deletes the previous file', function () {
     $firstPath = public_path($company->fresh()->logo);
     expect(file_exists($firstPath))->toBeTrue();
 
-    $this->actingAs($user)->put(route('companies.update', $company), [
+    $this->actingAs($user)->post(route('companies.update', $company), [
+        '_method' => 'put',
         'name' => $company->name,
         'logo' => UploadedFile::fake()->image('second.png'),
     ])->assertSessionHasNoErrors();
@@ -195,18 +212,17 @@ test('replacing a company logo deletes the previous file', function () {
     expect(file_exists($firstPath))->toBeFalse();
     expect(file_exists(public_path($company->logo)))->toBeTrue();
     expect($company->logo)->toBe("images/companies/{$company->id}.png");
-
-    unlink(public_path($company->logo));
 });
 
 test('a company logo can be removed without uploading a new one', function () {
     $user = User::factory()->create();
     $company = Company::factory()->create();
 
-    $this->actingAs($user)->put(route('companies.update', $company), [
+    $this->actingAs($user)->post(route('companies.update', $company), [
+        '_method' => 'put',
         'name' => $company->name,
         'logo' => UploadedFile::fake()->image('logo.png'),
-    ]);
+    ])->assertSessionHasNoErrors();
     $logoPath = public_path($company->fresh()->logo);
     expect(file_exists($logoPath))->toBeTrue();
 
@@ -229,4 +245,138 @@ test('company logo must be an image', function () {
     ]);
 
     $response->assertSessionHasErrors('logo');
+});
+
+test('an svg company logo is rejected', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->post(route('companies.store'), [
+        'name' => 'Acme Corp',
+        'logo' => UploadedFile::fake()->create('logo.svg', 10, 'image/svg+xml'),
+    ]);
+
+    $response->assertSessionHasErrors('logo');
+    expect(Company::query()->where('name', 'Acme Corp')->exists())->toBeFalse();
+});
+
+test('a company logo can be replaced through a spoofed multipart PUT from the edit page', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+
+    $response = $this->actingAs($user)->post(route('companies.update', $company), [
+        '_method' => 'put',
+        'name' => 'Renamed Corp',
+        'logo' => UploadedFile::fake()->image('logo.png'),
+    ]);
+
+    $response->assertSessionHasNoErrors()->assertRedirect(route('companies.index'));
+
+    $company->refresh();
+    expect($company->name)->toBe('Renamed Corp');
+    expect($company->logo)->toBe("images/companies/{$company->id}.png");
+    expect(file_exists(public_path($company->logo)))->toBeTrue();
+});
+
+/**
+ * Without a `File` in the payload Inertia sends a JSON body instead of
+ * multipart, so the spoofed method has to survive that shape too (it does:
+ * `Request::createFromBase()` points the POST bag at the decoded JSON).
+ */
+test('the spoofed PUT from the edit page also works when no file is attached', function () {
+    $user = User::factory()->create();
+    $country = Country::factory()->create();
+    $company = Company::factory()->create(['name' => 'Old Name']);
+
+    $response = $this->actingAs($user)->postJson(route('companies.update', $company), [
+        '_method' => 'put',
+        'name' => 'New Name',
+        'tax_id' => 'X123',
+        'address' => 'Main Street 1',
+        'zip' => '08001',
+        'city' => 'Barcelona',
+        'country_id' => $country->id,
+        'email' => 'billing@example.com',
+        'phone' => '+34 600 000 000',
+        'iban' => 'ES9121000418450200051332',
+        'is_default' => false,
+        'remove_logo' => false,
+    ]);
+
+    $response->assertSessionHasNoErrors()->assertRedirect(route('companies.index'));
+
+    $company->refresh();
+    expect($company->name)->toBe('New Name');
+    expect($company->country_id)->toBe($country->id);
+    expect($company->city)->toBe('Barcelona');
+});
+
+test('company can be created with the real frontend payload shape (blank optional fields as empty strings)', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->post(route('companies.store'), [
+        'name' => 'Acme Corp',
+        'tax_id' => '',
+        'address' => '',
+        'zip' => '',
+        'city' => '',
+        'country_id' => '',
+        'email' => '',
+        'phone' => '',
+        'iban' => '',
+        'is_default' => false,
+    ]);
+
+    $response->assertSessionHasNoErrors()->assertRedirect(route('companies.index'));
+
+    $company = Company::query()->where('name', 'Acme Corp')->firstOrFail();
+    expect($company->country_id)->toBeNull();
+    expect($company->tax_id)->toBeNull();
+    expect($company->address)->toBeNull();
+    expect($company->zip)->toBeNull();
+    expect($company->city)->toBeNull();
+    expect($company->email)->toBeNull();
+    expect($company->phone)->toBeNull();
+    expect($company->iban)->toBeNull();
+});
+
+test('company can be updated with the real frontend payload shape (blank optional fields as empty strings)', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create(['city' => 'Madrid']);
+
+    $response = $this->actingAs($user)->post(route('companies.update', $company), [
+        '_method' => 'put',
+        'name' => 'Acme Corp',
+        'tax_id' => '',
+        'address' => '',
+        'zip' => '',
+        'city' => '',
+        'country_id' => '',
+        'email' => '',
+        'phone' => '',
+        'iban' => '',
+        'is_default' => false,
+        'remove_logo' => false,
+    ]);
+
+    $response->assertSessionHasNoErrors()->assertRedirect(route('companies.index'));
+
+    $company->refresh();
+    expect($company->country_id)->toBeNull();
+    expect($company->tax_id)->toBeNull();
+    expect($company->city)->toBeNull();
+});
+
+test('updating a company to be the default unsets the previous default', function () {
+    $user = User::factory()->create();
+    $previousDefault = Company::factory()->create(['is_default' => true]);
+    $company = Company::factory()->create(['is_default' => false]);
+
+    $response = $this->actingAs($user)->put(route('companies.update', $company), [
+        'name' => $company->name,
+        'is_default' => true,
+    ]);
+
+    $response->assertSessionHasNoErrors()->assertRedirect(route('companies.index'));
+    expect($company->fresh()->is_default)->toBeTrue();
+    expect($previousDefault->fresh()->is_default)->toBeFalse();
 });
