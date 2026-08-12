@@ -26,6 +26,7 @@ class UpdateInvoiceRequest extends FormRequest
             'paid' => ['boolean'],
             'customer_id' => ['required', 'uuid', 'exists:customers,id'],
             'note' => ['nullable', 'string'],
+            'language' => ['required', 'string', Rule::in(['it', 'en', 'es'])],
             'rows' => ['required', 'array', 'min:1'],
             'rows.*.id' => ['nullable', 'uuid', 'exists:invoice_rows,id'],
             'rows.*.description' => ['required', 'string', 'max:255'],

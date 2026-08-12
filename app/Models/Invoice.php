@@ -19,13 +19,14 @@ use Illuminate\Support\Carbon;
  * @property bool $paid
  * @property string $customer_id
  * @property string|null $note
+ * @property string $language
  * @property-read float $subtotal
  * @property-read float $vat_total
  * @property-read float $total
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['number', 'invoice_date', 'paid', 'customer_id', 'note'])]
+#[Fillable(['number', 'invoice_date', 'paid', 'customer_id', 'note', 'language'])]
 class Invoice extends Model
 {
     /** @use HasFactory<InvoiceFactory> */

@@ -3,6 +3,7 @@
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceRow;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 
 test('invoice factory creates an invoice with a uuid primary key', function () {
@@ -58,7 +59,7 @@ test('invoice number must be unique at the database level', function () {
     Invoice::factory()->create(['number' => '2026-0001']);
 
     expect(fn () => Invoice::factory()->create(['number' => '2026-0001']))
-        ->toThrow(\Illuminate\Database\QueryException::class);
+        ->toThrow(QueryException::class);
 });
 
 test('invoice has many rows and rows are deleted when the invoice is deleted', function () {
@@ -76,7 +77,7 @@ test('a customer with invoices cannot be deleted', function () {
     $customer = Customer::factory()->create();
     Invoice::factory()->create(['customer_id' => $customer->id]);
 
-    expect(fn () => $customer->delete())->toThrow(\Illuminate\Database\QueryException::class);
+    expect(fn () => $customer->delete())->toThrow(QueryException::class);
 });
 
 test('invoice total accessors sum its rows', function () {
@@ -133,6 +134,7 @@ test('invoice can be created with rows', function () {
         'paid' => false,
         'customer_id' => $customer->id,
         'note' => 'Test note',
+        'language' => 'en',
         'rows' => [
             ['description' => 'Consulting', 'price' => 100, 'vat_rate' => 22],
             ['description' => 'Hosting', 'price' => 50, 'vat_rate' => 22],
@@ -144,6 +146,7 @@ test('invoice can be created with rows', function () {
     $invoice = Invoice::query()->where('customer_id', $customer->id)->firstOrFail();
     expect($invoice->rows)->toHaveCount(2);
     expect($invoice->number)->not->toBeNull();
+    expect($invoice->language)->toBe('en');
 });
 
 test('invoice requires at least one row', function () {
@@ -206,6 +209,7 @@ test('updating an invoice syncs its rows: adds, updates and removes', function (
         'invoice_date' => $invoice->invoice_date->format('Y-m-d'),
         'paid' => true,
         'customer_id' => $invoice->customer_id,
+        'language' => $invoice->language,
         'rows' => [
             ['id' => $keepRow->id, 'description' => 'Updated description', 'price' => 20, 'vat_rate' => 10],
             ['description' => 'New row', 'price' => 30, 'vat_rate' => 4],
@@ -231,4 +235,42 @@ test('invoice can be deleted and its rows are removed', function () {
     $response->assertRedirect(route('invoices.index'));
     expect(Invoice::query()->find($invoice->id))->toBeNull();
     expect(InvoiceRow::query()->where('invoice_id', $invoice->id)->count())->toBe(0);
+});
+
+test('invoice factory produces a valid language', function () {
+    $invoice = Invoice::factory()->create();
+
+    expect(['it', 'en', 'es'])->toContain($invoice->language);
+});
+
+test('invoice requires a language', function () {
+    $user = User::factory()->create();
+    $customer = Customer::factory()->create();
+
+    $response = $this->actingAs($user)->post(route('invoices.store'), [
+        'invoice_date' => '2026-01-15',
+        'customer_id' => $customer->id,
+        'language' => '',
+        'rows' => [
+            ['description' => 'Consulting', 'price' => 100, 'vat_rate' => 22],
+        ],
+    ]);
+
+    $response->assertSessionHasErrors('language');
+});
+
+test('invoice language must be it, en, or es', function () {
+    $user = User::factory()->create();
+    $customer = Customer::factory()->create();
+
+    $response = $this->actingAs($user)->post(route('invoices.store'), [
+        'invoice_date' => '2026-01-15',
+        'customer_id' => $customer->id,
+        'language' => 'fr',
+        'rows' => [
+            ['description' => 'Consulting', 'price' => 100, 'vat_rate' => 22],
+        ],
+    ]);
+
+    $response->assertSessionHasErrors('language');
 });

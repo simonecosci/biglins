@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreInvoiceRequest extends FormRequest
 {
@@ -22,6 +23,7 @@ class StoreInvoiceRequest extends FormRequest
             'paid' => ['boolean'],
             'customer_id' => ['required', 'uuid', 'exists:customers,id'],
             'note' => ['nullable', 'string'],
+            'language' => ['required', 'string', Rule::in(['it', 'en', 'es'])],
             'rows' => ['required', 'array', 'min:1'],
             'rows.*.description' => ['required', 'string', 'max:255'],
             'rows.*.price' => ['required', 'numeric', 'min:0'],

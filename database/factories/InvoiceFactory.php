@@ -24,6 +24,7 @@ class InvoiceFactory extends Factory
             'paid' => fake()->boolean(),
             'customer_id' => Customer::factory(),
             'note' => fake()->optional()->sentence(),
+            'language' => fake()->randomElement(['it', 'en', 'es']),
         ];
     }
 }
