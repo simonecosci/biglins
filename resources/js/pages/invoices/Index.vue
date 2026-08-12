@@ -1,0 +1,148 @@
+<script setup lang="ts">
+import { Head, Link, router } from '@inertiajs/vue3';
+import { Plus } from '@lucide/vue';
+import { ref } from 'vue';
+import Heading from '@/components/Heading.vue';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { create, edit, index } from '@/routes/invoices';
+import type { BreadcrumbItem } from '@/types';
+
+type Invoice = {
+    id: string;
+    number: string;
+    invoice_date: string;
+    paid: boolean;
+    total: string | number;
+    customer: { id: string; name: string } | null;
+};
+
+type PaginationLink = {
+    url: string | null;
+    label: string;
+    active: boolean;
+};
+
+const props = defineProps<{
+    invoices: {
+        data: Invoice[];
+        links: PaginationLink[];
+    };
+    filters: {
+        search: string;
+    };
+}>();
+
+const search = ref(props.filters.search);
+
+function onSearch(): void {
+    router.get(
+        index().url,
+        { search: search.value },
+        { preserveState: true, replace: true },
+    );
+}
+
+function formatTotal(total: string | number): string {
+    return Number(total).toFixed(2);
+}
+
+defineOptions({
+    layout: () => ({
+        breadcrumbs: [
+            { title: 'Invoices', href: index() },
+        ] satisfies BreadcrumbItem[],
+    }),
+});
+</script>
+
+<template>
+    <Head title="Invoices" />
+
+    <div class="flex flex-col space-y-6">
+        <div class="flex items-center justify-between">
+            <Heading title="Invoices" description="Manage your invoices" />
+            <Button as-child>
+                <Link :href="create()">
+                    <Plus />
+                    New invoice
+                </Link>
+            </Button>
+        </div>
+
+        <form class="max-w-sm" @submit.prevent="onSearch">
+            <Input
+                v-model="search"
+                placeholder="Search by number or customer..."
+            />
+        </form>
+
+        <div class="overflow-hidden rounded-lg border">
+            <table class="w-full text-sm">
+                <thead class="bg-muted/50 text-left">
+                    <tr>
+                        <th class="px-4 py-2 font-medium">Number</th>
+                        <th class="px-4 py-2 font-medium">Date</th>
+                        <th class="px-4 py-2 font-medium">Customer</th>
+                        <th class="px-4 py-2 font-medium">Paid</th>
+                        <th class="px-4 py-2 font-medium">Total</th>
+                        <th class="px-4 py-2"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for="invoice in invoices.data"
+                        :key="invoice.id"
+                        class="border-t"
+                    >
+                        <td class="px-4 py-2">{{ invoice.number }}</td>
+                        <td class="px-4 py-2">{{ invoice.invoice_date }}</td>
+                        <td class="px-4 py-2">
+                            {{ invoice.customer?.name ?? '—' }}
+                        </td>
+                        <td class="px-4 py-2">
+                            <Badge :variant="invoice.paid ? 'default' : 'secondary'">
+                                {{ invoice.paid ? 'Paid' : 'Unpaid' }}
+                            </Badge>
+                        </td>
+                        <td class="px-4 py-2">{{ formatTotal(invoice.total) }}</td>
+                        <td class="px-4 py-2 text-right">
+                            <Link
+                                :href="edit(invoice.id)"
+                                class="text-primary underline-offset-4 hover:underline"
+                            >
+                                Edit
+                            </Link>
+                        </td>
+                    </tr>
+                    <tr v-if="invoices.data.length === 0">
+                        <td
+                            colspan="6"
+                            class="px-4 py-6 text-center text-muted-foreground"
+                        >
+                            No invoices found.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div v-if="invoices.links.length > 3" class="flex flex-wrap gap-1">
+            <Link
+                v-for="(link, i) in invoices.links"
+                :key="i"
+                :href="link.url ?? ''"
+                :class="[
+                    'rounded-md px-3 py-1 text-sm',
+                    link.active
+                        ? 'bg-primary text-primary-foreground'
+                        : 'hover:bg-accent',
+                    !link.url && 'pointer-events-none opacity-50',
+                ]"
+            >
+                <span v-html="link.label" />
+            </Link>
+        </div>
+    </div>
+</template>
