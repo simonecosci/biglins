@@ -22,7 +22,7 @@
         .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
         .badge-paid { background: #dcfce7; color: #166534; }
         .badge-unpaid { background: #fee2e2; color: #991b1b; }
-        .customer { margin-bottom: 20px; text-align: right; }
+        .customer { padding: 0 16px; font-size: 11px; line-height: 1.5; }
         .customer h2 { font-size: 11px; text-transform: uppercase; color: #6b7280; margin: 0 0 4px; }
         table.rows { width: 100%; margin-bottom: 20px; }
         table.rows th { text-align: left; border-bottom: 2px solid #1f2937; padding: 6px 4px; font-size: 11px; text-transform: uppercase; }
@@ -51,6 +51,24 @@
                     {{ config('company.email') }} &mdash; {{ config('company.phone') }}
                 </div>
             </td>
+            <td class="customer">
+                <h2>{{ __('invoice.customer') }}</h2>
+                <div>
+                    <strong>{{ $invoice->customer->name }}</strong><br>
+                    @if($invoice->customer->address)
+                        {{ $invoice->customer->address }}<br>
+                    @endif
+                    @if($invoice->customer->zip || $invoice->customer->city)
+                        {{ $invoice->customer->zip }} {{ $invoice->customer->city }}<br>
+                    @endif
+                    @if($invoice->customer->country)
+                        {{ $invoice->customer->country->name }}<br>
+                    @endif
+                    @if($invoice->customer->nif)
+                        {{ __('invoice.tax_id') }}: {{ $invoice->customer->nif }}<br>
+                    @endif
+                </div>
+            </td>
             <td class="meta">
                 <h1>{{ __('invoice.title') }}</h1>
                 <div>{{ __('invoice.number') }}: {{ $invoice->number }}</div>
@@ -63,25 +81,6 @@
             </td>
         </tr>
     </table>
-
-    <div class="customer">
-        <h2>{{ __('invoice.customer') }}</h2>
-        <div>
-            <strong>{{ $invoice->customer->name }}</strong><br>
-            @if($invoice->customer->address)
-                {{ $invoice->customer->address }}<br>
-            @endif
-            @if($invoice->customer->zip || $invoice->customer->city)
-                {{ $invoice->customer->zip }} {{ $invoice->customer->city }}<br>
-            @endif
-            @if($invoice->customer->country)
-                {{ $invoice->customer->country->name }}<br>
-            @endif
-            @if($invoice->customer->nif)
-                {{ __('invoice.tax_id') }}: {{ $invoice->customer->nif }}<br>
-            @endif
-        </div>
-    </div>
 
     <table class="rows">
         <thead>
