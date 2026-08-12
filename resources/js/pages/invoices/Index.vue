@@ -129,6 +129,12 @@ defineOptions({
                             >
                                 Edit
                             </Link>
+                            <Link
+                                :href="create({ query: { duplicate: invoice.id } })"
+                                class="text-primary underline-offset-4 hover:underline"
+                            >
+                                Duplica
+                            </Link>
                         </td>
                     </tr>
                     <tr v-if="invoices.data.length === 0">

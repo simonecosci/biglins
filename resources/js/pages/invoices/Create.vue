@@ -33,6 +33,12 @@ type InvoiceRowForm = {
 const props = defineProps<{
     customers: Customer[];
     nextNumber: string;
+    duplicate: {
+        customer_id: string;
+        note: string | null;
+        language: string;
+        rows: InvoiceRowForm[];
+    } | null;
 }>();
 
 defineOptions({
@@ -47,10 +53,10 @@ const form = useForm({
     number: props.nextNumber,
     invoice_date: new Date().toISOString().slice(0, 10),
     paid: false,
-    customer_id: '',
-    note: '',
-    language: 'es',
-    rows: [{ description: '', price: 0, vat_rate: 0 }] as InvoiceRowForm[],
+    customer_id: props.duplicate?.customer_id ?? '',
+    note: props.duplicate?.note ?? '',
+    language: props.duplicate?.language ?? 'es',
+    rows: props.duplicate?.rows ?? [{ description: '', price: 0, vat_rate: 0 }],
 });
 
 function addRow(): void {
