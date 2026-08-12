@@ -274,3 +274,35 @@ test('invoice language must be it, en, or es', function () {
 
     $response->assertSessionHasErrors('language');
 });
+
+test('guests are redirected to the login page when previewing an invoice', function () {
+    $invoice = Invoice::factory()->create();
+
+    $this->get(route('invoices.preview', $invoice))->assertRedirect(route('login'));
+});
+
+test('invoice preview renders the invoice as html', function () {
+    $user = User::factory()->create();
+    $invoice = Invoice::factory()->create(['language' => 'en', 'note' => 'Please pay within 30 days']);
+    InvoiceRow::factory()->create(['invoice_id' => $invoice->id, 'description' => 'Design work']);
+
+    $response = $this->actingAs($user)->get(route('invoices.preview', $invoice));
+
+    $response->assertOk();
+    $response->assertSee($invoice->number);
+    $response->assertSee($invoice->customer->name);
+    $response->assertSee('Design work');
+    $response->assertSee('Please pay within 30 days');
+});
+
+test('invoice pdf downloads as a pdf file', function () {
+    $user = User::factory()->create();
+    $invoice = Invoice::factory()->create();
+    InvoiceRow::factory()->create(['invoice_id' => $invoice->id]);
+
+    $response = $this->actingAs($user)->get(route('invoices.pdf', $invoice));
+
+    $response->assertOk();
+    $response->assertHeader('Content-Type', 'application/pdf');
+    expect($response->headers->get('Content-Disposition'))->toContain($invoice->number);
+});

@@ -6,8 +6,12 @@ use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\Customer;
 use App\Models\Invoice;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -96,5 +100,23 @@ class InvoiceController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Invoice deleted.')]);
 
         return to_route('invoices.index');
+    }
+
+    public function preview(Invoice $invoice): View
+    {
+        App::setLocale($invoice->language);
+
+        return view('invoices.template', [
+            'invoice' => $invoice->load(['customer.country', 'rows']),
+        ]);
+    }
+
+    public function pdf(Invoice $invoice): HttpResponse
+    {
+        App::setLocale($invoice->language);
+
+        return Pdf::loadView('invoices.template', [
+            'invoice' => $invoice->load(['customer.country', 'rows']),
+        ])->download("{$invoice->number}.pdf");
     }
 }
