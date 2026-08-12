@@ -84,18 +84,34 @@ test('a customer with invoices cannot be deleted', function () {
 
 test('invoice total accessors sum its rows', function () {
     $invoice = Invoice::factory()->create();
-    InvoiceRow::factory()->create(['invoice_id' => $invoice->id, 'price' => 100, 'vat_rate' => 22]);
-    InvoiceRow::factory()->create(['invoice_id' => $invoice->id, 'price' => 50, 'vat_rate' => 10]);
+    InvoiceRow::factory()->create(['invoice_id' => $invoice->id, 'quantity' => 1, 'price' => 100, 'vat_rate' => 22]);
+    InvoiceRow::factory()->create(['invoice_id' => $invoice->id, 'quantity' => 1, 'price' => 50, 'vat_rate' => 10]);
 
     expect((float) $invoice->subtotal)->toEqual(150.0);
     expect((float) $invoice->vat_total)->toEqual(27.0);
     expect((float) $invoice->total)->toEqual(177.0);
 });
 
+test('invoice total accessors multiply price by quantity per row', function () {
+    $invoice = Invoice::factory()->create();
+    InvoiceRow::factory()->create(['invoice_id' => $invoice->id, 'quantity' => 2, 'price' => 100, 'vat_rate' => 22]);
+    InvoiceRow::factory()->create(['invoice_id' => $invoice->id, 'quantity' => 3, 'price' => 10, 'vat_rate' => 0]);
+
+    expect((float) $invoice->subtotal)->toEqual(230.0);
+    expect((float) $invoice->vat_total)->toEqual(44.0);
+    expect((float) $invoice->total)->toEqual(274.0);
+});
+
 test('invoice row total accessor adds vat to the price', function () {
-    $row = InvoiceRow::factory()->create(['price' => 100, 'vat_rate' => 22]);
+    $row = InvoiceRow::factory()->create(['quantity' => 1, 'price' => 100, 'vat_rate' => 22]);
 
     expect((float) $row->total)->toEqual(122.0);
+});
+
+test('invoice row total accessor multiplies price by quantity before applying vat', function () {
+    $row = InvoiceRow::factory()->create(['quantity' => 2, 'price' => 100, 'vat_rate' => 22]);
+
+    expect((float) $row->total)->toEqual(244.0);
 });
 
 use App\Models\User;
