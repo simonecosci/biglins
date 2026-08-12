@@ -32,6 +32,7 @@ type Company = {
 type InvoiceRow = {
     id: string;
     description: string;
+    quantity: number;
     price: number;
     vat_rate: number;
 };
@@ -51,6 +52,7 @@ type Invoice = {
 type InvoiceRowForm = {
     id?: string;
     description: string;
+    quantity: number;
     price: number;
     vat_rate: number;
 };
@@ -80,13 +82,14 @@ const form = useForm({
     rows: props.invoice.rows.map((row) => ({
         id: row.id,
         description: row.description,
+        quantity: row.quantity,
         price: row.price,
         vat_rate: row.vat_rate,
     })) as InvoiceRowForm[],
 });
 
 function addRow(): void {
-    form.rows.push({ description: '', price: 0, vat_rate: 0 });
+    form.rows.push({ description: '', quantity: 1, price: 0, vat_rate: 0 });
 }
 
 function removeRow(index: number): void {
@@ -94,10 +97,11 @@ function removeRow(index: number): void {
 }
 
 const total = computed(() =>
-    form.rows.reduce(
-        (sum, row) => sum + row.price + (row.price * row.vat_rate) / 100,
-        0,
-    ),
+    form.rows.reduce((sum, row) => {
+        const lineTotal = row.price * row.quantity;
+
+        return sum + lineTotal + (lineTotal * row.vat_rate) / 100;
+    }, 0),
 );
 
 function submit(): void {
@@ -245,9 +249,10 @@ function onDelete(): void {
                 <InputError :message="form.errors.rows" />
 
                 <div
-                    class="grid grid-cols-[1fr_8rem_6rem_2.5rem] gap-2 text-sm text-muted-foreground"
+                    class="grid grid-cols-[1fr_6rem_8rem_6rem_2.5rem] gap-2 text-sm text-muted-foreground"
                 >
                     <span>Description</span>
+                    <span>Quantity</span>
                     <span>Price</span>
                     <span>VAT (%)</span>
                     <span></span>
@@ -256,7 +261,7 @@ function onDelete(): void {
                 <div
                     v-for="(row, i) in form.rows"
                     :key="row.id ?? `new-${i}`"
-                    class="grid grid-cols-[1fr_8rem_6rem_2.5rem] items-start gap-2"
+                    class="grid grid-cols-[1fr_6rem_8rem_6rem_2.5rem] items-start gap-2"
                 >
                     <div class="grid gap-1">
                         <Input
@@ -265,6 +270,18 @@ function onDelete(): void {
                         />
                         <InputError
                             :message="form.errors[`rows.${i}.description`]"
+                        />
+                    </div>
+                    <div class="grid gap-1">
+                        <Input
+                            v-model.number="row.quantity"
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            placeholder="Quantity"
+                        />
+                        <InputError
+                            :message="form.errors[`rows.${i}.quantity`]"
                         />
                     </div>
                     <div class="grid gap-1">
