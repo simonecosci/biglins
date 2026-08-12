@@ -1,6 +1,9 @@
 <?php
 
 use App\Models\Country;
+use App\Models\User;
+use Database\Seeders\CountrySeeder;
+use Illuminate\Database\QueryException;
 
 test('country factory creates a country with a uuid primary key', function () {
     $country = Country::factory()->create();
@@ -13,17 +16,15 @@ test('country name must be unique at the database level', function () {
     Country::factory()->create(['name' => 'Italia']);
 
     expect(fn () => Country::factory()->create(['name' => 'Italia']))
-        ->toThrow(\Illuminate\Database\QueryException::class);
+        ->toThrow(QueryException::class);
 });
 
 test('seeding the countries table populates the standard country list', function () {
-    $this->seed(\Database\Seeders\CountrySeeder::class);
+    $this->seed(CountrySeeder::class);
 
     expect(Country::query()->count())->toBe(195);
     expect(Country::query()->where('name', 'Italia')->exists())->toBeTrue();
 });
-
-use App\Models\User;
 
 test('guests are redirected to the login page when visiting countries', function () {
     $this->get(route('countries.index'))->assertRedirect(route('login'));
