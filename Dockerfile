@@ -1,0 +1,92 @@
+# syntax=docker/dockerfile:1
+
+ARG PHP_VERSION=8.4
+
+# ---------------------------------------------------------------------------
+# Common PHP base (Debian trixie)
+# ---------------------------------------------------------------------------
+FROM debian:trixie-slim AS php-base
+
+ARG PHP_VERSION
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        git \
+        gnupg \
+        unzip \
+        php${PHP_VERSION}-cli \
+        php${PHP_VERSION}-fpm \
+        php${PHP_VERSION}-bcmath \
+        php${PHP_VERSION}-curl \
+        php${PHP_VERSION}-gd \
+        php${PHP_VERSION}-intl \
+        php${PHP_VERSION}-mbstring \
+        php${PHP_VERSION}-mysql \
+        php${PHP_VERSION}-opcache \
+        php${PHP_VERSION}-sqlite3 \
+        php${PHP_VERSION}-xml \
+        php${PHP_VERSION}-zip \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY docker/php/local.ini /etc/php/${PHP_VERSION}/fpm/conf.d/99-local.ini
+COPY docker/php/local.ini /etc/php/${PHP_VERSION}/cli/conf.d/99-local.ini
+COPY docker/php/www.conf /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf
+
+WORKDIR /app
+
+# ---------------------------------------------------------------------------
+# Composer dependencies + frontend build
+#
+# Node runs here (not in an isolated stage) because the Wayfinder Vite
+# plugin shells out to `php artisan wayfinder:generate` during `vite build`.
+# ---------------------------------------------------------------------------
+FROM php-base AS vendor
+
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY . .
+RUN composer install \
+        --no-dev \
+        --no-interaction \
+        --no-progress \
+        --optimize-autoloader
+
+RUN npm ci && npm run build && rm -rf node_modules
+
+# ---------------------------------------------------------------------------
+# Runtime image: php-fpm + nginx, supervised
+# ---------------------------------------------------------------------------
+FROM php-base AS final
+
+ARG PHP_VERSION
+ENV PHP_VERSION=${PHP_VERSION}
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        nginx \
+        supervisor \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY docker/nginx/app.conf /etc/nginx/sites-available/app.conf
+RUN rm -f /etc/nginx/sites-enabled/default \
+    && ln -sf /etc/nginx/sites-available/app.conf /etc/nginx/sites-enabled/app.conf
+
+COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+COPY --from=vendor /app /app
+
+RUN mkdir -p storage/framework/{cache,sessions,testing,views} storage/logs bootstrap/cache \
+    && chown -R www-data:www-data /app storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
+EXPOSE 80
+
+ENTRYPOINT ["entrypoint.sh"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf", "-n"]

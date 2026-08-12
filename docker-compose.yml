@@ -1,0 +1,19 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '${APP_PORT:-8080}:80'
+    env_file:
+      - .env
+    environment:
+      DB_DATABASE: /data/database.sqlite
+    volumes:
+      - storage:/app/storage
+      - database:/data
+    restart: unless-stopped
+
+volumes:
+  storage:
+  database:
