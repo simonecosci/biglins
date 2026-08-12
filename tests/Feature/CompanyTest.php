@@ -87,6 +87,18 @@ test('company can be updated', function () {
     expect($company->fresh()->name)->toBe('New Name');
 });
 
+test('updating a company without sending is_default preserves its current default status', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create(['is_default' => true]);
+
+    $response = $this->actingAs($user)->put(route('companies.update', $company), [
+        'name' => 'Still Default',
+    ]);
+
+    $response->assertSessionHasNoErrors()->assertRedirect(route('companies.index'));
+    expect($company->fresh()->is_default)->toBeTrue();
+});
+
 test('the first company created becomes the default automatically', function () {
     $user = User::factory()->create();
 

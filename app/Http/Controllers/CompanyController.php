@@ -69,7 +69,7 @@ class CompanyController extends Controller
     public function update(UpdateCompanyRequest $request, Company $company): RedirectResponse
     {
         DB::transaction(function () use ($request, $company) {
-            $isDefault = $request->boolean('is_default');
+            $isDefault = $request->has('is_default') ? $request->boolean('is_default') : $company->is_default;
 
             $company->update([
                 ...$request->safe()->except(['is_default', 'logo', 'remove_logo']),
