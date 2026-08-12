@@ -9,6 +9,7 @@ services:
       - .env
     environment:
       DB_DATABASE: /data/database.sqlite
+      APP_URL: http://localhost:${APP_PORT:-8080}
     volumes:
       - storage:/app/storage
       - database:/data
