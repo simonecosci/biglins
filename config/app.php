@@ -1,5 +1,7 @@
 <?php
 
+$composerJson = json_decode((string) file_get_contents(base_path('composer.json')), true);
+
 return [
 
     /*
@@ -14,6 +16,19 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+    |
+    | This value is the current version of your application, read from the
+    | "version" field in composer.json. It is displayed in the UI next to
+    | the application name.
+    |
+    */
+
+    'version' => $composerJson['version'] ?? null,
 
     /*
     |--------------------------------------------------------------------------
