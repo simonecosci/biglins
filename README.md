@@ -29,7 +29,7 @@ Avvio ambiente di sviluppo (server, queue worker, Vite) in un solo comando:
 composer run dev
 ```
 
-L'app risponde su `http://localhost:8000` (vedi `APP_URL` in `.env`).
+L'app risponde su `http://localhost:8080` (vedi `APP_URL` in `.env`).
 
 ## Setup con Docker
 
