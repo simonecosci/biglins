@@ -146,7 +146,11 @@ defineOptions({
                                 size="icon-sm"
                                 title="PDF"
                             >
-                                <a :href="InvoiceController.pdf(invoice.id).url">
+                                <a
+                                    :href="
+                                        InvoiceController.pdf(invoice.id).url
+                                    "
+                                >
                                     <FileText />
                                 </a>
                             </Button>

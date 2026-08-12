@@ -80,9 +80,9 @@ function onLogoChange(event: Event): void {
  * method instead: the wire request is a POST with `_method=put`.
  */
 function submit(): void {
-    form
-        .transform((data) => ({ ...data, _method: 'put' }))
-        .post(CompanyController.update(props.company.id).url);
+    form.transform((data) => ({ ...data, _method: 'put' })).post(
+        CompanyController.update(props.company.id).url,
+    );
 }
 
 function onDelete(): void {
