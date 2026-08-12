@@ -106,7 +106,9 @@ class Invoice extends Model
     protected function subtotal(): Attribute
     {
         return Attribute::make(
-            get: fn (): float => (float) $this->rows->sum(fn (InvoiceRow $row): float => (float) $row->price),
+            get: fn (): float => (float) $this->rows->sum(
+                fn (InvoiceRow $row): float => (float) $row->price * (float) $row->quantity
+            ),
         );
     }
 
@@ -116,9 +118,11 @@ class Invoice extends Model
     protected function vatTotal(): Attribute
     {
         return Attribute::make(
-            get: fn (): float => (float) $this->rows->sum(
-                fn (InvoiceRow $row): float => (float) $row->price * (float) $row->vat_rate / 100
-            ),
+            get: fn (): float => (float) $this->rows->sum(function (InvoiceRow $row): float {
+                $lineTotal = (float) $row->price * (float) $row->quantity;
+
+                return $lineTotal * (float) $row->vat_rate / 100;
+            }),
         );
     }
 

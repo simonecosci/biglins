@@ -81,6 +81,7 @@
         <thead>
             <tr>
                 <th>{{ __('invoice.description') }}</th>
+                <th class="num">{{ __('invoice.quantity') }}</th>
                 <th class="num">{{ __('invoice.price') }}</th>
                 <th class="num">{{ __('invoice.vat') }}</th>
                 <th class="num">{{ __('invoice.total') }}</th>
@@ -90,6 +91,7 @@
             @foreach($invoice->rows as $row)
                 <tr>
                     <td>{{ $row->description }}</td>
+                    <td class="num">{{ number_format((float) $row->quantity, 2) }}</td>
                     <td class="num">{{ number_format((float) $row->price, 2) }}</td>
                     <td class="num">{{ number_format((float) $row->vat_rate, 2) }}%</td>
                     <td class="num">{{ number_format((float) $row->total, 2) }}</td>

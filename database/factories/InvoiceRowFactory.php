@@ -21,6 +21,7 @@ class InvoiceRowFactory extends Factory
         return [
             'invoice_id' => Invoice::factory(),
             'description' => fake()->sentence(4),
+            'quantity' => fake()->numberBetween(1, 5),
             'price' => fake()->randomFloat(2, 10, 1000),
             'vat_rate' => fake()->randomElement([7, 0]),
         ];

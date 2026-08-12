@@ -65,8 +65,9 @@ UUID primary key. Belongs to `invoices` (`invoice_id`, `cascadeOnDelete` — del
 | Column | Notes |
 |---|---|
 | `description` | required |
+| `quantity` | `decimal(10,2)`, default `1.00`, multiplied against `price` |
 | `price` | `decimal(10,2)` |
-| `vat_rate` | `decimal(5,2)`, percentage applied to `price` |
+| `vat_rate` | `decimal(5,2)`, percentage applied to `price * quantity` |
 
 ## Factories & seeding
 

@@ -15,13 +15,14 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $invoice_id
  * @property string $description
+ * @property float $quantity
  * @property float $price
  * @property float $vat_rate
  * @property-read float $total
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['invoice_id', 'description', 'price', 'vat_rate'])]
+#[Fillable(['invoice_id', 'description', 'quantity', 'price', 'vat_rate'])]
 class InvoiceRow extends Model
 {
     /** @use HasFactory<InvoiceRowFactory> */
@@ -35,6 +36,7 @@ class InvoiceRow extends Model
     protected function casts(): array
     {
         return [
+            'quantity' => 'float',
             'price' => 'float',
             'vat_rate' => 'float',
         ];
@@ -54,7 +56,11 @@ class InvoiceRow extends Model
     protected function total(): Attribute
     {
         return Attribute::make(
-            get: fn (): float => (float) $this->price + (float) $this->price * (float) $this->vat_rate / 100,
+            get: function (): float {
+                $lineTotal = (float) $this->price * (float) $this->quantity;
+
+                return $lineTotal + $lineTotal * (float) $this->vat_rate / 100;
+            },
         );
     }
 }
