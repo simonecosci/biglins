@@ -306,3 +306,34 @@ test('invoice pdf downloads as a pdf file', function () {
     $response->assertHeader('Content-Type', 'application/pdf');
     expect($response->headers->get('Content-Disposition'))->toContain($invoice->number);
 });
+
+test('guests are redirected to the login page when downloading an invoice pdf', function () {
+    $invoice = Invoice::factory()->create();
+
+    $this->get(route('invoices.pdf', $invoice))->assertRedirect(route('login'));
+});
+
+test('invoice preview renders the italian locale label', function () {
+    $user = User::factory()->create();
+    $invoice = Invoice::factory()->create(['language' => 'it']);
+    InvoiceRow::factory()->create(['invoice_id' => $invoice->id]);
+
+    $response = $this->actingAs($user)->get(route('invoices.preview', $invoice));
+
+    $response->assertOk();
+    $response->assertSee('Fattura');
+});
+
+test('invoice pdf download sanitizes slashes in the invoice number', function () {
+    $user = User::factory()->create();
+    $invoice = Invoice::factory()->create(['number' => '2026/0001']);
+    InvoiceRow::factory()->create(['invoice_id' => $invoice->id]);
+
+    $response = $this->actingAs($user)->get(route('invoices.pdf', $invoice));
+
+    $response->assertOk();
+    $response->assertHeader('Content-Type', 'application/pdf');
+    $disposition = $response->headers->get('Content-Disposition');
+    expect($disposition)->toContain('2026-0001');
+    expect($disposition)->not->toContain('2026/0001');
+});

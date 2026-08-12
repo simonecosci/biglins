@@ -117,6 +117,6 @@ class InvoiceController extends Controller
 
         return Pdf::loadView('invoices.template', [
             'invoice' => $invoice->load(['customer.country', 'rows']),
-        ])->download("{$invoice->number}.pdf");
+        ])->download(str_replace(['/', '\\'], '-', $invoice->number).'.pdf');
     }
 }
