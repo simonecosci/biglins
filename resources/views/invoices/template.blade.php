@@ -22,7 +22,7 @@
         .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; }
         .badge-paid { background: #dcfce7; color: #166534; }
         .badge-unpaid { background: #fee2e2; color: #991b1b; }
-        .customer { margin-bottom: 20px; }
+        .customer { margin-bottom: 20px; text-align: right; }
         .customer h2 { font-size: 11px; text-transform: uppercase; color: #6b7280; margin: 0 0 4px; }
         table.rows { width: 100%; margin-bottom: 20px; }
         table.rows th { text-align: left; border-bottom: 2px solid #1f2937; padding: 6px 4px; font-size: 11px; text-transform: uppercase; }
