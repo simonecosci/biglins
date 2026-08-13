@@ -79,7 +79,7 @@ defineProps<{
                     required
                     :tabindex="2"
                     autocomplete="current-password"
-                    placeholder="Password"
+                    :placeholder="t('auth.login.password')"
                 />
                 <InputError :message="errors.password" />
             </div>
