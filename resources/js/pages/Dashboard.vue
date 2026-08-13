@@ -2,6 +2,7 @@
 import { Head, setLayoutProps } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 import SubscriptionsWidget from '@/components/dashboard/SubscriptionsWidget.vue';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 
@@ -26,6 +27,10 @@ type SubscriptionGroup = {
 };
 
 const props = defineProps<{
+    revenue: {
+        year: number;
+        yearToDate: number;
+    };
     subscriptions: {
         expiredCount: number;
         expiringSoonCount: number;
@@ -51,6 +56,23 @@ setLayoutProps({
     <div
         class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
     >
+        <Card>
+            <CardHeader>
+                <CardTitle class="text-sm font-medium text-muted-foreground">
+                    {{
+                        t('dashboard.revenue.label', {
+                            year: props.revenue.year,
+                        })
+                    }}
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p class="text-3xl font-bold">
+                    {{ props.revenue.yearToDate.toFixed(2) }}
+                </p>
+            </CardContent>
+        </Card>
+
         <SubscriptionsWidget
             :expired-count="props.subscriptions.expiredCount"
             :expiring-soon-count="props.subscriptions.expiringSoonCount"

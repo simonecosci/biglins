@@ -173,6 +173,9 @@ const messages = {
     },
     dashboard: {
         title: 'Dashboard',
+        revenue: {
+            label: 'Revenue ({year} to date)',
+        },
         subscriptions: {
             expiredLabel: 'Expired services',
             expiringSoonLabel: 'Expiring in 30 days',

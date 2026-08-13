@@ -181,6 +181,9 @@ const messages: MessageSchema = {
     },
     dashboard: {
         title: 'Dashboard',
+        revenue: {
+            label: 'Fatturato {year} (da inizio anno)',
+        },
         subscriptions: {
             expiredLabel: 'Servizi scaduti',
             expiringSoonLabel: 'In scadenza nei prossimi 30 giorni',

@@ -186,6 +186,9 @@ const messages: MessageSchema = {
     },
     dashboard: {
         title: 'Panel',
+        revenue: {
+            label: 'Facturación {year} (desde principio de año)',
+        },
         subscriptions: {
             expiredLabel: 'Servicios caducados',
             expiringSoonLabel: 'Vencen en 30 días',

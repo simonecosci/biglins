@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ExpirationUrgency;
+use App\Models\Invoice;
 use App\Models\InvoiceRow;
 use App\Support\CurrentCompany;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -14,6 +16,15 @@ class DashboardController extends Controller
     public function __invoke(Request $request): Response
     {
         $currentCompanyId = CurrentCompany::resolve()?->id;
+
+        $today = Carbon::today();
+
+        $yearToDateRevenue = Invoice::query()
+            ->where('company_id', $currentCompanyId)
+            ->whereBetween('invoice_date', [$today->copy()->startOfYear(), $today])
+            ->with('rows')
+            ->get()
+            ->sum('total');
 
         $rows = InvoiceRow::query()
             ->subscriptions()
@@ -51,6 +62,10 @@ class DashboardController extends Controller
             ->values();
 
         return Inertia::render('Dashboard', [
+            'revenue' => [
+                'year' => $today->year,
+                'yearToDate' => (float) $yearToDateRevenue,
+            ],
             'subscriptions' => [
                 'expiredCount' => $rows->filter(fn (InvoiceRow $row): bool => $row->expiration_urgency === ExpirationUrgency::Expired)->count(),
                 'expiringSoonCount' => $rows->filter(fn (InvoiceRow $row): bool => $row->expiration_urgency === ExpirationUrgency::ExpiringSoon)->count(),
