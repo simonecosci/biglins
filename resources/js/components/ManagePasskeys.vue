@@ -56,7 +56,9 @@ const { t } = useI18n();
                 >
                     <KeyRound class="h-7 w-7 text-muted-foreground" />
                 </div>
-                <p class="font-medium">{{ t('settings.passkeys.emptyTitle') }}</p>
+                <p class="font-medium">
+                    {{ t('settings.passkeys.emptyTitle') }}
+                </p>
                 <p class="mt-1 text-sm text-muted-foreground">
                     {{ t('settings.passkeys.emptyDescription') }}
                 </p>

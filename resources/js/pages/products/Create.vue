@@ -55,11 +55,17 @@ setLayoutProps({
                     <Label for="type">{{ t('products.create.type') }}</Label>
                     <Select name="type" default-value="product">
                         <SelectTrigger id="type" class="w-full">
-                            <SelectValue :placeholder="t('products.create.selectType')" />
+                            <SelectValue
+                                :placeholder="t('products.create.selectType')"
+                            />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="product">{{ t('products.type.product') }}</SelectItem>
-                            <SelectItem value="service">{{ t('products.type.service') }}</SelectItem>
+                            <SelectItem value="product">{{
+                                t('products.type.product')
+                            }}</SelectItem>
+                            <SelectItem value="service">{{
+                                t('products.type.service')
+                            }}</SelectItem>
                         </SelectContent>
                     </Select>
                     <InputError :message="errors.type" />
@@ -67,7 +73,9 @@ setLayoutProps({
             </div>
 
             <div class="grid gap-2">
-                <Label for="description">{{ t('products.create.descriptionLabel') }}</Label>
+                <Label for="description">{{
+                    t('products.create.descriptionLabel')
+                }}</Label>
                 <Input
                     id="description"
                     name="description"
@@ -92,7 +100,9 @@ setLayoutProps({
             </div>
 
             <div class="flex items-center gap-4 pt-2">
-                <Button :disabled="processing" type="submit">{{ t('common.actions.save') }}</Button>
+                <Button :disabled="processing" type="submit">{{
+                    t('common.actions.save')
+                }}</Button>
                 <Link
                     :href="index()"
                     class="text-sm text-muted-foreground hover:underline"

@@ -62,7 +62,9 @@ function onDelete(): void {
     <div class="flex max-w-lg flex-col space-y-6">
         <Heading
             :title="t('customers.edit.title')"
-            :description="t('customers.edit.description', { name: customer.name })"
+            :description="
+                t('customers.edit.description', { name: customer.name })
+            "
         />
 
         <Form
@@ -119,13 +121,17 @@ function onDelete(): void {
 
             <div class="grid grid-cols-2 gap-4">
                 <div class="grid gap-2">
-                    <Label for="country_id">{{ t('common.fields.country') }}</Label>
+                    <Label for="country_id">{{
+                        t('common.fields.country')
+                    }}</Label>
                     <Select
                         name="country_id"
                         :default-value="customer.country_id ?? undefined"
                     >
                         <SelectTrigger id="country_id" class="w-full">
-                            <SelectValue :placeholder="t('common.fields.selectCountry')" />
+                            <SelectValue
+                                :placeholder="t('common.fields.selectCountry')"
+                            />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem
@@ -140,12 +146,16 @@ function onDelete(): void {
                     <InputError :message="errors.country_id" />
                 </div>
                 <div class="grid gap-2">
-                    <Label for="state">{{ t('customers.create.stateProvince') }}</Label>
+                    <Label for="state">{{
+                        t('customers.create.stateProvince')
+                    }}</Label>
                     <Input
                         id="state"
                         name="state"
                         :default-value="customer.state ?? undefined"
-                        :placeholder="t('customers.create.stateProvincePlaceholder')"
+                        :placeholder="
+                            t('customers.create.stateProvincePlaceholder')
+                        "
                     />
                     <InputError :message="errors.state" />
                 </div>
@@ -198,7 +208,9 @@ function onDelete(): void {
             </div>
 
             <div class="flex items-center gap-4 pt-2">
-                <Button :disabled="processing" type="submit">{{ t('common.actions.save') }}</Button>
+                <Button :disabled="processing" type="submit">{{
+                    t('common.actions.save')
+                }}</Button>
                 <Link
                     :href="index()"
                     class="text-sm text-muted-foreground hover:underline"

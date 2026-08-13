@@ -51,7 +51,9 @@ const inputEmail = ref(props.email);
             </div>
 
             <div class="grid gap-2">
-                <Label for="password">{{ t('auth.resetPassword.password') }}</Label>
+                <Label for="password">{{
+                    t('auth.resetPassword.password')
+                }}</Label>
                 <PasswordInput
                     id="password"
                     name="password"

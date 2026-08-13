@@ -40,7 +40,9 @@ function onDelete(): void {
     <div class="flex max-w-lg flex-col space-y-6">
         <Heading
             :title="t('countries.edit.title')"
-            :description="t('countries.edit.description', { name: country.name })"
+            :description="
+                t('countries.edit.description', { name: country.name })
+            "
         />
 
         <Form

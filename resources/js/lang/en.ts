@@ -319,7 +319,12 @@ const messages = {
             description: 'Manage your customer registry',
             newButton: 'New customer',
             searchPlaceholder: 'Search by name or email...',
-            columns: { name: 'Name', city: 'City', country: 'Country', email: 'Email' },
+            columns: {
+                name: 'Name',
+                city: 'City',
+                country: 'Country',
+                email: 'Email',
+            },
             empty: 'No customers found.',
         },
         create: {
@@ -350,7 +355,13 @@ const messages = {
             description: 'Manage your invoices',
             newButton: 'New invoice',
             searchPlaceholder: 'Search by number or customer...',
-            columns: { number: 'Number', date: 'Date', customer: 'Customer', paid: 'Paid', total: 'Total' },
+            columns: {
+                number: 'Number',
+                date: 'Date',
+                customer: 'Customer',
+                paid: 'Paid',
+                total: 'Total',
+            },
             paid: 'Paid',
             unpaid: 'Unpaid',
             preview: 'Preview',
@@ -402,7 +413,12 @@ const messages = {
             description: 'Manage your product and service catalog',
             newButton: 'New product',
             searchPlaceholder: 'Search by code or description...',
-            columns: { code: 'Code', type: 'Type', description: 'Description', price: 'Price' },
+            columns: {
+                code: 'Code',
+                type: 'Type',
+                description: 'Description',
+                price: 'Price',
+            },
             empty: 'No products found.',
         },
         create: {

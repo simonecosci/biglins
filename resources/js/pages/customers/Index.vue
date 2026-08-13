@@ -70,17 +70,28 @@ setLayoutProps({
         </div>
 
         <form class="max-w-sm" @submit.prevent="onSearch">
-            <Input v-model="search" :placeholder="t('customers.index.searchPlaceholder')" />
+            <Input
+                v-model="search"
+                :placeholder="t('customers.index.searchPlaceholder')"
+            />
         </form>
 
         <div class="overflow-hidden rounded-lg border">
             <table class="w-full text-sm">
                 <thead class="bg-muted/50 text-left">
                     <tr>
-                        <th class="px-4 py-2 font-medium">{{ t('customers.index.columns.name') }}</th>
-                        <th class="px-4 py-2 font-medium">{{ t('customers.index.columns.city') }}</th>
-                        <th class="px-4 py-2 font-medium">{{ t('customers.index.columns.country') }}</th>
-                        <th class="px-4 py-2 font-medium">{{ t('customers.index.columns.email') }}</th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('customers.index.columns.name') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('customers.index.columns.city') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('customers.index.columns.country') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('customers.index.columns.email') }}
+                        </th>
                         <th class="px-4 py-2"></th>
                     </tr>
                 </thead>

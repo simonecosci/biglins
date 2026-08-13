@@ -131,7 +131,9 @@ function choose(product: ProductResult): void {
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                    <p>{{ selectedLabel || t('productPicker.fallbackLabel') }}</p>
+                    <p>
+                        {{ selectedLabel || t('productPicker.fallbackLabel') }}
+                    </p>
                 </TooltipContent>
             </Tooltip>
         </TooltipProvider>
@@ -196,7 +198,12 @@ function choose(product: ProductResult): void {
                 >
                     {{ t('common.actions.previous') }}
                 </Button>
-                <span>{{ t('productPicker.page', { current: currentPage, last: lastPage }) }}</span>
+                <span>{{
+                    t('productPicker.page', {
+                        current: currentPage,
+                        last: lastPage,
+                    })
+                }}</span>
                 <Button
                     type="button"
                     variant="outline"

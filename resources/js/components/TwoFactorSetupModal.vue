@@ -197,7 +197,9 @@ watch(
                                 class="absolute inset-0 top-1/2 h-px w-full bg-border"
                             />
                             <span class="relative bg-card px-2 py-1">{{
-                                t('settings.twoFactor.setupModal.manualEntryLabel')
+                                t(
+                                    'settings.twoFactor.setupModal.manualEntryLabel',
+                                )
                             }}</span>
                         </div>
 
@@ -279,14 +281,22 @@ watch(
                                     @click="showVerificationStep = false"
                                     :disabled="processing"
                                 >
-                                    {{ t('settings.twoFactor.setupModal.backButton') }}
+                                    {{
+                                        t(
+                                            'settings.twoFactor.setupModal.backButton',
+                                        )
+                                    }}
                                 </Button>
                                 <Button
                                     type="submit"
                                     class="w-auto flex-1"
                                     :disabled="processing || code.length < 6"
                                 >
-                                    {{ t('settings.twoFactor.setupModal.confirmButton') }}
+                                    {{
+                                        t(
+                                            'settings.twoFactor.setupModal.confirmButton',
+                                        )
+                                    }}
                                 </Button>
                             </div>
                         </div>

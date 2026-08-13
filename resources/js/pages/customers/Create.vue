@@ -63,29 +63,45 @@ setLayoutProps({
 
             <div class="grid gap-2">
                 <Label for="address">{{ t('common.fields.address') }}</Label>
-                <Input id="address" name="address" :placeholder="t('customers.create.addressPlaceholder')" />
+                <Input
+                    id="address"
+                    name="address"
+                    :placeholder="t('customers.create.addressPlaceholder')"
+                />
                 <InputError :message="errors.address" />
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div class="grid gap-2">
                     <Label for="zip">{{ t('common.fields.zip') }}</Label>
-                    <Input id="zip" name="zip" :placeholder="t('customers.create.zipPlaceholder')" />
+                    <Input
+                        id="zip"
+                        name="zip"
+                        :placeholder="t('customers.create.zipPlaceholder')"
+                    />
                     <InputError :message="errors.zip" />
                 </div>
                 <div class="grid gap-2">
                     <Label for="city">{{ t('common.fields.city') }}</Label>
-                    <Input id="city" name="city" :placeholder="t('customers.create.cityPlaceholder')" />
+                    <Input
+                        id="city"
+                        name="city"
+                        :placeholder="t('customers.create.cityPlaceholder')"
+                    />
                     <InputError :message="errors.city" />
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div class="grid gap-2">
-                    <Label for="country_id">{{ t('common.fields.country') }}</Label>
+                    <Label for="country_id">{{
+                        t('common.fields.country')
+                    }}</Label>
                     <Select name="country_id">
                         <SelectTrigger id="country_id" class="w-full">
-                            <SelectValue :placeholder="t('common.fields.selectCountry')" />
+                            <SelectValue
+                                :placeholder="t('common.fields.selectCountry')"
+                            />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem
@@ -100,11 +116,15 @@ setLayoutProps({
                     <InputError :message="errors.country_id" />
                 </div>
                 <div class="grid gap-2">
-                    <Label for="state">{{ t('customers.create.stateProvince') }}</Label>
+                    <Label for="state">{{
+                        t('customers.create.stateProvince')
+                    }}</Label>
                     <Input
                         id="state"
                         name="state"
-                        :placeholder="t('customers.create.stateProvincePlaceholder')"
+                        :placeholder="
+                            t('customers.create.stateProvincePlaceholder')
+                        "
                     />
                     <InputError :message="errors.state" />
                 </div>
@@ -130,7 +150,11 @@ setLayoutProps({
             <div class="grid grid-cols-2 gap-4">
                 <div class="grid gap-2">
                     <Label for="phone">{{ t('common.fields.phone') }}</Label>
-                    <Input id="phone" name="phone" :placeholder="t('customers.create.phonePlaceholder')" />
+                    <Input
+                        id="phone"
+                        name="phone"
+                        :placeholder="t('customers.create.phonePlaceholder')"
+                    />
                     <InputError :message="errors.phone" />
                 </div>
                 <div class="grid gap-2">
@@ -145,7 +169,9 @@ setLayoutProps({
             </div>
 
             <div class="flex items-center gap-4 pt-2">
-                <Button :disabled="processing" type="submit">{{ t('common.actions.save') }}</Button>
+                <Button :disabled="processing" type="submit">{{
+                    t('common.actions.save')
+                }}</Button>
                 <Link
                     :href="index()"
                     class="text-sm text-muted-foreground hover:underline"

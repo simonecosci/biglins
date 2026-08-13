@@ -85,10 +85,18 @@ setLayoutProps({
             <table class="w-full text-sm">
                 <thead class="bg-muted/50 text-left">
                     <tr>
-                        <th class="px-4 py-2 font-medium">{{ t('products.index.columns.code') }}</th>
-                        <th class="px-4 py-2 font-medium">{{ t('products.index.columns.type') }}</th>
-                        <th class="px-4 py-2 font-medium">{{ t('products.index.columns.description') }}</th>
-                        <th class="px-4 py-2 font-medium">{{ t('products.index.columns.price') }}</th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('products.index.columns.code') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('products.index.columns.type') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('products.index.columns.description') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('products.index.columns.price') }}
+                        </th>
                         <th class="px-4 py-2"></th>
                     </tr>
                 </thead>

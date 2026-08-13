@@ -83,9 +83,9 @@ const toggleRecoveryMode = (clearErrors: () => void): void => {
                     </div>
                     <InputError :message="errors.code" />
                 </div>
-                <Button type="submit" class="w-full" :disabled="processing"
-                    >{{ t('auth.twoFactorChallenge.continue') }}</Button
-                >
+                <Button type="submit" class="w-full" :disabled="processing">{{
+                    t('auth.twoFactorChallenge.continue')
+                }}</Button>
                 <div class="text-center text-sm text-muted-foreground">
                     <span>{{ t('auth.twoFactorChallenge.orYouCan') }} </span>
                     <button
@@ -109,14 +109,16 @@ const toggleRecoveryMode = (clearErrors: () => void): void => {
                 <Input
                     name="recovery_code"
                     type="text"
-                    :placeholder="t('auth.twoFactorChallenge.recoveryPlaceholder')"
+                    :placeholder="
+                        t('auth.twoFactorChallenge.recoveryPlaceholder')
+                    "
                     :autofocus="showRecoveryInput"
                     required
                 />
                 <InputError :message="errors.recovery_code" />
-                <Button type="submit" class="w-full" :disabled="processing"
-                    >{{ t('auth.twoFactorChallenge.continue') }}</Button
-                >
+                <Button type="submit" class="w-full" :disabled="processing">{{
+                    t('auth.twoFactorChallenge.continue')
+                }}</Button>
 
                 <div class="text-center text-sm text-muted-foreground">
                     <span>{{ t('auth.twoFactorChallenge.orYouCan') }} </span>

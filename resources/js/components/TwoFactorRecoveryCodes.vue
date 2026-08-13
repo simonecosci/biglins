@@ -82,7 +82,11 @@ onMounted(async () => {
                         :disabled="processing"
                     >
                         <RefreshCw />
-                        {{ t('settings.twoFactor.recoveryCodes.regenerateButton') }}
+                        {{
+                            t(
+                                'settings.twoFactor.recoveryCodes.regenerateButton',
+                            )
+                        }}
                     </Button>
                 </Form>
             </div>
@@ -118,11 +122,17 @@ onMounted(async () => {
                         </div>
                     </div>
                     <p class="text-xs text-muted-foreground select-none">
-                        {{ t('settings.twoFactor.recoveryCodes.helpTextPrefix') }}
+                        {{
+                            t('settings.twoFactor.recoveryCodes.helpTextPrefix')
+                        }}
                         <span class="font-bold">{{
-                            t('settings.twoFactor.recoveryCodes.regenerateButton')
+                            t(
+                                'settings.twoFactor.recoveryCodes.regenerateButton',
+                            )
                         }}</span>
-                        {{ t('settings.twoFactor.recoveryCodes.helpTextSuffix') }}
+                        {{
+                            t('settings.twoFactor.recoveryCodes.helpTextSuffix')
+                        }}
                     </p>
                 </div>
             </div>

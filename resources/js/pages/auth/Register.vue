@@ -77,7 +77,9 @@ setLayoutProps({
             </div>
 
             <div class="grid gap-2">
-                <Label for="password_confirmation">{{ t('auth.register.confirmPassword') }}</Label>
+                <Label for="password_confirmation">{{
+                    t('auth.register.confirmPassword')
+                }}</Label>
                 <PasswordInput
                     id="password_confirmation"
                     required

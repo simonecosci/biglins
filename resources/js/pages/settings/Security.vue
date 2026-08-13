@@ -60,19 +60,25 @@ setLayoutProps({
             v-slot="{ errors, processing }"
         >
             <div class="grid gap-2">
-                <Label for="current_password">{{ t('settings.security.currentPassword') }}</Label>
+                <Label for="current_password">{{
+                    t('settings.security.currentPassword')
+                }}</Label>
                 <PasswordInput
                     id="current_password"
                     name="current_password"
                     class="mt-1 block w-full"
                     autocomplete="current-password"
-                    :placeholder="t('settings.security.currentPasswordPlaceholder')"
+                    :placeholder="
+                        t('settings.security.currentPasswordPlaceholder')
+                    "
                 />
                 <InputError :message="errors.current_password" />
             </div>
 
             <div class="grid gap-2">
-                <Label for="password">{{ t('settings.security.newPassword') }}</Label>
+                <Label for="password">{{
+                    t('settings.security.newPassword')
+                }}</Label>
                 <PasswordInput
                     id="password"
                     name="password"
@@ -85,13 +91,17 @@ setLayoutProps({
             </div>
 
             <div class="grid gap-2">
-                <Label for="password_confirmation">{{ t('settings.security.confirmPassword') }}</Label>
+                <Label for="password_confirmation">{{
+                    t('settings.security.confirmPassword')
+                }}</Label>
                 <PasswordInput
                     id="password_confirmation"
                     name="password_confirmation"
                     class="mt-1 block w-full"
                     autocomplete="new-password"
-                    :placeholder="t('settings.security.confirmPasswordPlaceholder')"
+                    :placeholder="
+                        t('settings.security.confirmPasswordPlaceholder')
+                    "
                     :passwordrules="props.passwordRules"
                 />
                 <InputError :message="errors.password_confirmation" />

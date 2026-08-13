@@ -136,11 +136,13 @@ const messages: MessageSchema = {
                 lastUsedPrefix: 'Ultimo utilizzo',
             },
             register: {
-                notSupported: 'Le passkey non sono supportate in questo browser.',
+                notSupported:
+                    'Le passkey non sono supportate in questo browser.',
                 addButton: 'Aggiungi passkey',
                 nameLabel: 'Nome passkey',
                 namePlaceholder: 'es. MacBook Pro, iPhone',
-                nameHelp: 'Un nome ti aiuta a identificare questa passkey in seguito.',
+                nameHelp:
+                    'Un nome ti aiuta a identificare questa passkey in seguito.',
                 registerButton: 'Registra passkey',
                 registeringButton: 'Registrazione in corso...',
             },
@@ -308,13 +310,15 @@ const messages: MessageSchema = {
         },
         create: {
             title: 'Nuovo paese',
-            description: 'Aggiungi un paese alla lista disponibile per i clienti',
+            description:
+                'Aggiungi un paese alla lista disponibile per i clienti',
             namePlaceholder: 'Nome del paese',
         },
         edit: {
             title: 'Modifica paese',
             description: 'Aggiorna {name}',
-            confirmDelete: "Eliminare questo paese? L'azione non può essere annullata.",
+            confirmDelete:
+                "Eliminare questo paese? L'azione non può essere annullata.",
             deleteButton: 'Elimina paese',
         },
     },
@@ -324,7 +328,12 @@ const messages: MessageSchema = {
             description: 'Gestisci la tua anagrafica clienti',
             newButton: 'Nuovo cliente',
             searchPlaceholder: 'Cerca per nome o email...',
-            columns: { name: 'Nome', city: 'Città', country: 'Paese', email: 'Email' },
+            columns: {
+                name: 'Nome',
+                city: 'Città',
+                country: 'Paese',
+                email: 'Email',
+            },
             empty: 'Nessun cliente trovato.',
         },
         create: {
@@ -345,7 +354,8 @@ const messages: MessageSchema = {
         edit: {
             title: 'Modifica cliente',
             description: 'Aggiorna {name}',
-            confirmDelete: "Eliminare questo cliente? L'azione non può essere annullata.",
+            confirmDelete:
+                "Eliminare questo cliente? L'azione non può essere annullata.",
             deleteButton: 'Elimina cliente',
         },
     },
@@ -355,7 +365,13 @@ const messages: MessageSchema = {
             description: 'Gestisci le tue fatture',
             newButton: 'Nuova fattura',
             searchPlaceholder: 'Cerca per numero o cliente...',
-            columns: { number: 'Numero', date: 'Data', customer: 'Cliente', paid: 'Pagata', total: 'Totale' },
+            columns: {
+                number: 'Numero',
+                date: 'Data',
+                customer: 'Cliente',
+                paid: 'Pagata',
+                total: 'Totale',
+            },
             paid: 'Pagata',
             unpaid: 'Non pagata',
             preview: 'Anteprima',
@@ -389,7 +405,8 @@ const messages: MessageSchema = {
         edit: {
             title: 'Modifica fattura',
             description: 'Aggiorna la fattura {number}',
-            confirmDelete: "Eliminare questa fattura? L'azione non può essere annullata.",
+            confirmDelete:
+                "Eliminare questa fattura? L'azione non può essere annullata.",
             deleteButton: 'Elimina fattura',
         },
     },
@@ -407,7 +424,12 @@ const messages: MessageSchema = {
             description: 'Gestisci il tuo catalogo di prodotti e servizi',
             newButton: 'Nuovo prodotto',
             searchPlaceholder: 'Cerca per codice o descrizione...',
-            columns: { code: 'Codice', type: 'Tipo', description: 'Descrizione', price: 'Prezzo' },
+            columns: {
+                code: 'Codice',
+                type: 'Tipo',
+                description: 'Descrizione',
+                price: 'Prezzo',
+            },
             empty: 'Nessun prodotto trovato.',
         },
         create: {
@@ -425,7 +447,8 @@ const messages: MessageSchema = {
         edit: {
             title: 'Modifica prodotto',
             description: 'Aggiorna {name}',
-            confirmDelete: "Eliminare questo prodotto? L'azione non può essere annullata.",
+            confirmDelete:
+                "Eliminare questo prodotto? L'azione non può essere annullata.",
             deleteButton: 'Elimina prodotto',
         },
     },

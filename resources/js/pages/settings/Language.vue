@@ -60,7 +60,10 @@ function updateLocale(value: AcceptableValue): void {
         />
 
         <div class="grid gap-2">
-            <Select :model-value="props.locale" @update:model-value="updateLocale">
+            <Select
+                :model-value="props.locale"
+                @update:model-value="updateLocale"
+            >
                 <SelectTrigger id="locale" class="w-full max-w-xs">
                     <SelectValue :placeholder="t('settings.language.label')" />
                 </SelectTrigger>

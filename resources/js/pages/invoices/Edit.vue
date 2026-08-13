@@ -110,7 +110,9 @@ function productLabel(product: PickedProduct | undefined): string | null {
         return null;
     }
 
-    return product.code ? `${product.code} — ${product.description}` : product.description;
+    return product.code
+        ? `${product.code} — ${product.description}`
+        : product.description;
 }
 
 function applyProduct(index: number, product: PickedProduct): void {
@@ -144,7 +146,9 @@ function onDelete(): void {
     <div class="flex max-w-2xl flex-col space-y-6">
         <Heading
             :title="t('invoices.edit.title')"
-            :description="t('invoices.edit.description', { number: invoice.number })"
+            :description="
+                t('invoices.edit.description', { number: invoice.number })
+            "
         />
 
         <div class="flex gap-1">
@@ -177,7 +181,9 @@ function onDelete(): void {
         <form class="space-y-4" @submit.prevent="submit">
             <div class="grid grid-cols-2 gap-4">
                 <div class="grid gap-2">
-                    <Label for="number">{{ t('invoices.create.number') }}</Label>
+                    <Label for="number">{{
+                        t('invoices.create.number')
+                    }}</Label>
                     <Input
                         id="number"
                         v-model="form.number"
@@ -186,7 +192,9 @@ function onDelete(): void {
                     <InputError :message="form.errors.number" />
                 </div>
                 <div class="grid gap-2">
-                    <Label for="invoice_date">{{ t('invoices.create.date') }}</Label>
+                    <Label for="invoice_date">{{
+                        t('invoices.create.date')
+                    }}</Label>
                     <Input
                         id="invoice_date"
                         v-model="form.invoice_date"
@@ -197,10 +205,14 @@ function onDelete(): void {
             </div>
 
             <div class="grid gap-2">
-                <Label for="customer_id">{{ t('invoices.create.customer') }}</Label>
+                <Label for="customer_id">{{
+                    t('invoices.create.customer')
+                }}</Label>
                 <Select v-model="form.customer_id">
                     <SelectTrigger id="customer_id" class="w-full">
-                        <SelectValue :placeholder="t('invoices.create.selectCustomer')" />
+                        <SelectValue
+                            :placeholder="t('invoices.create.selectCustomer')"
+                        />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem
@@ -216,10 +228,14 @@ function onDelete(): void {
             </div>
 
             <div class="grid gap-2">
-                <Label for="company_id">{{ t('invoices.create.company') }}</Label>
+                <Label for="company_id">{{
+                    t('invoices.create.company')
+                }}</Label>
                 <Select v-model="form.company_id">
                     <SelectTrigger id="company_id" class="w-full">
-                        <SelectValue :placeholder="t('invoices.create.selectCompany')" />
+                        <SelectValue
+                            :placeholder="t('invoices.create.selectCompany')"
+                        />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem
@@ -235,10 +251,14 @@ function onDelete(): void {
             </div>
 
             <div class="grid gap-2">
-                <Label for="language">{{ t('invoices.create.language') }}</Label>
+                <Label for="language">{{
+                    t('invoices.create.language')
+                }}</Label>
                 <Select v-model="form.language">
                     <SelectTrigger id="language" class="w-full">
-                        <SelectValue :placeholder="t('invoices.create.selectLanguage')" />
+                        <SelectValue
+                            :placeholder="t('invoices.create.selectLanguage')"
+                        />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="it">Italiano</SelectItem>
@@ -339,7 +359,9 @@ function onDelete(): void {
                             step="0.01"
                             min="0"
                             max="100"
-                            :placeholder="t('invoices.create.rowVatPlaceholder')"
+                            :placeholder="
+                                t('invoices.create.rowVatPlaceholder')
+                            "
                         />
                         <InputError
                             :message="form.errors[`rows.${i}.vat_rate`]"
@@ -357,7 +379,9 @@ function onDelete(): void {
                 </div>
 
                 <p class="text-right text-sm text-muted-foreground">
-                    {{ t('invoices.create.total', { amount: total.toFixed(2) }) }}
+                    {{
+                        t('invoices.create.total', { amount: total.toFixed(2) })
+                    }}
                 </p>
             </div>
 

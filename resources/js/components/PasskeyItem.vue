@@ -71,18 +71,28 @@ const handleDelete = () => {
                     class="text-destructive hover:bg-destructive/10 hover:text-destructive"
                 >
                     <Trash2 class="h-4 w-4" />
-                    <span class="sr-only">{{ t('settings.passkeys.item.removeSrLabel') }}</span>
+                    <span class="sr-only">{{
+                        t('settings.passkeys.item.removeSrLabel')
+                    }}</span>
                 </Button>
             </DialogTrigger>
 
             <DialogContent>
-                <DialogTitle>{{ t('settings.passkeys.item.removeTitle') }}</DialogTitle>
+                <DialogTitle>{{
+                    t('settings.passkeys.item.removeTitle')
+                }}</DialogTitle>
                 <DialogDescription>
-                    {{ t('settings.passkeys.item.removeDescription', { name: passkey.name }) }}
+                    {{
+                        t('settings.passkeys.item.removeDescription', {
+                            name: passkey.name,
+                        })
+                    }}
                 </DialogDescription>
                 <DialogFooter class="gap-2">
                     <DialogClose as-child>
-                        <Button variant="secondary">{{ t('common.actions.cancel') }}</Button>
+                        <Button variant="secondary">{{
+                            t('common.actions.cancel')
+                        }}</Button>
                     </DialogClose>
                     <Button
                         variant="destructive"

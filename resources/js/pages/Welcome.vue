@@ -85,7 +85,9 @@ const dashboardUrl = computed(() => dashboard().url);
                                     target="_blank"
                                     class="ml-1 inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4 dark:text-[#FF4433]"
                                 >
-                                    <span>{{ t('welcome.documentation') }}</span>
+                                    <span>{{
+                                        t('welcome.documentation')
+                                    }}</span>
                                     <svg
                                         width="10"
                                         height="11"

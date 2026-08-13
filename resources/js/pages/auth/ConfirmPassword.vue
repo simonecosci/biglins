@@ -41,7 +41,9 @@ setLayoutProps({
     >
         <div class="space-y-6">
             <div class="grid gap-2">
-                <Label htmlFor="password">{{ t('auth.confirmPassword.password') }}</Label>
+                <Label htmlFor="password">{{
+                    t('auth.confirmPassword.password')
+                }}</Label>
                 <PasswordInput
                     id="password"
                     name="password"
