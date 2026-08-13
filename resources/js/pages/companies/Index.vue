@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Plus } from '@lucide/vue';
+import { Pencil, Plus } from '@lucide/vue';
 import { ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
@@ -101,12 +101,16 @@ defineOptions({
                             {{ company.is_default ? 'Yes' : '—' }}
                         </td>
                         <td class="px-4 py-2 text-right">
-                            <Link
-                                :href="edit(company.id)"
-                                class="text-primary underline-offset-4 hover:underline"
+                            <Button
+                                as-child
+                                variant="ghost"
+                                size="icon-sm"
+                                title="Edit"
                             >
-                                Edit
-                            </Link>
+                                <Link :href="edit(company.id)">
+                                    <Pencil />
+                                </Link>
+                            </Button>
                         </td>
                     </tr>
                     <tr v-if="companies.data.length === 0">
