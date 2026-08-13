@@ -26,6 +26,31 @@ test('products index page can be rendered', function () {
     $response->assertInertia(fn ($page) => $page->component('products/Index'));
 });
 
+test('products index can be searched as json for the invoice picker', function () {
+    $user = User::factory()->create();
+    Product::factory()->create(['code' => 'SKU-1', 'description' => 'Blue widget']);
+    Product::factory()->create(['code' => 'SKU-2', 'description' => 'Red widget']);
+    Product::factory()->create(['code' => 'SKU-3', 'description' => 'Consulting hour']);
+
+    $response = $this->actingAs($user)->getJson(route('products.index', ['search' => 'widget']));
+
+    $response->assertOk();
+    expect($response->json('data'))->toHaveCount(2);
+    expect(collect($response->json('data'))->pluck('code')->sort()->values()->all())
+        ->toBe(['SKU-1', 'SKU-2']);
+});
+
+test('products index json response is paginated', function () {
+    $user = User::factory()->create();
+    Product::factory()->count(20)->create();
+
+    $response = $this->actingAs($user)->getJson(route('products.index'));
+
+    $response->assertOk();
+    expect($response->json('data'))->toHaveCount(15);
+    expect($response->json('last_page'))->toBe(2);
+});
+
 test('product can be created without a code', function () {
     $user = User::factory()->create();
 

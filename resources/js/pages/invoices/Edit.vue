@@ -5,6 +5,8 @@ import { computed, ref } from 'vue';
 import InvoiceController from '@/actions/App/Http/Controllers/InvoiceController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import ProductPicker from '@/components/ProductPicker.vue';
+import type { PickedProduct } from '@/components/ProductPicker.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -27,13 +29,6 @@ type Customer = {
 type Company = {
     id: string;
     name: string;
-};
-
-type Product = {
-    id: string;
-    code: string | null;
-    description: string;
-    price: number;
 };
 
 type InvoiceRow = {
@@ -68,7 +63,6 @@ const props = defineProps<{
     invoice: Invoice;
     customers: Customer[];
     companies: Company[];
-    products: Product[];
 }>();
 
 defineOptions({
@@ -96,29 +90,30 @@ const form = useForm({
     })) as InvoiceRowForm[],
 });
 
-const selectedProductIds = ref<(string | undefined)[]>(
+const selectedProducts = ref<(PickedProduct | undefined)[]>(
     form.rows.map(() => undefined),
 );
 
 function addRow(): void {
     form.rows.push({ description: '', quantity: 1, price: 0, vat_rate: 0 });
-    selectedProductIds.value.push(undefined);
+    selectedProducts.value.push(undefined);
 }
 
 function removeRow(index: number): void {
     form.rows.splice(index, 1);
-    selectedProductIds.value.splice(index, 1);
+    selectedProducts.value.splice(index, 1);
 }
 
-function applyProduct(index: number, productId: unknown): void {
-    selectedProductIds.value[index] = productId as string | undefined;
-
-    const product = props.products.find((p) => p.id === productId);
-
+function productLabel(product: PickedProduct | undefined): string | null {
     if (!product) {
-        return;
+        return null;
     }
 
+    return product.code ? `${product.code} — ${product.description}` : product.description;
+}
+
+function applyProduct(index: number, product: PickedProduct): void {
+    selectedProducts.value[index] = product;
     form.rows[index].description = product.description;
     form.rows[index].price = product.price;
 }
@@ -291,27 +286,10 @@ function onDelete(): void {
                     :key="row.id ?? `new-${i}`"
                     class="grid grid-cols-[12rem_1fr_6rem_8rem_6rem_2.5rem] items-start gap-2"
                 >
-                    <Select
-                        :model-value="selectedProductIds[i]"
-                        @update:model-value="(value) => applyProduct(i, value)"
-                    >
-                        <SelectTrigger class="w-full">
-                            <SelectValue placeholder="From catalog" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem
-                                v-for="product in products"
-                                :key="product.id"
-                                :value="product.id"
-                            >
-                                {{
-                                    product.code
-                                        ? `${product.code} — ${product.description}`
-                                        : product.description
-                                }}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <ProductPicker
+                        :selected-label="productLabel(selectedProducts[i])"
+                        @select="(product) => applyProduct(i, product)"
+                    />
                     <div class="grid gap-1">
                         <Input
                             v-model="row.description"

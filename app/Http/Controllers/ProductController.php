@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -12,7 +13,7 @@ use Inertia\Response;
 
 class ProductController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): Response|JsonResponse
     {
         $search = $request->string('search')->trim()->toString();
 
@@ -24,6 +25,10 @@ class ProductController extends Controller
             ->orderBy('description')
             ->paginate(15)
             ->withQueryString();
+
+        if ($request->wantsJson()) {
+            return response()->json($products);
+        }
 
         return Inertia::render('products/Index', [
             'products' => $products,
