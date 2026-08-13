@@ -434,7 +434,7 @@ test('updating an invoice from another company is forbidden', function () {
     $user = User::factory()->create();
     $company = Company::factory()->create();
     $otherCompany = Company::factory()->create();
-    $invoice = Invoice::factory()->create(['company_id' => $otherCompany->id]);
+    $invoice = Invoice::factory()->create(['company_id' => $otherCompany->id, 'paid' => false]);
 
     $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->put(route('invoices.update', $invoice), [
         'number' => $invoice->number,
