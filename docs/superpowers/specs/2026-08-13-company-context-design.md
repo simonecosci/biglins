@@ -26,12 +26,21 @@ Spostare la selezione della "company operativa" dal form delle fatture a un sele
 
 ## 2. Contesto "company corrente" (sessione)
 
-- Nuovo helper `App\Support\CurrentCompany` (classe con metodo statico `resolve(): Company`) che risolve la company corrente:
+- Nuovo helper `App\Support\CurrentCompany` (classe con metodo statico `resolve(): ?Company`, **nullable**) che risolve la company corrente:
   1. se `session('current_company_id')` punta a una company esistente, usa quella;
   2. altrimenti fallback sulla company con `is_default = true`;
-  3. altrimenti la prima company (`orderBy('name')->first()`).
+  3. altrimenti la prima company (`orderBy('name')->first()`);
+  4. se non esiste **nessuna** company nel DB, ritorna `null`.
 - Nessuna colonna nuova su `users`: la selezione vive solo in sessione, si resetta implicitamente se la sessione scade o cambia browser (in quel caso si ricade sul fallback default/prima company).
-- `App\Http\Middleware\HandleInertiaRequests`: aggiunge ai props condivisi `currentCompany` (oggetto `{id, name}`) e `companies` (lista completa `{id, name}`, ordinata per nome) per alimentare lo switcher in header — stesso pattern già usato per `auth`.
+- `App\Http\Middleware\HandleInertiaRequests`: aggiunge ai props condivisi `currentCompany` (oggetto `{id, name}` o `null` se nessuna company esiste) e `companies` (lista completa `{id, name}`, ordinata per nome, eventualmente vuota) per alimentare lo switcher in header — stesso pattern già usato per `auth`.
+
+### Nessuna company nel DB (caso limite)
+
+Su un'installazione nuova o dopo un `migrate:fresh`, `companies` può essere vuota. In questo stato:
+- Non è possibile creare fatture o prodotti (dipendono entrambi da una company). Le rotte `invoices.create`/`invoices.store` e `products.create`/`products.store` verificano `CurrentCompany::resolve()`: se `null`, redirect a `companies.create` con messaggio flash ("Crea prima almeno una company per poter registrare fatture/prodotti.").
+- Le pagine `invoices.index`/`products.index` restano accessibili ma mostrano lo stato vuoto esistente (nessuna query "cross-company" pericolosa: senza company corrente semplicemente non c'è nulla da filtrare).
+- Lo switcher in header, quando `companies` è vuota, mostra un link "Crea la prima company" verso `companies.create` invece del dropdown.
+- Non appena viene creata la prima company (`CompanyController::store`, che già la marca `is_default` automaticamente), diventa immediatamente la company corrente al prossimo caricamento (fallback `is_default` nel resolver).
 
 ### Cambio company
 
@@ -41,7 +50,7 @@ Spostare la selezione della "company operativa" dal form delle fatture a un sele
 
 ## 3. Backend — Fatture
 
-- `InvoiceController@create`: **rimuove** `companies`/`defaultCompanyId` dai props passati alla vista (non serve più scegliere la company nel form). Il numero successivo (`nextNumber`) viene calcolato con la company corrente dal contesto.
+- `InvoiceController@create`/`@store`: se `CurrentCompany::resolve()` è `null`, redirect a `companies.create` con messaggio flash (vedi § "Nessuna company nel DB"). Altrimenti, `create()` **rimuove** `companies`/`defaultCompanyId` dai props passati alla vista (non serve più scegliere la company nel form): il numero successivo (`nextNumber`) viene calcolato con la company corrente dal contesto.
 - `InvoiceController@store`: non legge più `company_id` dal payload del form; lo imposta lui stesso dalla company corrente (`CurrentCompany::resolve()->id`) prima del `create()`.
 - `InvoiceController@index`: filtra sempre `where('company_id', CurrentCompany::resolve()->id)`.
 - `InvoiceController@edit`/`update`/`destroy`: se `$invoice->company_id !== CurrentCompany::resolve()->id`, abort(403) — evita modifiche cross-company via URL diretta, dato che la company non è più scelta nel form.
@@ -50,14 +59,14 @@ Spostare la selezione della "company operativa" dal form delle fatture a un sele
 
 ## 4. Backend — Prodotti
 
-- `ProductController@store`: imposta `company_id` dalla company corrente, non da input utente.
+- `ProductController@create`/`@store`: se `CurrentCompany::resolve()` è `null`, redirect a `companies.create` con lo stesso messaggio flash usato per le fatture. Altrimenti `store` imposta `company_id` dalla company corrente, non da input utente.
 - `ProductController@index`: filtra sempre `where('company_id', CurrentCompany::resolve()->id)` (inclusa la variante `wantsJson()` usata dal picker).
 - `ProductController@edit`/`update`/`destroy`: stesso controllo 403 cross-company delle fatture.
 - `StoreProductRequest`: nessuna regola su `company_id` (non è un campo del form).
 
 ## 5. Frontend (Inertia + Vue)
 
-- Nuovo componente `resources/js/components/CompanySwitcher.vue`: dropdown (stesso pattern shadcn/`Select` o `DropdownMenu` già usato per il menu utente), popolato da `page.props.companies` (via `usePage()`), valore corrente da `page.props.currentCompany`. Alla selezione: `router.put('/current-company', { company_id })` con reload dei props condivisi (fatture/prodotti già visibili si aggiornano al filtro nuovo).
+- Nuovo componente `resources/js/components/CompanySwitcher.vue`: dropdown (stesso pattern shadcn/`Select` o `DropdownMenu` già usato per il menu utente), popolato da `page.props.companies` (via `usePage()`), valore corrente da `page.props.currentCompany`. Alla selezione: `router.put('/current-company', { company_id })` con reload dei props condivisi (fatture/prodotti già visibili si aggiornano al filtro nuovo). Se `companies` è vuota, mostra invece un link "Crea la prima company" verso `companies.create`.
 - `resources/js/components/AppHeader.vue`: inserisce `<CompanySwitcher />` nell'area destra (`ml-auto flex items-center space-x-2`), prima dell'avatar utente.
 - `resources/js/pages/invoices/Create.vue` / `Edit.vue`: **rimosso** il `<Select>` per `company_id` e la prop `companies`/`defaultCompanyId`; `form` non include più `company_id`.
 - `resources/js/pages/products/Create.vue` / `Edit.vue`: nessun campo company nel form (non esisteva già).
@@ -65,9 +74,9 @@ Spostare la selezione della "company operativa" dal form delle fatture a un sele
 
 ## 6. Testing (Pest, feature)
 
-- `CurrentCompanyTest`: cambiare company via `PUT /current-company` aggiorna la sessione; fallback su `is_default` quando la sessione è vuota; 422 se `company_id` non esiste.
-- `InvoiceTest`: `index` filtra per company corrente; `store` assegna automaticamente la company corrente ignorando eventuale `company_id` nel payload; numerazione riparte per ogni company (stesso anno, company diverse → entrambe `2026-0001`); 403 su edit/update/destroy di una fattura di un'altra company; duplicazione usa la company corrente.
-- `ProductTest`: `index`/picker filtrano per company corrente; `store` assegna automaticamente la company corrente; 403 su edit/update/destroy di un prodotto di un'altra company.
+- `CurrentCompanyTest`: cambiare company via `PUT /current-company` aggiorna la sessione; fallback su `is_default` quando la sessione è vuota; 422 se `company_id` non esiste; `resolve()` ritorna `null` quando `companies` è vuota.
+- `InvoiceTest`: `index` filtra per company corrente; `store` assegna automaticamente la company corrente ignorando eventuale `company_id` nel payload; numerazione riparte per ogni company (stesso anno, company diverse → entrambe `2026-0001`); 403 su edit/update/destroy di una fattura di un'altra company; duplicazione usa la company corrente; `create`/`store` con zero company nel DB redirigono a `companies.create`.
+- `ProductTest`: `index`/picker filtrano per company corrente; `store` assegna automaticamente la company corrente; 403 su edit/update/destroy di un prodotto di un'altra company; `create`/`store` con zero company nel DB redirigono a `companies.create`.
 - Factories: `ProductFactory` aggiorna per generare/associare una `Company`; test esistenti che creano prodotti/fatture aggiornati per impostare la company corrente in sessione dove serve.
 
 ## Note
