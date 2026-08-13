@@ -189,7 +189,7 @@ const messages: MessageSchema = {
     },
     welcome: {
         description:
-            'Aplicación de facturación para autónomos: registro de clientes, emisión de facturas con líneas/IVA, numeración secuencial automática, vista previa y generación de PDF, duplicación de facturas.',
+            'Aplicación de facturación para autónomos: registro de clientes, emisión de facturas con líneas/IGIC, numeración secuencial automática, vista previa y generación de PDF, duplicación de facturas.',
         readDocsPrefix: 'Lee la',
         documentation: 'Documentación',
         dashboard: 'Panel',
@@ -422,8 +422,8 @@ const messages: MessageSchema = {
             rowDescription: 'Descripción',
             rowQuantity: 'Cantidad',
             rowPrice: 'Precio',
-            rowVat: 'IVA (%)',
-            rowVatPlaceholder: 'IVA %',
+            rowVat: 'IGIC (%)',
+            rowVatPlaceholder: 'IGIC %',
             total: 'Total: {amount}',
         },
         edit: {

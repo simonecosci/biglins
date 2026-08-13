@@ -23,7 +23,7 @@ test('seeding the countries table populates the standard country list', function
     $this->seed(CountrySeeder::class);
 
     expect(Country::query()->count())->toBe(195);
-    expect(Country::query()->where('name', 'Italia')->exists())->toBeTrue();
+    expect(Country::query()->where('name', 'Italy')->exists())->toBeTrue();
 });
 
 test('guests are redirected to the login page when visiting countries', function () {
