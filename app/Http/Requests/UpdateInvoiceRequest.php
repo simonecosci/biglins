@@ -36,6 +36,7 @@ class UpdateInvoiceRequest extends FormRequest
             'rows.*.quantity' => ['required', 'numeric', 'min:0.01'],
             'rows.*.price' => ['required', 'numeric', 'min:0'],
             'rows.*.vat_rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'rows.*.expiration_date' => ['nullable', 'date'],
         ];
     }
 }

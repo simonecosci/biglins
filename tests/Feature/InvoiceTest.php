@@ -144,6 +144,7 @@ test('invoice row total accessor multiplies price by quantity before applying va
     expect((float) $row->total)->toEqual(244.0);
 });
 
+use App\Enums\SubscriptionStatus;
 use App\Models\User;
 use Illuminate\Support\Str;
 
@@ -685,4 +686,65 @@ test('invoice create page has no duplicate data without the query param', functi
         ->component('invoices/Create')
         ->where('duplicate', null)
     );
+});
+
+test('creating an invoice persists an optional row expiration date', function () {
+    $user = User::factory()->create();
+    $customer = Customer::factory()->create();
+    $company = Company::factory()->create();
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('invoices.store'), [
+        'invoice_date' => '2026-01-15',
+        'customer_id' => $customer->id,
+        'language' => 'it',
+        'rows' => [
+            ['description' => 'Hosting', 'quantity' => 1, 'price' => 100, 'vat_rate' => 22, 'expiration_date' => '2027-01-15'],
+            ['description' => 'Consulting', 'quantity' => 1, 'price' => 50, 'vat_rate' => 22],
+        ],
+    ]);
+
+    $response->assertSessionHasNoErrors()->assertRedirect(route('invoices.index'));
+
+    $invoice = Invoice::query()->where('company_id', $company->id)->firstOrFail();
+    expect($invoice->rows->firstWhere('description', 'Hosting')->expiration_date->format('Y-m-d'))->toBe('2027-01-15');
+    expect($invoice->rows->firstWhere('description', 'Consulting')->expiration_date)->toBeNull();
+});
+
+test('creating an invoice ignores a client-supplied subscription_status', function () {
+    $user = User::factory()->create();
+    $customer = Customer::factory()->create();
+    $company = Company::factory()->create();
+
+    $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('invoices.store'), [
+        'invoice_date' => '2026-01-15',
+        'customer_id' => $customer->id,
+        'language' => 'it',
+        'rows' => [
+            ['description' => 'Hosting', 'quantity' => 1, 'price' => 100, 'vat_rate' => 22, 'expiration_date' => '2027-01-15', 'subscription_status' => 'cancelled'],
+        ],
+    ]);
+
+    $invoice = Invoice::query()->where('company_id', $company->id)->firstOrFail();
+    expect($invoice->rows->first()->subscription_status)->toBe(SubscriptionStatus::Active);
+});
+
+test('updating an invoice persists a row expiration date change', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $invoice = Invoice::factory()->create(['company_id' => $company->id]);
+    $row = InvoiceRow::factory()->create(['invoice_id' => $invoice->id, 'expiration_date' => null]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->put(route('invoices.update', $invoice), [
+        'number' => $invoice->number,
+        'invoice_date' => $invoice->invoice_date->format('Y-m-d'),
+        'paid' => $invoice->paid,
+        'customer_id' => $invoice->customer_id,
+        'language' => $invoice->language,
+        'rows' => [
+            ['id' => $row->id, 'description' => $row->description, 'quantity' => $row->quantity, 'price' => $row->price, 'vat_rate' => $row->vat_rate, 'expiration_date' => '2027-03-01'],
+        ],
+    ]);
+
+    $response->assertSessionHasNoErrors();
+    expect($row->fresh()->expiration_date->format('Y-m-d'))->toBe('2027-03-01');
 });
