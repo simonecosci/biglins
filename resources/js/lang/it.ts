@@ -53,12 +53,14 @@ const messages: MessageSchema = {
             emailPlaceholder: 'Indirizzo email',
             unverified: 'Il tuo indirizzo email non è verificato.',
             resendLink: "Clicca qui per inviare di nuovo l'email di verifica.",
-            verificationSent: 'Un nuovo link di verifica è stato inviato al tuo indirizzo email.',
+            verificationSent:
+                'Un nuovo link di verifica è stato inviato al tuo indirizzo email.',
         },
         security: {
             title: 'Aggiorna password',
             pageTitle: 'Impostazioni sicurezza',
-            description: "Assicurati che il tuo account utilizzi una password lunga e casuale per restare sicuro",
+            description:
+                'Assicurati che il tuo account utilizzi una password lunga e casuale per restare sicuro',
             currentPassword: 'Password attuale',
             currentPasswordPlaceholder: 'Password attuale',
             newPassword: 'Nuova password',
@@ -70,7 +72,8 @@ const messages: MessageSchema = {
             title: 'Elimina account',
             description: 'Elimina il tuo account e tutte le sue risorse',
             warningTitle: 'Attenzione',
-            warningBody: "Procedi con cautela, questa azione non può essere annullata.",
+            warningBody:
+                'Procedi con cautela, questa azione non può essere annullata.',
             deleteButton: 'Elimina account',
             confirmTitle: 'Sei sicuro di voler eliminare il tuo account?',
             confirmDescription:
@@ -80,7 +83,8 @@ const messages: MessageSchema = {
         },
         twoFactor: {
             title: 'Autenticazione a due fattori',
-            description: "Gestisci le impostazioni dell'autenticazione a due fattori",
+            description:
+                "Gestisci le impostazioni dell'autenticazione a due fattori",
             disabledIntro:
                 "Quando attivi l'autenticazione a due fattori, ti verrà richiesto un pin sicuro durante l'accesso. Questo pin può essere recuperato da un'applicazione TOTP sul tuo telefono.",
             continueSetup: 'Continua configurazione',
@@ -93,7 +97,8 @@ const messages: MessageSchema = {
             title: 'Passkey',
             description: 'Gestisci le tue passkey per accedere senza password',
             emptyTitle: 'Nessuna passkey ancora',
-            emptyDescription: 'Aggiungi una passkey per accedere senza password',
+            emptyDescription:
+                'Aggiungi una passkey per accedere senza password',
         },
     },
     passwordInput: {
@@ -153,7 +158,8 @@ const messages: MessageSchema = {
         },
         forgotPassword: {
             layoutTitle: 'Password dimenticata',
-            layoutDescription: 'Inserisci la tua email per ricevere il link di reimpostazione',
+            layoutDescription:
+                'Inserisci la tua email per ricevere il link di reimpostazione',
             headTitle: 'Password dimenticata',
             email: 'Indirizzo email',
             submit: 'Invia link di reimpostazione password',
@@ -171,7 +177,8 @@ const messages: MessageSchema = {
         },
         confirmPassword: {
             layoutTitle: 'Conferma password',
-            layoutDescription: "Questa è un'area protetta dell'applicazione. Conferma la tua password prima di continuare.",
+            layoutDescription:
+                "Questa è un'area protetta dell'applicazione. Conferma la tua password prima di continuare.",
             headTitle: 'Conferma password',
             passkeyLabel: 'Conferma con passkey',
             passkeyLoading: 'Conferma in corso...',
@@ -182,10 +189,12 @@ const messages: MessageSchema = {
         twoFactorChallenge: {
             headTitle: 'Autenticazione a due fattori',
             recoveryTitle: 'Codice di recupero',
-            recoveryDescription: "Conferma l'accesso al tuo account inserendo uno dei tuoi codici di recupero di emergenza.",
+            recoveryDescription:
+                "Conferma l'accesso al tuo account inserendo uno dei tuoi codici di recupero di emergenza.",
             recoveryButton: 'accedi con un codice di autenticazione',
             authTitle: 'Codice di autenticazione',
-            authDescription: "Inserisci il codice di autenticazione fornito dall'applicazione del tuo autenticatore.",
+            authDescription:
+                "Inserisci il codice di autenticazione fornito dall'applicazione del tuo autenticatore.",
             authButton: 'accedi con un codice di recupero',
             recoveryPlaceholder: 'Inserisci il codice di recupero',
             continue: 'Continua',
@@ -193,11 +202,54 @@ const messages: MessageSchema = {
         },
         verifyEmail: {
             layoutTitle: 'Verifica email',
-            layoutDescription: "Verifica il tuo indirizzo email cliccando sul link che ti abbiamo appena inviato.",
+            layoutDescription:
+                'Verifica il tuo indirizzo email cliccando sul link che ti abbiamo appena inviato.',
             headTitle: 'Verifica email',
             sent: 'Un nuovo link di verifica è stato inviato allindirizzo email fornito in fase di registrazione.',
             resend: 'Invia di nuovo email di verifica',
             logout: 'Esci',
+        },
+    },
+    companies: {
+        index: {
+            title: 'Aziende',
+            description: 'Gestisci le aziende che possono emettere fatture',
+            newButton: 'Nuova azienda',
+            searchPlaceholder: 'Cerca per nome...',
+            columns: {
+                name: 'Nome',
+                city: 'Città',
+                country: 'Paese',
+                email: 'Email',
+                default: 'Predefinita',
+            },
+            yes: 'Sì',
+            empty: 'Nessuna azienda trovata.',
+        },
+        create: {
+            title: 'Nuova azienda',
+            description: "Aggiungi un'azienda emittente all'anagrafica",
+            namePlaceholder: 'Nome azienda',
+            taxId: 'Partita IVA',
+            taxIdPlaceholder: 'Numero identificativo fiscale',
+            addressPlaceholder: 'Indirizzo',
+            zipPlaceholder: 'CAP',
+            cityPlaceholder: 'Città',
+            emailPlaceholder: 'Indirizzo email',
+            phonePlaceholder: 'Numero di telefono',
+            iban: 'IBAN',
+            ibanPlaceholder: 'IBAN del conto bancario',
+            logo: 'Logo',
+            defaultCompany: 'Azienda predefinita per le nuove fatture',
+        },
+        edit: {
+            title: 'Modifica azienda',
+            description: 'Aggiorna {name}',
+            currentLogoAlt: 'Logo attuale',
+            removeLogo: 'Rimuovi logo attuale',
+            confirmDelete:
+                "Eliminare questa azienda? L'azione non può essere annullata.",
+            deleteButton: 'Elimina azienda',
         },
     },
 };

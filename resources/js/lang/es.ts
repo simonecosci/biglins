@@ -48,17 +48,22 @@ const messages: MessageSchema = {
         profile: {
             title: 'Perfil',
             pageTitle: 'Configuración de perfil',
-            description: 'Actualiza tu nombre y dirección de correo electrónico',
+            description:
+                'Actualiza tu nombre y dirección de correo electrónico',
             namePlaceholder: 'Nombre completo',
             emailPlaceholder: 'Correo electrónico',
-            unverified: 'Tu dirección de correo electrónico no está verificada.',
-            resendLink: 'Haz clic aquí para reenviar el correo de verificación.',
-            verificationSent: 'Se ha enviado un nuevo enlace de verificación a tu dirección de correo electrónico.',
+            unverified:
+                'Tu dirección de correo electrónico no está verificada.',
+            resendLink:
+                'Haz clic aquí para reenviar el correo de verificación.',
+            verificationSent:
+                'Se ha enviado un nuevo enlace de verificación a tu dirección de correo electrónico.',
         },
         security: {
             title: 'Actualizar contraseña',
             pageTitle: 'Configuración de seguridad',
-            description: 'Asegúrate de que tu cuenta use una contraseña larga y aleatoria para mantenerse segura',
+            description:
+                'Asegúrate de que tu cuenta use una contraseña larga y aleatoria para mantenerse segura',
             currentPassword: 'Contraseña actual',
             currentPasswordPlaceholder: 'Contraseña actual',
             newPassword: 'Nueva contraseña',
@@ -70,7 +75,8 @@ const messages: MessageSchema = {
             title: 'Eliminar cuenta',
             description: 'Elimina tu cuenta y todos sus recursos',
             warningTitle: 'Advertencia',
-            warningBody: 'Procede con precaución, esta acción no se puede deshacer.',
+            warningBody:
+                'Procede con precaución, esta acción no se puede deshacer.',
             deleteButton: 'Eliminar cuenta',
             confirmTitle: '¿Seguro que quieres eliminar tu cuenta?',
             confirmDescription:
@@ -80,7 +86,8 @@ const messages: MessageSchema = {
         },
         twoFactor: {
             title: 'Autenticación de dos factores',
-            description: 'Gestiona la configuración de tu autenticación de dos factores',
+            description:
+                'Gestiona la configuración de tu autenticación de dos factores',
             disabledIntro:
                 'Cuando actives la autenticación de dos factores, se te pedirá un PIN seguro durante el inicio de sesión. Este PIN se puede obtener desde una aplicación TOTP en tu teléfono.',
             continueSetup: 'Continuar configuración',
@@ -91,9 +98,11 @@ const messages: MessageSchema = {
         },
         passkeys: {
             title: 'Passkeys',
-            description: 'Gestiona tus passkeys para iniciar sesión sin contraseña',
+            description:
+                'Gestiona tus passkeys para iniciar sesión sin contraseña',
             emptyTitle: 'Aún no hay passkeys',
-            emptyDescription: 'Añade una passkey para iniciar sesión sin contraseña',
+            emptyDescription:
+                'Añade una passkey para iniciar sesión sin contraseña',
         },
     },
     passwordInput: {
@@ -125,7 +134,8 @@ const messages: MessageSchema = {
     auth: {
         login: {
             layoutTitle: 'Inicia sesión en tu cuenta',
-            layoutDescription: 'Introduce tu correo y contraseña para iniciar sesión',
+            layoutDescription:
+                'Introduce tu correo y contraseña para iniciar sesión',
             headTitle: 'Iniciar sesión',
             email: 'Correo electrónico',
             password: 'Contraseña',
@@ -153,7 +163,8 @@ const messages: MessageSchema = {
         },
         forgotPassword: {
             layoutTitle: 'Contraseña olvidada',
-            layoutDescription: 'Introduce tu correo para recibir el enlace de restablecimiento',
+            layoutDescription:
+                'Introduce tu correo para recibir el enlace de restablecimiento',
             headTitle: 'Contraseña olvidada',
             email: 'Correo electrónico',
             submit: 'Enviar enlace de restablecimiento',
@@ -171,7 +182,8 @@ const messages: MessageSchema = {
         },
         confirmPassword: {
             layoutTitle: 'Confirmar contraseña',
-            layoutDescription: 'Esta es un área segura de la aplicación. Confirma tu contraseña antes de continuar.',
+            layoutDescription:
+                'Esta es un área segura de la aplicación. Confirma tu contraseña antes de continuar.',
             headTitle: 'Confirmar contraseña',
             passkeyLabel: 'Confirmar con passkey',
             passkeyLoading: 'Confirmando...',
@@ -182,10 +194,12 @@ const messages: MessageSchema = {
         twoFactorChallenge: {
             headTitle: 'Autenticación de dos factores',
             recoveryTitle: 'Código de recuperación',
-            recoveryDescription: 'Confirma el acceso a tu cuenta introduciendo uno de tus códigos de recuperación de emergencia.',
+            recoveryDescription:
+                'Confirma el acceso a tu cuenta introduciendo uno de tus códigos de recuperación de emergencia.',
             recoveryButton: 'iniciar sesión con un código de autenticación',
             authTitle: 'Código de autenticación',
-            authDescription: 'Introduce el código de autenticación proporcionado por tu aplicación autenticadora.',
+            authDescription:
+                'Introduce el código de autenticación proporcionado por tu aplicación autenticadora.',
             authButton: 'iniciar sesión con un código de recuperación',
             recoveryPlaceholder: 'Introduce el código de recuperación',
             continue: 'Continuar',
@@ -193,11 +207,54 @@ const messages: MessageSchema = {
         },
         verifyEmail: {
             layoutTitle: 'Verificación de correo',
-            layoutDescription: 'Verifica tu dirección de correo haciendo clic en el enlace que te acabamos de enviar.',
+            layoutDescription:
+                'Verifica tu dirección de correo haciendo clic en el enlace que te acabamos de enviar.',
             headTitle: 'Verificación de correo',
             sent: 'Se ha enviado un nuevo enlace de verificación a la dirección de correo que proporcionaste durante el registro.',
             resend: 'Reenviar correo de verificación',
             logout: 'Cerrar sesión',
+        },
+    },
+    companies: {
+        index: {
+            title: 'Empresas',
+            description: 'Gestiona las empresas que pueden emitir facturas',
+            newButton: 'Nueva empresa',
+            searchPlaceholder: 'Buscar por nombre...',
+            columns: {
+                name: 'Nombre',
+                city: 'Ciudad',
+                country: 'País',
+                email: 'Correo electrónico',
+                default: 'Predeterminada',
+            },
+            yes: 'Sí',
+            empty: 'No se encontraron empresas.',
+        },
+        create: {
+            title: 'Nueva empresa',
+            description: 'Añade una empresa emisora al registro',
+            namePlaceholder: 'Nombre de la empresa',
+            taxId: 'NIF',
+            taxIdPlaceholder: 'Número de identificación fiscal',
+            addressPlaceholder: 'Dirección',
+            zipPlaceholder: 'Código postal',
+            cityPlaceholder: 'Ciudad',
+            emailPlaceholder: 'Correo electrónico',
+            phonePlaceholder: 'Número de teléfono',
+            iban: 'IBAN',
+            ibanPlaceholder: 'IBAN de la cuenta bancaria',
+            logo: 'Logotipo',
+            defaultCompany: 'Empresa predeterminada para nuevas facturas',
+        },
+        edit: {
+            title: 'Editar empresa',
+            description: 'Actualizar {name}',
+            currentLogoAlt: 'Logotipo actual',
+            removeLogo: 'Eliminar logotipo actual',
+            confirmDelete:
+                '¿Eliminar esta empresa? Esta acción no se puede deshacer.',
+            deleteButton: 'Eliminar empresa',
         },
     },
 };

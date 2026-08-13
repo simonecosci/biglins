@@ -51,12 +51,14 @@ const messages = {
             emailPlaceholder: 'Email address',
             unverified: 'Your email address is unverified.',
             resendLink: 'Click here to re-send the verification email.',
-            verificationSent: 'A new verification link has been sent to your email address.',
+            verificationSent:
+                'A new verification link has been sent to your email address.',
         },
         security: {
             title: 'Update password',
             pageTitle: 'Security settings',
-            description: 'Ensure your account is using a long, random password to stay secure',
+            description:
+                'Ensure your account is using a long, random password to stay secure',
             currentPassword: 'Current password',
             currentPasswordPlaceholder: 'Current password',
             newPassword: 'New password',
@@ -138,7 +140,8 @@ const messages = {
         },
         register: {
             layoutTitle: 'Create an account',
-            layoutDescription: 'Enter your details below to create your account',
+            layoutDescription:
+                'Enter your details below to create your account',
             headTitle: 'Register',
             name: 'Name',
             namePlaceholder: 'Full name',
@@ -151,7 +154,8 @@ const messages = {
         },
         forgotPassword: {
             layoutTitle: 'Forgot password',
-            layoutDescription: 'Enter your email to receive a password reset link',
+            layoutDescription:
+                'Enter your email to receive a password reset link',
             headTitle: 'Forgot password',
             email: 'Email address',
             submit: 'Email password reset link',
@@ -169,7 +173,8 @@ const messages = {
         },
         confirmPassword: {
             layoutTitle: 'Confirm password',
-            layoutDescription: 'This is a secure area of the application. Please confirm your password before continuing.',
+            layoutDescription:
+                'This is a secure area of the application. Please confirm your password before continuing.',
             headTitle: 'Confirm password',
             passkeyLabel: 'Confirm with passkey',
             passkeyLoading: 'Confirming...',
@@ -180,10 +185,12 @@ const messages = {
         twoFactorChallenge: {
             headTitle: 'Two-factor authentication',
             recoveryTitle: 'Recovery code',
-            recoveryDescription: 'Please confirm access to your account by entering one of your emergency recovery codes.',
+            recoveryDescription:
+                'Please confirm access to your account by entering one of your emergency recovery codes.',
             recoveryButton: 'login using an authentication code',
             authTitle: 'Authentication code',
-            authDescription: 'Enter the authentication code provided by your authenticator application.',
+            authDescription:
+                'Enter the authentication code provided by your authenticator application.',
             authButton: 'login using a recovery code',
             recoveryPlaceholder: 'Enter recovery code',
             continue: 'Continue',
@@ -191,11 +198,53 @@ const messages = {
         },
         verifyEmail: {
             layoutTitle: 'Email verification',
-            layoutDescription: 'Please verify your email address by clicking on the link we just emailed to you.',
+            layoutDescription:
+                'Please verify your email address by clicking on the link we just emailed to you.',
             headTitle: 'Email verification',
             sent: 'A new verification link has been sent to the email address you provided during registration.',
             resend: 'Resend verification email',
             logout: 'Log out',
+        },
+    },
+    companies: {
+        index: {
+            title: 'Companies',
+            description: 'Manage the companies that can issue invoices',
+            newButton: 'New company',
+            searchPlaceholder: 'Search by name...',
+            columns: {
+                name: 'Name',
+                city: 'City',
+                country: 'Country',
+                email: 'Email',
+                default: 'Default',
+            },
+            yes: 'Yes',
+            empty: 'No companies found.',
+        },
+        create: {
+            title: 'New company',
+            description: 'Add an issuing company to the registry',
+            namePlaceholder: 'Company name',
+            taxId: 'Tax ID',
+            taxIdPlaceholder: 'Tax identification number',
+            addressPlaceholder: 'Address',
+            zipPlaceholder: 'ZIP code',
+            cityPlaceholder: 'City',
+            emailPlaceholder: 'Email address',
+            phonePlaceholder: 'Phone number',
+            iban: 'IBAN',
+            ibanPlaceholder: 'Bank account IBAN',
+            logo: 'Logo',
+            defaultCompany: 'Default company for new invoices',
+        },
+        edit: {
+            title: 'Edit company',
+            description: 'Update {name}',
+            currentLogoAlt: 'Current logo',
+            removeLogo: 'Remove current logo',
+            confirmDelete: 'Delete this company? This cannot be undone.',
+            deleteButton: 'Delete company',
         },
     },
 };
