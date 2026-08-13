@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { Plus, Trash2 } from '@lucide/vue';
-import { computed } from 'vue';
+import { Eye, FileText, Plus, Trash2 } from '@lucide/vue';
+import { computed, ref } from 'vue';
 import InvoiceController from '@/actions/App/Http/Controllers/InvoiceController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -27,6 +27,13 @@ type Customer = {
 type Company = {
     id: string;
     name: string;
+};
+
+type Product = {
+    id: string;
+    code: string | null;
+    description: string;
+    price: number;
 };
 
 type InvoiceRow = {
@@ -61,6 +68,7 @@ const props = defineProps<{
     invoice: Invoice;
     customers: Customer[];
     companies: Company[];
+    products: Product[];
 }>();
 
 defineOptions({
@@ -88,12 +96,31 @@ const form = useForm({
     })) as InvoiceRowForm[],
 });
 
+const selectedProductIds = ref<(string | undefined)[]>(
+    form.rows.map(() => undefined),
+);
+
 function addRow(): void {
     form.rows.push({ description: '', quantity: 1, price: 0, vat_rate: 0 });
+    selectedProductIds.value.push(undefined);
 }
 
 function removeRow(index: number): void {
     form.rows.splice(index, 1);
+    selectedProductIds.value.splice(index, 1);
+}
+
+function applyProduct(index: number, productId: unknown): void {
+    selectedProductIds.value[index] = productId as string | undefined;
+
+    const product = props.products.find((p) => p.id === productId);
+
+    if (!product) {
+        return;
+    }
+
+    form.rows[index].description = product.description;
+    form.rows[index].price = product.price;
 }
 
 const total = computed(() =>
@@ -124,21 +151,21 @@ function onDelete(): void {
             :description="`Update invoice ${invoice.number}`"
         />
 
-        <div class="flex gap-4">
-            <a
-                :href="InvoiceController.preview(invoice.id).url"
-                target="_blank"
-                rel="noopener"
-                class="text-primary underline-offset-4 hover:underline"
-            >
-                Preview
-            </a>
-            <a
-                :href="InvoiceController.pdf(invoice.id).url"
-                class="text-primary underline-offset-4 hover:underline"
-            >
-                Download PDF
-            </a>
+        <div class="flex gap-1">
+            <Button as-child variant="ghost" size="icon-sm" title="Preview">
+                <a
+                    :href="InvoiceController.preview(invoice.id).url"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    <Eye />
+                </a>
+            </Button>
+            <Button as-child variant="ghost" size="icon-sm" title="PDF">
+                <a :href="InvoiceController.pdf(invoice.id).url">
+                    <FileText />
+                </a>
+            </Button>
         </div>
 
         <form class="space-y-4" @submit.prevent="submit">
@@ -249,8 +276,9 @@ function onDelete(): void {
                 <InputError :message="form.errors.rows" />
 
                 <div
-                    class="grid grid-cols-[1fr_6rem_8rem_6rem_2.5rem] gap-2 text-sm text-muted-foreground"
+                    class="grid grid-cols-[12rem_1fr_6rem_8rem_6rem_2.5rem] gap-2 text-sm text-muted-foreground"
                 >
+                    <span>Product</span>
                     <span>Description</span>
                     <span>Quantity</span>
                     <span>Price</span>
@@ -261,8 +289,29 @@ function onDelete(): void {
                 <div
                     v-for="(row, i) in form.rows"
                     :key="row.id ?? `new-${i}`"
-                    class="grid grid-cols-[1fr_6rem_8rem_6rem_2.5rem] items-start gap-2"
+                    class="grid grid-cols-[12rem_1fr_6rem_8rem_6rem_2.5rem] items-start gap-2"
                 >
+                    <Select
+                        :model-value="selectedProductIds[i]"
+                        @update:model-value="(value) => applyProduct(i, value)"
+                    >
+                        <SelectTrigger class="w-full">
+                            <SelectValue placeholder="From catalog" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem
+                                v-for="product in products"
+                                :key="product.id"
+                                :value="product.id"
+                            >
+                                {{
+                                    product.code
+                                        ? `${product.code} — ${product.description}`
+                                        : product.description
+                                }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
                     <div class="grid gap-1">
                         <Input
                             v-model="row.description"

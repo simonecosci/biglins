@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceRow;
+use App\Models\Product;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -51,6 +52,7 @@ class InvoiceController extends Controller
         return Inertia::render('invoices/Create', [
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'companies' => Company::query()->orderBy('name')->get(['id', 'name']),
+            'products' => Product::query()->orderBy('description')->get(['id', 'code', 'description', 'price']),
             'defaultCompanyId' => Company::query()->where('is_default', true)->value('id'),
             'nextNumber' => Invoice::nextNumber(),
             'duplicate' => $source ? [
@@ -87,6 +89,7 @@ class InvoiceController extends Controller
             'invoice' => $invoice->load('rows'),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'companies' => Company::query()->orderBy('name')->get(['id', 'name']),
+            'products' => Product::query()->orderBy('description')->get(['id', 'code', 'description', 'price']),
         ]);
     }
 

@@ -6,6 +6,7 @@ import {
     FolderGit2,
     Globe,
     LayoutGrid,
+    Package,
     Receipt,
     Users,
 } from '@lucide/vue';
@@ -28,6 +29,7 @@ import { index as companiesIndex } from '@/routes/companies';
 import { index as countriesIndex } from '@/routes/countries';
 import { index as customersIndex } from '@/routes/customers';
 import { index as invoicesIndex } from '@/routes/invoices';
+import { index as productsIndex } from '@/routes/products';
 import type { NavItem } from '@/types';
 
 const dashboardUrl = computed(() => dashboard().url);
@@ -52,6 +54,11 @@ const mainNavItems = computed<NavItem[]>(() => [
         title: 'Invoices',
         href: invoicesIndex().url,
         icon: Receipt,
+    },
+    {
+        title: 'Products',
+        href: productsIndex().url,
+        icon: Package,
     },
     {
         title: 'Countries',
