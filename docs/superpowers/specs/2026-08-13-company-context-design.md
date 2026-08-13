@@ -82,3 +82,5 @@ Su un'installazione nuova o dopo un `migrate:fresh`, `companies` può essere vuo
 ## Note
 
 Il DB di sviluppo viene svuotato/rigenerato con le nuove migration (`migrate:fresh`), nessuna migrazione dati da preservare oltre al backfill di `products.company_id` (comunque banale: tutta la company `is_default`). Nessuna gestione di ruoli/permessi differenziata per lo switcher: qualsiasi utente autenticato vede e può selezionare tutte le company.
+
+Questa app non ha un confine di tenancy per utente: qualsiasi utente autenticato può vedere e selezionare qualunque company. I controlli 403 su edit/update/destroy di fatture e prodotti servono quindi a prevenire scritture cross-company *accidentali* (es. URL diretta dopo un cambio di company), non a impedire letture cross-company. Coerentemente, `?duplicate=` in creazione fattura e le rotte `preview()`/`pdf()` restano intenzionalmente non filtrate per company.

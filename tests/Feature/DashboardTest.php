@@ -41,3 +41,15 @@ test('dashboard shares a null current company when none exist', function () {
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page->where('currentCompany', null));
 });
+
+test('guests are not shared any company data even when companies exist', function () {
+    Company::factory()->create(['is_default' => true]);
+
+    $response = $this->get(route('login'));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->where('currentCompany', null)
+        ->where('companies', [])
+    );
+});

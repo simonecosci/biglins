@@ -8,7 +8,7 @@
     "Company created.": "Azienda creata.",
     "Company updated.": "Azienda aggiornata.",
     "Company deleted.": "Azienda eliminata.",
-    "This company has invoices and cannot be deleted.": "Questa azienda ha fatture associate e non può essere eliminata.",
+    "This company has invoices or products and cannot be deleted.": "Questa azienda ha fatture o prodotti associati e non può essere eliminata.",
     "Product created.": "Prodotto creato.",
     "Product updated.": "Prodotto aggiornato.",
     "Product deleted.": "Prodotto eliminato.",

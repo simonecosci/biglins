@@ -37,7 +37,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $currentCompany = CurrentCompany::resolve();
+        $currentCompany = $request->user() ? CurrentCompany::resolve() : null;
 
         return [
             ...parent::share($request),
@@ -53,7 +53,7 @@ class HandleInertiaRequests extends Middleware
                 'id' => $currentCompany->id,
                 'name' => $currentCompany->name,
             ] : null,
-            'companies' => Company::query()->orderBy('name')->get(['id', 'name']),
+            'companies' => $request->user() ? Company::query()->orderBy('name')->get(['id', 'name']) : [],
         ];
     }
 }

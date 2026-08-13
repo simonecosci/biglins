@@ -95,8 +95,8 @@ class CompanyController extends Controller
 
     public function destroy(Company $company): RedirectResponse
     {
-        if ($company->invoices()->exists()) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => __('This company has invoices and cannot be deleted.')]);
+        if ($company->invoices()->exists() || $company->products()->exists()) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('This company has invoices or products and cannot be deleted.')]);
 
             return to_route('companies.index');
         }

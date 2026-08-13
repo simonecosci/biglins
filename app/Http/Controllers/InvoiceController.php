@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopesToCurrentCompany;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\Customer;
@@ -20,6 +21,8 @@ use Inertia\Response;
 
 class InvoiceController extends Controller
 {
+    use ScopesToCurrentCompany;
+
     public function index(Request $request): Response
     {
         $search = $request->string('search')->trim()->toString();
@@ -168,17 +171,5 @@ class InvoiceController extends Controller
         return Pdf::loadView('invoices.template', [
             'invoice' => $invoice->load(['customer.country', 'company.country', 'rows']),
         ])->download(str_replace(['/', '\\'], '-', $invoice->number).'.pdf');
-    }
-
-    private function authorizeCurrentCompany(Invoice $invoice): void
-    {
-        abort_unless($invoice->company_id === CurrentCompany::resolve()?->id, 403);
-    }
-
-    private function redirectToCreateCompany(): RedirectResponse
-    {
-        Inertia::flash('toast', ['type' => 'error', 'message' => __('Create a company before you can manage invoices or products.')]);
-
-        return to_route('companies.create');
     }
 }
