@@ -308,6 +308,10 @@ const messages = {
             deleteButton: 'Delete company',
         },
     },
+    companySwitcher: {
+        label: 'Company',
+        createFirst: 'Create your first company',
+    },
     countries: {
         index: {
             title: 'Countries',

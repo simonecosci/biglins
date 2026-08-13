@@ -316,6 +316,10 @@ const messages: MessageSchema = {
             deleteButton: 'Elimina azienda',
         },
     },
+    companySwitcher: {
+        label: 'Azienda',
+        createFirst: 'Crea la tua prima azienda',
+    },
     countries: {
         index: {
             title: 'Paesi',
