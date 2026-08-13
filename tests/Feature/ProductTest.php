@@ -1,8 +1,10 @@
 <?php
 
 use App\Enums\ProductType;
+use App\Models\Company;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 
 test('product factory creates a product', function () {
     $product = Product::factory()->create();
@@ -10,6 +12,26 @@ test('product factory creates a product', function () {
     expect($product->id)->toBeString();
     expect(strlen($product->id))->toBe(36);
     expect($product->type)->toBeInstanceOf(ProductType::class);
+});
+
+test('product belongs to a company', function () {
+    $company = Company::factory()->create();
+    $product = Product::factory()->create(['company_id' => $company->id]);
+
+    expect($product->company)->toBeInstanceOf(Company::class);
+    expect($product->company->id)->toBe($company->id);
+});
+
+test('a company can have many products', function () {
+    $company = Company::factory()->create();
+    Product::factory()->count(2)->create(['company_id' => $company->id]);
+
+    expect($company->fresh()->products)->toHaveCount(2);
+});
+
+test('a product requires a company_id at the database level', function () {
+    expect(fn () => Product::factory()->create(['company_id' => null]))
+        ->toThrow(QueryException::class);
 });
 
 test('guests are redirected to the login page when visiting products', function () {

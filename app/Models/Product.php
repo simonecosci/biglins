@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
@@ -16,10 +17,11 @@ use Illuminate\Support\Carbon;
  * @property ProductType $type
  * @property string $description
  * @property float $price
+ * @property string $company_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['code', 'type', 'description', 'price'])]
+#[Fillable(['code', 'type', 'description', 'price', 'company_id'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -36,5 +38,13 @@ class Product extends Model
             'type' => ProductType::class,
             'price' => 'float',
         ];
+    }
+
+    /**
+     * @return BelongsTo<Company, $this>
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
     }
 }
