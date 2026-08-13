@@ -27,11 +27,6 @@ type Customer = {
     name: string;
 };
 
-type Company = {
-    id: string;
-    name: string;
-};
-
 type InvoiceRow = {
     id: string;
     description: string;
@@ -63,7 +58,6 @@ type InvoiceRowForm = {
 const props = defineProps<{
     invoice: Invoice;
     customers: Customer[];
-    companies: Company[];
 }>();
 
 const { t } = useI18n();
@@ -79,7 +73,6 @@ const form = useForm({
     invoice_date: props.invoice.invoice_date,
     paid: props.invoice.paid,
     customer_id: props.invoice.customer_id,
-    company_id: props.invoice.company_id,
     note: props.invoice.note ?? '',
     language: props.invoice.language,
     rows: props.invoice.rows.map((row) => ({
@@ -225,29 +218,6 @@ function onDelete(): void {
                     </SelectContent>
                 </Select>
                 <InputError :message="form.errors.customer_id" />
-            </div>
-
-            <div class="grid gap-2">
-                <Label for="company_id">{{
-                    t('invoices.create.company')
-                }}</Label>
-                <Select v-model="form.company_id">
-                    <SelectTrigger id="company_id" class="w-full">
-                        <SelectValue
-                            :placeholder="t('invoices.create.selectCompany')"
-                        />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem
-                            v-for="company in companies"
-                            :key="company.id"
-                            :value="company.id"
-                        >
-                            {{ company.name }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
-                <InputError :message="form.errors.company_id" />
             </div>
 
             <div class="grid gap-2">

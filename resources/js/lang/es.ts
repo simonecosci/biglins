@@ -413,8 +413,6 @@ const messages: MessageSchema = {
             date: 'Fecha',
             customer: 'Cliente',
             selectCustomer: 'Selecciona un cliente',
-            company: 'Empresa emisora',
-            selectCompany: 'Selecciona una empresa',
             language: 'Idioma',
             selectLanguage: 'Selecciona un idioma',
             paid: 'Pagada',

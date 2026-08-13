@@ -396,8 +396,6 @@ const messages = {
             date: 'Date',
             customer: 'Customer',
             selectCustomer: 'Select a customer',
-            company: 'Issuing company',
-            selectCompany: 'Select a company',
             language: 'Language',
             selectLanguage: 'Select a language',
             paid: 'Paid',

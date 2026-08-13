@@ -27,11 +27,6 @@ type Customer = {
     name: string;
 };
 
-type Company = {
-    id: string;
-    name: string;
-};
-
 type InvoiceRowForm = {
     description: string;
     quantity: number;
@@ -41,12 +36,9 @@ type InvoiceRowForm = {
 
 const props = defineProps<{
     customers: Customer[];
-    companies: Company[];
-    defaultCompanyId: string | null;
     nextNumber: string;
     duplicate: {
         customer_id: string;
-        company_id: string;
         note: string | null;
         language: string;
         rows: InvoiceRowForm[];
@@ -66,7 +58,6 @@ const form = useForm({
     invoice_date: new Date().toISOString().slice(0, 10),
     paid: false,
     customer_id: props.duplicate?.customer_id ?? '',
-    company_id: props.duplicate?.company_id ?? props.defaultCompanyId ?? '',
     note: props.duplicate?.note ?? '',
     language: props.duplicate?.language ?? 'es',
     rows: props.duplicate?.rows ?? [
@@ -173,29 +164,6 @@ function submit(): void {
                     </SelectContent>
                 </Select>
                 <InputError :message="form.errors.customer_id" />
-            </div>
-
-            <div class="grid gap-2">
-                <Label for="company_id">{{
-                    t('invoices.create.company')
-                }}</Label>
-                <Select v-model="form.company_id">
-                    <SelectTrigger id="company_id" class="w-full">
-                        <SelectValue
-                            :placeholder="t('invoices.create.selectCompany')"
-                        />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem
-                            v-for="company in companies"
-                            :key="company.id"
-                            :value="company.id"
-                        >
-                            {{ company.name }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
-                <InputError :message="form.errors.company_id" />
             </div>
 
             <div class="grid gap-2">
