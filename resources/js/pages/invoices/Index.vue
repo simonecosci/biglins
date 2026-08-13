@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/vue3';
 import { Copy, Eye, FileText, Pencil, Plus } from '@lucide/vue';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import InvoiceController from '@/actions/App/Http/Controllers/InvoiceController';
 import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +25,14 @@ type PaginationLink = {
     label: string;
     active: boolean;
 };
+
+const { t } = useI18n();
+
+setLayoutProps({
+    breadcrumbs: [
+        { title: t('invoices.index.title'), href: index() },
+    ] satisfies BreadcrumbItem[],
+});
 
 const props = defineProps<{
     invoices: {
@@ -54,26 +63,21 @@ function formatDate(date: string): string {
 
     return `${day}/${month}/${year}`;
 }
-
-defineOptions({
-    layout: () => ({
-        breadcrumbs: [
-            { title: 'Invoices', href: index() },
-        ] satisfies BreadcrumbItem[],
-    }),
-});
 </script>
 
 <template>
-    <Head title="Invoices" />
+    <Head :title="t('invoices.index.title')" />
 
     <div class="flex flex-col space-y-6">
         <div class="flex items-center justify-between">
-            <Heading title="Invoices" description="Manage your invoices" />
+            <Heading
+                :title="t('invoices.index.title')"
+                :description="t('invoices.index.description')"
+            />
             <Button as-child>
                 <Link :href="create()">
                     <Plus />
-                    New invoice
+                    {{ t('invoices.index.newButton') }}
                 </Link>
             </Button>
         </div>
@@ -81,7 +85,7 @@ defineOptions({
         <form class="max-w-sm" @submit.prevent="onSearch">
             <Input
                 v-model="search"
-                placeholder="Search by number or customer..."
+                :placeholder="t('invoices.index.searchPlaceholder')"
             />
         </form>
 
@@ -89,11 +93,21 @@ defineOptions({
             <table class="w-full text-sm">
                 <thead class="bg-muted/50 text-left">
                     <tr>
-                        <th class="px-4 py-2 font-medium">Number</th>
-                        <th class="px-4 py-2 font-medium">Date</th>
-                        <th class="px-4 py-2 font-medium">Customer</th>
-                        <th class="px-4 py-2 font-medium">Paid</th>
-                        <th class="px-4 py-2 font-medium">Total</th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('invoices.index.columns.number') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('invoices.index.columns.date') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('invoices.index.columns.customer') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('invoices.index.columns.paid') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('invoices.index.columns.total') }}
+                        </th>
                         <th class="px-4 py-2"></th>
                     </tr>
                 </thead>
@@ -116,7 +130,11 @@ defineOptions({
                                     invoice.paid ? 'default' : 'secondary'
                                 "
                             >
-                                {{ invoice.paid ? 'Paid' : 'Unpaid' }}
+                                {{
+                                    invoice.paid
+                                        ? t('invoices.index.paid')
+                                        : t('invoices.index.unpaid')
+                                }}
                             </Badge>
                         </td>
                         <td class="px-4 py-2">
@@ -127,7 +145,7 @@ defineOptions({
                                 as-child
                                 variant="ghost"
                                 size="icon-sm"
-                                title="Preview"
+                                :title="t('invoices.index.preview')"
                             >
                                 <a
                                     :href="
@@ -144,7 +162,7 @@ defineOptions({
                                 as-child
                                 variant="ghost"
                                 size="icon-sm"
-                                title="PDF"
+                                :title="t('invoices.index.pdf')"
                             >
                                 <a
                                     :href="
@@ -158,7 +176,7 @@ defineOptions({
                                 as-child
                                 variant="ghost"
                                 size="icon-sm"
-                                title="Edit"
+                                :title="t('common.actions.edit')"
                             >
                                 <Link :href="edit(invoice.id)">
                                     <Pencil />
@@ -168,7 +186,7 @@ defineOptions({
                                 as-child
                                 variant="ghost"
                                 size="icon-sm"
-                                title="Duplica"
+                                :title="t('invoices.index.duplicate')"
                             >
                                 <Link
                                     :href="
@@ -187,7 +205,7 @@ defineOptions({
                             colspan="6"
                             class="px-4 py-6 text-center text-muted-foreground"
                         >
-                            No invoices found.
+                            {{ t('invoices.index.empty') }}
                         </td>
                     </tr>
                 </tbody>

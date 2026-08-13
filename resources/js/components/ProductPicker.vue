@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Search } from '@lucide/vue';
 import { nextTick, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -42,6 +43,8 @@ defineProps<{
 const emit = defineEmits<{
     select: [product: PickedProduct];
 }>();
+
+const { t } = useI18n();
 
 const open = ref(false);
 const search = ref('');
@@ -122,26 +125,26 @@ function choose(product: ProductResult): void {
                         @click="open = true"
                     >
                         <span class="sr-only">{{
-                            selectedLabel || 'From catalog'
+                            selectedLabel || t('productPicker.fallbackLabel')
                         }}</span>
                         <Search class="size-4 text-muted-foreground" />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                    <p>{{ selectedLabel || 'From catalog' }}</p>
+                    <p>{{ selectedLabel || t('productPicker.fallbackLabel') }}</p>
                 </TooltipContent>
             </Tooltip>
         </TooltipProvider>
 
         <DialogContent class="sm:max-w-lg">
             <DialogHeader>
-                <DialogTitle>Choose a product</DialogTitle>
+                <DialogTitle>{{ t('productPicker.title') }}</DialogTitle>
             </DialogHeader>
 
             <Input
                 ref="searchInput"
                 v-model="search"
-                placeholder="Search by code or description..."
+                :placeholder="t('productPicker.searchPlaceholder')"
             />
 
             <div class="max-h-80 overflow-y-auto rounded-md border">
@@ -176,7 +179,7 @@ function choose(product: ProductResult): void {
                     v-else
                     class="px-3 py-8 text-center text-sm text-muted-foreground"
                 >
-                    No products found.
+                    {{ t('productPicker.empty') }}
                 </p>
             </div>
 
@@ -191,9 +194,9 @@ function choose(product: ProductResult): void {
                     :disabled="currentPage <= 1 || loading"
                     @click="loadProducts(currentPage - 1)"
                 >
-                    Previous
+                    {{ t('common.actions.previous') }}
                 </Button>
-                <span>Page {{ currentPage }} of {{ lastPage }}</span>
+                <span>{{ t('productPicker.page', { current: currentPage, last: lastPage }) }}</span>
                 <Button
                     type="button"
                     variant="outline"
@@ -201,7 +204,7 @@ function choose(product: ProductResult): void {
                     :disabled="currentPage >= lastPage || loading"
                     @click="loadProducts(currentPage + 1)"
                 >
-                    Next
+                    {{ t('common.actions.next') }}
                 </Button>
             </div>
         </DialogContent>
