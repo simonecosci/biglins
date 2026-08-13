@@ -186,6 +186,23 @@ const messages: MessageSchema = {
     },
     dashboard: {
         title: 'Panel',
+        subscriptions: {
+            expiredLabel: 'Servicios caducados',
+            expiringSoonLabel: 'Vencen en 30 días',
+            empty: 'No hay servicios por vencer.',
+            status: {
+                expired: 'Caducado',
+                expiring_soon: 'Por vencer',
+                upcoming: 'Próximo',
+            },
+            cancelRow: 'Cancelar',
+            cancelGroup: 'Cancelar grupo',
+            renewGroup: 'Renovar grupo',
+            total: 'Total: {amount}',
+            confirmCancelRow: '¿Marcar este servicio como no renovable?',
+            confirmCancelGroup:
+                '¿Marcar todos los servicios del grupo como no renovables?',
+        },
     },
     welcome: {
         description:

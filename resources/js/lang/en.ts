@@ -173,6 +173,23 @@ const messages = {
     },
     dashboard: {
         title: 'Dashboard',
+        subscriptions: {
+            expiredLabel: 'Expired services',
+            expiringSoonLabel: 'Expiring in 30 days',
+            empty: 'No expiring services.',
+            status: {
+                expired: 'Expired',
+                expiring_soon: 'Expiring soon',
+                upcoming: 'Upcoming',
+            },
+            cancelRow: 'Cancel',
+            cancelGroup: 'Cancel group',
+            renewGroup: 'Renew group',
+            total: 'Total: {amount}',
+            confirmCancelRow: 'Mark this service as not renewing?',
+            confirmCancelGroup:
+                'Mark all services in this group as not renewing?',
+        },
     },
     welcome: {
         description:

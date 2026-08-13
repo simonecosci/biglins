@@ -1,9 +1,37 @@
 <script setup lang="ts">
 import { Head, setLayoutProps } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
-import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
+import SubscriptionsWidget from '@/components/dashboard/SubscriptionsWidget.vue';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
+
+type SubscriptionStatus = 'expired' | 'expiring_soon' | 'upcoming';
+
+type SubscriptionRow = {
+    id: string;
+    description: string;
+    price: number;
+    quantity: number;
+    expiration_date: string;
+    urgency: SubscriptionStatus;
+};
+
+type SubscriptionGroup = {
+    invoice_id: string;
+    invoice_number: string;
+    customer_name: string | null;
+    status: SubscriptionStatus;
+    total: number;
+    rows: SubscriptionRow[];
+};
+
+const props = defineProps<{
+    subscriptions: {
+        expiredCount: number;
+        expiringSoonCount: number;
+        groups: SubscriptionGroup[];
+    };
+}>();
 
 const { t } = useI18n();
 
@@ -23,27 +51,10 @@ setLayoutProps({
     <div
         class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
     >
-        <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div
-                class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-            >
-                <PlaceholderPattern />
-            </div>
-            <div
-                class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-            >
-                <PlaceholderPattern />
-            </div>
-            <div
-                class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-            >
-                <PlaceholderPattern />
-            </div>
-        </div>
-        <div
-            class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border"
-        >
-            <PlaceholderPattern />
-        </div>
+        <SubscriptionsWidget
+            :expired-count="props.subscriptions.expiredCount"
+            :expiring-soon-count="props.subscriptions.expiringSoonCount"
+            :groups="props.subscriptions.groups"
+        />
     </div>
 </template>

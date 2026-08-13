@@ -181,6 +181,24 @@ const messages: MessageSchema = {
     },
     dashboard: {
         title: 'Dashboard',
+        subscriptions: {
+            expiredLabel: 'Servizi scaduti',
+            expiringSoonLabel: 'In scadenza nei prossimi 30 giorni',
+            empty: 'Nessun servizio in scadenza.',
+            status: {
+                expired: 'Scaduto',
+                expiring_soon: 'In scadenza',
+                upcoming: 'Futuro',
+            },
+            cancelRow: 'Annulla',
+            cancelGroup: 'Annulla gruppo',
+            renewGroup: 'Rinnova gruppo',
+            total: 'Totale: {amount}',
+            confirmCancelRow:
+                'Contrassegnare questo servizio come non da rinnovare?',
+            confirmCancelGroup:
+                'Contrassegnare tutti i servizi del gruppo come non da rinnovare?',
+        },
     },
     welcome: {
         description:
