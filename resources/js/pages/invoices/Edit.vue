@@ -27,6 +27,8 @@ type Customer = {
     name: string;
 };
 
+type SubscriptionStatus = 'active' | 'cancelled';
+
 type InvoiceRow = {
     id: string;
     description: string;
@@ -34,6 +36,7 @@ type InvoiceRow = {
     price: number;
     vat_rate: number;
     expiration_date: string | null;
+    subscription_status: SubscriptionStatus;
 };
 
 type Invoice = {
@@ -55,6 +58,7 @@ type InvoiceRowForm = {
     price: number;
     vat_rate: number;
     expiration_date: string | null;
+    subscription_status?: SubscriptionStatus;
 };
 
 const props = defineProps<{
@@ -84,6 +88,7 @@ const form = useForm({
         price: row.price,
         vat_rate: row.vat_rate,
         expiration_date: row.expiration_date,
+        subscription_status: row.subscription_status,
     })) as InvoiceRowForm[],
 });
 
@@ -103,8 +108,26 @@ function addRow(): void {
 }
 
 function removeRow(index: number): void {
+    if (!confirm(t('invoices.create.confirmRemoveRow'))) {
+        return;
+    }
+
     form.rows.splice(index, 1);
     selectedProducts.value.splice(index, 1);
+}
+
+function toggleSubscription(
+    row: InvoiceRowForm,
+    checked: boolean | 'indeterminate',
+): void {
+    row.expiration_date = checked === true ? (row.expiration_date ?? '') : null;
+}
+
+function toggleSubscriptionActive(
+    row: InvoiceRowForm,
+    checked: boolean | 'indeterminate',
+): void {
+    row.subscription_status = checked === true ? 'active' : 'cancelled';
 }
 
 function productLabel(product: PickedProduct | undefined): string | null {
@@ -148,7 +171,7 @@ function onDelete(): void {
 <template>
     <Head :title="t('invoices.edit.title')" />
 
-    <div class="flex max-w-2xl flex-col space-y-6">
+    <div class="flex max-w-5xl flex-col space-y-6">
         <Heading
             :title="t('invoices.edit.title')"
             :description="
@@ -209,46 +232,52 @@ function onDelete(): void {
                 </div>
             </div>
 
-            <div class="grid gap-2">
-                <Label for="customer_id">{{
-                    t('invoices.create.customer')
-                }}</Label>
-                <Select v-model="form.customer_id">
-                    <SelectTrigger id="customer_id" class="w-full">
-                        <SelectValue
-                            :placeholder="t('invoices.create.selectCustomer')"
-                        />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem
-                            v-for="customer in customers"
-                            :key="customer.id"
-                            :value="customer.id"
-                        >
-                            {{ customer.name }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
-                <InputError :message="form.errors.customer_id" />
-            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="grid gap-2">
+                    <Label for="customer_id">{{
+                        t('invoices.create.customer')
+                    }}</Label>
+                    <Select v-model="form.customer_id">
+                        <SelectTrigger id="customer_id" class="w-full">
+                            <SelectValue
+                                :placeholder="
+                                    t('invoices.create.selectCustomer')
+                                "
+                            />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem
+                                v-for="customer in customers"
+                                :key="customer.id"
+                                :value="customer.id"
+                            >
+                                {{ customer.name }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <InputError :message="form.errors.customer_id" />
+                </div>
 
-            <div class="grid gap-2">
-                <Label for="language">{{
-                    t('invoices.create.language')
-                }}</Label>
-                <Select v-model="form.language">
-                    <SelectTrigger id="language" class="w-full">
-                        <SelectValue
-                            :placeholder="t('invoices.create.selectLanguage')"
-                        />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="it">Italiano</SelectItem>
-                        <SelectItem value="en">English</SelectItem>
-                        <SelectItem value="es">Español</SelectItem>
-                    </SelectContent>
-                </Select>
-                <InputError :message="form.errors.language" />
+                <div class="grid gap-2">
+                    <Label for="language">{{
+                        t('invoices.create.language')
+                    }}</Label>
+                    <Select v-model="form.language">
+                        <SelectTrigger id="language" class="w-full">
+                            <SelectValue
+                                :placeholder="
+                                    t('invoices.create.selectLanguage')
+                                "
+                            />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="it">Italiano</SelectItem>
+                            <SelectItem value="en">English</SelectItem>
+                            <SelectItem value="es">Español</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <InputError :message="form.errors.language" />
+                </div>
             </div>
 
             <div class="flex items-center gap-2">
@@ -284,21 +313,25 @@ function onDelete(): void {
                 <InputError :message="form.errors.rows" />
 
                 <div
-                    class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_8rem_2.5rem] gap-2 text-sm text-muted-foreground"
+                    class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_5rem_8rem_5rem_2.5rem] gap-2 text-sm text-muted-foreground"
                 >
                     <span></span>
                     <span>{{ t('invoices.create.rowDescription') }}</span>
                     <span>{{ t('invoices.create.rowQuantity') }}</span>
                     <span>{{ t('invoices.create.rowPrice') }}</span>
                     <span>{{ t('invoices.create.rowVat') }}</span>
+                    <span>{{ t('invoices.create.rowIsSubscription') }}</span>
                     <span>{{ t('invoices.create.rowExpirationDate') }}</span>
+                    <span>{{
+                        t('invoices.create.rowSubscriptionActive')
+                    }}</span>
                     <span></span>
                 </div>
 
                 <div
                     v-for="(row, i) in form.rows"
                     :key="row.id ?? `new-${i}`"
-                    class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_8rem_2.5rem] items-start gap-2"
+                    class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_5rem_8rem_5rem_2.5rem] items-start gap-2"
                 >
                     <ProductPicker
                         :selected-label="productLabel(selectedProducts[i])"
@@ -307,6 +340,7 @@ function onDelete(): void {
                     <div class="grid gap-1">
                         <Input
                             v-model="row.description"
+                            class="md:text-base"
                             :placeholder="t('invoices.create.rowDescription')"
                         />
                         <InputError
@@ -350,19 +384,47 @@ function onDelete(): void {
                             :message="form.errors[`rows.${i}.vat_rate`]"
                         />
                     </div>
-                    <div class="grid gap-1">
-                        <Input
-                            :model-value="row.expiration_date ?? undefined"
-                            type="date"
+                    <div class="flex items-center justify-center pt-2">
+                        <Checkbox
+                            :model-value="row.expiration_date !== null"
+                            :aria-label="t('invoices.create.rowIsSubscription')"
                             @update:model-value="
-                                (value) =>
-                                    (row.expiration_date = value
-                                        ? String(value)
-                                        : null)
+                                (checked) => toggleSubscription(row, checked)
                             "
                         />
-                        <InputError
-                            :message="form.errors[`rows.${i}.expiration_date`]"
+                    </div>
+                    <div class="grid gap-1">
+                        <template v-if="row.expiration_date !== null">
+                            <Input
+                                :model-value="row.expiration_date ?? undefined"
+                                type="date"
+                                @update:model-value="
+                                    (value) =>
+                                        (row.expiration_date = value
+                                            ? String(value)
+                                            : null)
+                                "
+                            />
+                            <InputError
+                                :message="
+                                    form.errors[`rows.${i}.expiration_date`]
+                                "
+                            />
+                        </template>
+                    </div>
+                    <div class="flex items-center justify-center pt-2">
+                        <Checkbox
+                            v-if="row.id && row.expiration_date !== null"
+                            :model-value="
+                                row.subscription_status !== 'cancelled'
+                            "
+                            :aria-label="
+                                t('invoices.create.rowSubscriptionActive')
+                            "
+                            @update:model-value="
+                                (checked) =>
+                                    toggleSubscriptionActive(row, checked)
+                            "
                         />
                     </div>
                     <Button

@@ -644,6 +644,56 @@ test('invoice create page includes the row expiration date when duplicating', fu
     );
 });
 
+test('updating an invoice can reactivate a cancelled row', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $invoice = Invoice::factory()->create(['company_id' => $company->id]);
+    $row = InvoiceRow::factory()->create([
+        'invoice_id' => $invoice->id,
+        'expiration_date' => '2026-09-01',
+        'subscription_status' => SubscriptionStatus::Cancelled,
+    ]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->put(route('invoices.update', $invoice), [
+        'number' => $invoice->number,
+        'invoice_date' => $invoice->invoice_date->format('Y-m-d'),
+        'paid' => $invoice->paid,
+        'customer_id' => $invoice->customer_id,
+        'language' => $invoice->language,
+        'rows' => [
+            ['id' => $row->id, 'description' => $row->description, 'quantity' => $row->quantity, 'price' => $row->price, 'vat_rate' => $row->vat_rate, 'expiration_date' => '2026-09-01', 'subscription_status' => 'active'],
+        ],
+    ]);
+
+    $response->assertSessionHasNoErrors();
+    expect($row->fresh()->subscription_status)->toBe(SubscriptionStatus::Active);
+});
+
+test('updating an invoice can cancel an active row', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $invoice = Invoice::factory()->create(['company_id' => $company->id]);
+    $row = InvoiceRow::factory()->create([
+        'invoice_id' => $invoice->id,
+        'expiration_date' => '2026-09-01',
+        'subscription_status' => SubscriptionStatus::Active,
+    ]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->put(route('invoices.update', $invoice), [
+        'number' => $invoice->number,
+        'invoice_date' => $invoice->invoice_date->format('Y-m-d'),
+        'paid' => $invoice->paid,
+        'customer_id' => $invoice->customer_id,
+        'language' => $invoice->language,
+        'rows' => [
+            ['id' => $row->id, 'description' => $row->description, 'quantity' => $row->quantity, 'price' => $row->price, 'vat_rate' => $row->vat_rate, 'expiration_date' => '2026-09-01', 'subscription_status' => 'cancelled'],
+        ],
+    ]);
+
+    $response->assertSessionHasNoErrors();
+    expect($row->fresh()->subscription_status)->toBe(SubscriptionStatus::Cancelled);
+});
+
 test('invoice create page ignores an invalid duplicate id', function () {
     $user = User::factory()->create();
     $company = Company::factory()->create();

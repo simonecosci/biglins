@@ -439,8 +439,11 @@ const messages: MessageSchema = {
             rowPrice: 'Prezzo',
             rowVat: 'IVA (%)',
             rowVatPlaceholder: 'IVA %',
+            rowIsSubscription: 'A rinnovo',
             rowExpirationDate: 'Data di scadenza',
+            rowSubscriptionActive: 'Attivo',
             total: 'Totale: {amount}',
+            confirmRemoveRow: 'Rimuovere questa riga?',
         },
         edit: {
             title: 'Modifica fattura',

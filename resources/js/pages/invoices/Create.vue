@@ -88,8 +88,19 @@ function addRow(): void {
 }
 
 function removeRow(index: number): void {
+    if (!confirm(t('invoices.create.confirmRemoveRow'))) {
+        return;
+    }
+
     form.rows.splice(index, 1);
     selectedProducts.value.splice(index, 1);
+}
+
+function toggleSubscription(
+    row: InvoiceRowForm,
+    checked: boolean | 'indeterminate',
+): void {
+    row.expiration_date = checked === true ? (row.expiration_date ?? '') : null;
 }
 
 function productLabel(product: PickedProduct | undefined): string | null {
@@ -127,7 +138,7 @@ function submit(): void {
 <template>
     <Head :title="t('invoices.create.title')" />
 
-    <div class="flex max-w-2xl flex-col space-y-6">
+    <div class="flex max-w-5xl flex-col space-y-6">
         <Heading
             :title="t('invoices.create.title')"
             :description="t('invoices.create.description')"
@@ -159,46 +170,52 @@ function submit(): void {
                 </div>
             </div>
 
-            <div class="grid gap-2">
-                <Label for="customer_id">{{
-                    t('invoices.create.customer')
-                }}</Label>
-                <Select v-model="form.customer_id">
-                    <SelectTrigger id="customer_id" class="w-full">
-                        <SelectValue
-                            :placeholder="t('invoices.create.selectCustomer')"
-                        />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem
-                            v-for="customer in customers"
-                            :key="customer.id"
-                            :value="customer.id"
-                        >
-                            {{ customer.name }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
-                <InputError :message="form.errors.customer_id" />
-            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="grid gap-2">
+                    <Label for="customer_id">{{
+                        t('invoices.create.customer')
+                    }}</Label>
+                    <Select v-model="form.customer_id">
+                        <SelectTrigger id="customer_id" class="w-full">
+                            <SelectValue
+                                :placeholder="
+                                    t('invoices.create.selectCustomer')
+                                "
+                            />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem
+                                v-for="customer in customers"
+                                :key="customer.id"
+                                :value="customer.id"
+                            >
+                                {{ customer.name }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <InputError :message="form.errors.customer_id" />
+                </div>
 
-            <div class="grid gap-2">
-                <Label for="language">{{
-                    t('invoices.create.language')
-                }}</Label>
-                <Select v-model="form.language">
-                    <SelectTrigger id="language" class="w-full">
-                        <SelectValue
-                            :placeholder="t('invoices.create.selectLanguage')"
-                        />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="it">Italiano</SelectItem>
-                        <SelectItem value="en">English</SelectItem>
-                        <SelectItem value="es">Español</SelectItem>
-                    </SelectContent>
-                </Select>
-                <InputError :message="form.errors.language" />
+                <div class="grid gap-2">
+                    <Label for="language">{{
+                        t('invoices.create.language')
+                    }}</Label>
+                    <Select v-model="form.language">
+                        <SelectTrigger id="language" class="w-full">
+                            <SelectValue
+                                :placeholder="
+                                    t('invoices.create.selectLanguage')
+                                "
+                            />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="it">Italiano</SelectItem>
+                            <SelectItem value="en">English</SelectItem>
+                            <SelectItem value="es">Español</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <InputError :message="form.errors.language" />
+                </div>
             </div>
 
             <div class="flex items-center gap-2">
@@ -234,13 +251,14 @@ function submit(): void {
                 <InputError :message="form.errors.rows" />
 
                 <div
-                    class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_8rem_2.5rem] gap-2 text-sm text-muted-foreground"
+                    class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_5rem_8rem_2.5rem] gap-2 text-sm text-muted-foreground"
                 >
                     <span></span>
                     <span>{{ t('invoices.create.rowDescription') }}</span>
                     <span>{{ t('invoices.create.rowQuantity') }}</span>
                     <span>{{ t('invoices.create.rowPrice') }}</span>
                     <span>{{ t('invoices.create.rowVat') }}</span>
+                    <span>{{ t('invoices.create.rowIsSubscription') }}</span>
                     <span>{{ t('invoices.create.rowExpirationDate') }}</span>
                     <span></span>
                 </div>
@@ -248,7 +266,7 @@ function submit(): void {
                 <div
                     v-for="(row, i) in form.rows"
                     :key="i"
-                    class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_8rem_2.5rem] items-start gap-2"
+                    class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_5rem_8rem_2.5rem] items-start gap-2"
                 >
                     <ProductPicker
                         :selected-label="productLabel(selectedProducts[i])"
@@ -257,6 +275,7 @@ function submit(): void {
                     <div class="grid gap-1">
                         <Input
                             v-model="row.description"
+                            class="md:text-base"
                             :placeholder="t('invoices.create.rowDescription')"
                         />
                         <InputError
@@ -300,20 +319,33 @@ function submit(): void {
                             :message="form.errors[`rows.${i}.vat_rate`]"
                         />
                     </div>
-                    <div class="grid gap-1">
-                        <Input
-                            :model-value="row.expiration_date ?? undefined"
-                            type="date"
+                    <div class="flex items-center justify-center pt-2">
+                        <Checkbox
+                            :model-value="row.expiration_date !== null"
+                            :aria-label="t('invoices.create.rowIsSubscription')"
                             @update:model-value="
-                                (value) =>
-                                    (row.expiration_date = value
-                                        ? String(value)
-                                        : null)
+                                (checked) => toggleSubscription(row, checked)
                             "
                         />
-                        <InputError
-                            :message="form.errors[`rows.${i}.expiration_date`]"
-                        />
+                    </div>
+                    <div class="grid gap-1">
+                        <template v-if="row.expiration_date !== null">
+                            <Input
+                                :model-value="row.expiration_date ?? undefined"
+                                type="date"
+                                @update:model-value="
+                                    (value) =>
+                                        (row.expiration_date = value
+                                            ? String(value)
+                                            : null)
+                                "
+                            />
+                            <InputError
+                                :message="
+                                    form.errors[`rows.${i}.expiration_date`]
+                                "
+                            />
+                        </template>
                     </div>
                     <Button
                         type="button"

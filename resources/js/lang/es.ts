@@ -444,8 +444,11 @@ const messages: MessageSchema = {
             rowPrice: 'Precio',
             rowVat: 'IGIC (%)',
             rowVatPlaceholder: 'IGIC %',
+            rowIsSubscription: 'Renovable',
             rowExpirationDate: 'Fecha de vencimiento',
+            rowSubscriptionActive: 'Activo',
             total: 'Total: {amount}',
+            confirmRemoveRow: '¿Eliminar esta línea?',
         },
         edit: {
             title: 'Editar factura',

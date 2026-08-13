@@ -427,8 +427,11 @@ const messages = {
             rowPrice: 'Price',
             rowVat: 'VAT (%)',
             rowVatPlaceholder: 'VAT %',
+            rowIsSubscription: 'Renews',
             rowExpirationDate: 'Expiration date',
+            rowSubscriptionActive: 'Active',
             total: 'Total: {amount}',
+            confirmRemoveRow: 'Remove this row?',
         },
         edit: {
             title: 'Edit invoice',
