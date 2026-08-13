@@ -619,6 +619,31 @@ test('invoice create page prefills from a duplicate query param', function () {
     );
 });
 
+test('invoice create page includes the row expiration date when duplicating', function () {
+    $user = User::factory()->create();
+    $customer = Customer::factory()->create();
+    $currentCompany = Company::factory()->create();
+    $sourceCompany = Company::factory()->create();
+    $source = Invoice::factory()->create([
+        'customer_id' => $customer->id,
+        'company_id' => $sourceCompany->id,
+        'language' => 'en',
+    ]);
+    InvoiceRow::factory()->create([
+        'invoice_id' => $source->id,
+        'description' => 'Hosting',
+        'expiration_date' => '2026-09-01',
+    ]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $currentCompany->id])->get(route('invoices.create', ['duplicate' => $source->id]));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('invoices/Create')
+        ->where('duplicate.rows.0.expiration_date', '2026-09-01')
+    );
+});
+
 test('invoice create page ignores an invalid duplicate id', function () {
     $user = User::factory()->create();
     $company = Company::factory()->create();

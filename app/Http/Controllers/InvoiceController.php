@@ -71,6 +71,7 @@ class InvoiceController extends Controller
                     'quantity' => $row->quantity,
                     'price' => $row->price,
                     'vat_rate' => $row->vat_rate,
+                    'expiration_date' => $row->expiration_date?->format('Y-m-d'),
                 ])->all(),
             ] : null,
         ]);
