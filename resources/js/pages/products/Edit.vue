@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Form, Head, Link, router } from '@inertiajs/vue3';
+import { Form, Head, Link, router, setLayoutProps } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import ProductController from '@/actions/App/Http/Controllers/ProductController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -28,28 +29,28 @@ const props = defineProps<{
     product: Product;
 }>();
 
-defineOptions({
-    layout: () => ({
-        breadcrumbs: [
-            { title: 'Products', href: index() },
-        ] satisfies BreadcrumbItem[],
-    }),
+const { t } = useI18n();
+
+setLayoutProps({
+    breadcrumbs: [
+        { title: t('products.index.title'), href: index() },
+    ] satisfies BreadcrumbItem[],
 });
 
 function onDelete(): void {
-    if (confirm('Delete this product? This cannot be undone.')) {
+    if (confirm(t('products.edit.confirmDelete'))) {
         router.delete(ProductController.destroy(props.product.id).url);
     }
 }
 </script>
 
 <template>
-    <Head title="Edit product" />
+    <Head :title="t('products.edit.title')" />
 
     <div class="flex max-w-lg flex-col space-y-6">
         <Heading
-            title="Edit product"
-            :description="`Update ${product.description}`"
+            :title="t('products.edit.title')"
+            :description="t('products.edit.description', { name: product.description })"
         />
 
         <Form
@@ -59,25 +60,25 @@ function onDelete(): void {
         >
             <div class="grid grid-cols-2 gap-4">
                 <div class="grid gap-2">
-                    <Label for="code">Code</Label>
+                    <Label for="code">{{ t('products.create.code') }}</Label>
                     <Input
                         id="code"
                         name="code"
                         :default-value="product.code ?? undefined"
                         autofocus
-                        placeholder="Optional code"
+                        :placeholder="t('products.create.codePlaceholder')"
                     />
                     <InputError :message="errors.code" />
                 </div>
                 <div class="grid gap-2">
-                    <Label for="type">Type</Label>
+                    <Label for="type">{{ t('products.create.type') }}</Label>
                     <Select name="type" :default-value="product.type">
                         <SelectTrigger id="type" class="w-full">
-                            <SelectValue placeholder="Select a type" />
+                            <SelectValue :placeholder="t('products.create.selectType')" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="product">Product</SelectItem>
-                            <SelectItem value="service">Service</SelectItem>
+                            <SelectItem value="product">{{ t('products.type.product') }}</SelectItem>
+                            <SelectItem value="service">{{ t('products.type.service') }}</SelectItem>
                         </SelectContent>
                     </Select>
                     <InputError :message="errors.type" />
@@ -85,19 +86,19 @@ function onDelete(): void {
             </div>
 
             <div class="grid gap-2">
-                <Label for="description">Description</Label>
+                <Label for="description">{{ t('products.create.descriptionLabel') }}</Label>
                 <Input
                     id="description"
                     name="description"
                     :default-value="product.description"
                     required
-                    placeholder="Description"
+                    :placeholder="t('products.create.descriptionPlaceholder')"
                 />
                 <InputError :message="errors.description" />
             </div>
 
             <div class="grid gap-2">
-                <Label for="price">Price</Label>
+                <Label for="price">{{ t('products.create.price') }}</Label>
                 <Input
                     id="price"
                     name="price"
@@ -106,25 +107,25 @@ function onDelete(): void {
                     min="0"
                     :default-value="product.price"
                     required
-                    placeholder="Price"
+                    :placeholder="t('products.create.pricePlaceholder')"
                 />
                 <InputError :message="errors.price" />
             </div>
 
             <div class="flex items-center gap-4 pt-2">
-                <Button :disabled="processing" type="submit">Save</Button>
+                <Button :disabled="processing" type="submit">{{ t('common.actions.save') }}</Button>
                 <Link
                     :href="index()"
                     class="text-sm text-muted-foreground hover:underline"
                 >
-                    Cancel
+                    {{ t('common.actions.cancel') }}
                 </Link>
             </div>
         </Form>
 
         <div class="border-t pt-6">
             <Button variant="destructive" type="button" @click="onDelete">
-                Delete product
+                {{ t('products.edit.deleteButton') }}
             </Button>
         </div>
     </div>

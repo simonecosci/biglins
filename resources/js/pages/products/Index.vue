@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/vue3';
 import { Pencil, Plus } from '@lucide/vue';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,10 +35,12 @@ const props = defineProps<{
 
 const search = ref(props.filters.search);
 
-const typeLabels: Record<Product['type'], string> = {
-    product: 'Product',
-    service: 'Service',
-};
+const { t } = useI18n();
+
+const typeLabels = computed<Record<Product['type'], string>>(() => ({
+    product: t('products.type.product'),
+    service: t('products.type.service'),
+}));
 
 function onSearch(): void {
     router.get(
@@ -47,28 +50,26 @@ function onSearch(): void {
     );
 }
 
-defineOptions({
-    layout: () => ({
-        breadcrumbs: [
-            { title: 'Products', href: index() },
-        ] satisfies BreadcrumbItem[],
-    }),
+setLayoutProps({
+    breadcrumbs: [
+        { title: t('products.index.title'), href: index() },
+    ] satisfies BreadcrumbItem[],
 });
 </script>
 
 <template>
-    <Head title="Products" />
+    <Head :title="t('products.index.title')" />
 
     <div class="flex flex-col space-y-6">
         <div class="flex items-center justify-between">
             <Heading
-                title="Products"
-                description="Manage your product and service catalog"
+                :title="t('products.index.title')"
+                :description="t('products.index.description')"
             />
             <Button as-child>
                 <Link :href="create()">
                     <Plus />
-                    New product
+                    {{ t('products.index.newButton') }}
                 </Link>
             </Button>
         </div>
@@ -76,7 +77,7 @@ defineOptions({
         <form class="max-w-sm" @submit.prevent="onSearch">
             <Input
                 v-model="search"
-                placeholder="Search by code or description..."
+                :placeholder="t('products.index.searchPlaceholder')"
             />
         </form>
 
@@ -84,10 +85,10 @@ defineOptions({
             <table class="w-full text-sm">
                 <thead class="bg-muted/50 text-left">
                     <tr>
-                        <th class="px-4 py-2 font-medium">Code</th>
-                        <th class="px-4 py-2 font-medium">Type</th>
-                        <th class="px-4 py-2 font-medium">Description</th>
-                        <th class="px-4 py-2 font-medium">Price</th>
+                        <th class="px-4 py-2 font-medium">{{ t('products.index.columns.code') }}</th>
+                        <th class="px-4 py-2 font-medium">{{ t('products.index.columns.type') }}</th>
+                        <th class="px-4 py-2 font-medium">{{ t('products.index.columns.description') }}</th>
+                        <th class="px-4 py-2 font-medium">{{ t('products.index.columns.price') }}</th>
                         <th class="px-4 py-2"></th>
                     </tr>
                 </thead>
@@ -110,7 +111,7 @@ defineOptions({
                                 as-child
                                 variant="ghost"
                                 size="icon-sm"
-                                title="Edit"
+                                :title="t('common.actions.edit')"
                             >
                                 <Link :href="edit(product.id)">
                                     <Pencil />
@@ -123,7 +124,7 @@ defineOptions({
                             colspan="5"
                             class="px-4 py-6 text-center text-muted-foreground"
                         >
-                            No products found.
+                            {{ t('products.index.empty') }}
                         </td>
                     </tr>
                 </tbody>

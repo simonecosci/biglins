@@ -304,6 +304,35 @@ const messages: MessageSchema = {
             deleteButton: 'Elimina cliente',
         },
     },
+    products: {
+        type: { product: 'Prodotto', service: 'Servizio' },
+        index: {
+            title: 'Prodotti',
+            description: 'Gestisci il tuo catalogo di prodotti e servizi',
+            newButton: 'Nuovo prodotto',
+            searchPlaceholder: 'Cerca per codice o descrizione...',
+            columns: { code: 'Codice', type: 'Tipo', description: 'Descrizione', price: 'Prezzo' },
+            empty: 'Nessun prodotto trovato.',
+        },
+        create: {
+            title: 'Nuovo prodotto',
+            description: 'Aggiungi un prodotto o servizio al catalogo',
+            code: 'Codice',
+            codePlaceholder: 'Codice opzionale',
+            type: 'Tipo',
+            selectType: 'Seleziona un tipo',
+            descriptionLabel: 'Descrizione',
+            descriptionPlaceholder: 'Descrizione',
+            price: 'Prezzo',
+            pricePlaceholder: 'Prezzo',
+        },
+        edit: {
+            title: 'Modifica prodotto',
+            description: 'Aggiorna {name}',
+            confirmDelete: "Eliminare questo prodotto? L'azione non può essere annullata.",
+            deleteButton: 'Elimina prodotto',
+        },
+    },
 };
 
 export default messages;

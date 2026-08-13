@@ -299,6 +299,35 @@ const messages = {
             deleteButton: 'Delete customer',
         },
     },
+    products: {
+        type: { product: 'Product', service: 'Service' },
+        index: {
+            title: 'Products',
+            description: 'Manage your product and service catalog',
+            newButton: 'New product',
+            searchPlaceholder: 'Search by code or description...',
+            columns: { code: 'Code', type: 'Type', description: 'Description', price: 'Price' },
+            empty: 'No products found.',
+        },
+        create: {
+            title: 'New product',
+            description: 'Add a product or service to the catalog',
+            code: 'Code',
+            codePlaceholder: 'Optional code',
+            type: 'Type',
+            selectType: 'Select a type',
+            descriptionLabel: 'Description',
+            descriptionPlaceholder: 'Description',
+            price: 'Price',
+            pricePlaceholder: 'Price',
+        },
+        edit: {
+            title: 'Edit product',
+            description: 'Update {name}',
+            confirmDelete: 'Delete this product? This cannot be undone.',
+            deleteButton: 'Delete product',
+        },
+    },
 };
 
 export default messages;
