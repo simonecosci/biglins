@@ -271,9 +271,9 @@ function onDelete(): void {
                 <InputError :message="form.errors.rows" />
 
                 <div
-                    class="grid grid-cols-[12rem_1fr_6rem_8rem_6rem_2.5rem] gap-2 text-sm text-muted-foreground"
+                    class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_2.5rem] gap-2 text-sm text-muted-foreground"
                 >
-                    <span>Product</span>
+                    <span></span>
                     <span>Description</span>
                     <span>Quantity</span>
                     <span>Price</span>
@@ -284,7 +284,7 @@ function onDelete(): void {
                 <div
                     v-for="(row, i) in form.rows"
                     :key="row.id ?? `new-${i}`"
-                    class="grid grid-cols-[12rem_1fr_6rem_8rem_6rem_2.5rem] items-start gap-2"
+                    class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_2.5rem] items-start gap-2"
                 >
                     <ProductPicker
                         :selected-label="productLabel(selectedProducts[i])"

@@ -10,6 +10,12 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { index } from '@/routes/products';
 
 export type PickedProduct = {
@@ -106,17 +112,26 @@ function choose(product: ProductResult): void {
 
 <template>
     <Dialog v-model:open="open">
-        <Button
-            type="button"
-            variant="outline"
-            class="w-full justify-start truncate font-normal"
-            @click="open = true"
-        >
-            <Search class="size-4 shrink-0 text-muted-foreground" />
-            <span class="truncate">
-                {{ selectedLabel || 'From catalog' }}
-            </span>
-        </Button>
+        <TooltipProvider :delay-duration="0">
+            <Tooltip>
+                <TooltipTrigger as-child>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        @click="open = true"
+                    >
+                        <span class="sr-only">{{
+                            selectedLabel || 'From catalog'
+                        }}</span>
+                        <Search class="size-4 text-muted-foreground" />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>{{ selectedLabel || 'From catalog' }}</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
 
         <DialogContent class="sm:max-w-lg">
             <DialogHeader>
