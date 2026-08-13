@@ -20,6 +20,8 @@ declare module '@inertiajs/core' {
             version: string | null;
             auth: Auth;
             sidebarOpen: boolean;
+            locale: string;
+            locales: string[];
             [key: string]: unknown;
         };
     }
