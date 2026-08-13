@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\SetLocale;
 use App\Http\Requests\Settings\LanguageUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,10 @@ class LanguageController extends Controller
      */
     public function edit(Request $request): Response
     {
-        return Inertia::render('settings/Language');
+        return Inertia::render('settings/Language', [
+            'locale' => $request->user()->locale,
+            'locales' => SetLocale::SUPPORTED_LOCALES,
+        ]);
     }
 
     /**

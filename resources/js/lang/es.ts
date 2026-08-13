@@ -26,6 +26,26 @@ const messages: MessageSchema = {
         dark: 'Oscuro',
         system: 'Sistema',
     },
+    settings: {
+        title: 'Configuración',
+        description: 'Gestiona tu perfil y la configuración de la cuenta',
+        nav: {
+            profile: 'Perfil',
+            security: 'Seguridad',
+            appearance: 'Apariencia',
+            language: 'Idioma',
+        },
+        language: {
+            title: 'Configuración de idioma',
+            description: 'Elige el idioma utilizado en toda la aplicación',
+            label: 'Idioma',
+            options: {
+                en: 'English',
+                it: 'Italiano',
+                es: 'Español',
+            },
+        },
+    },
 };
 
 export default messages;

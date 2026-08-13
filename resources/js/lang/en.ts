@@ -24,6 +24,26 @@ const messages = {
         dark: 'Dark',
         system: 'System',
     },
+    settings: {
+        title: 'Settings',
+        description: 'Manage your profile and account settings',
+        nav: {
+            profile: 'Profile',
+            security: 'Security',
+            appearance: 'Appearance',
+            language: 'Language',
+        },
+        language: {
+            title: 'Language settings',
+            description: 'Choose the language used across the application',
+            label: 'Language',
+            options: {
+                en: 'English',
+                it: 'Italiano',
+                es: 'Español',
+            },
+        },
+    },
 };
 
 export default messages;
