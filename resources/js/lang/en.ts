@@ -6,6 +6,7 @@ const messages = {
             edit: 'Edit',
             previous: 'Previous',
             next: 'Next',
+            addRow: 'Add row',
         },
         fields: {
             name: 'Name',
@@ -17,6 +18,7 @@ const messages = {
             selectCountry: 'Select a country',
             phone: 'Phone number',
         },
+        errorTitle: 'Something went wrong.',
     },
     appearance: {
         light: 'Light',
@@ -31,6 +33,10 @@ const messages = {
             security: 'Security',
             appearance: 'Appearance',
             language: 'Language',
+        },
+        appearance: {
+            title: 'Appearance settings',
+            description: 'Update the appearance settings for your account',
         },
         language: {
             title: 'Language settings',
@@ -87,6 +93,11 @@ const messages = {
             enabledIntro:
                 'You will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.',
             disable: 'Disable 2FA',
+            errors: {
+                qrCode: 'Failed to fetch QR code',
+                setupKey: 'Failed to fetch a setup key',
+                recoveryCodes: 'Failed to fetch recovery codes',
+            },
             recoveryCodes: {
                 title: '2FA recovery codes',
                 description:
@@ -146,6 +157,7 @@ const messages = {
         hide: 'Hide password',
     },
     nav: {
+        platform: 'Platform',
         dashboard: 'Dashboard',
         customers: 'Customers',
         companies: 'Companies',
@@ -154,6 +166,10 @@ const messages = {
         countries: 'Countries',
         repository: 'Repository',
         documentation: 'Documentation',
+    },
+    userMenu: {
+        settings: 'Settings',
+        logout: 'Log out',
     },
     dashboard: {
         title: 'Dashboard',
@@ -384,7 +400,6 @@ const messages = {
             note: 'Note',
             notePlaceholder: 'Optional note',
             rows: 'Rows',
-            addRow: 'Add row',
             rowDescription: 'Description',
             rowQuantity: 'Quantity',
             rowPrice: 'Price',

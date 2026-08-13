@@ -8,6 +8,7 @@ const messages: MessageSchema = {
             edit: 'Modifica',
             previous: 'Precedente',
             next: 'Successivo',
+            addRow: 'Aggiungi riga',
         },
         fields: {
             name: 'Nome',
@@ -19,6 +20,7 @@ const messages: MessageSchema = {
             selectCountry: 'Seleziona un paese',
             phone: 'Numero di telefono',
         },
+        errorTitle: 'Qualcosa è andato storto.',
     },
     appearance: {
         light: 'Chiaro',
@@ -33,6 +35,11 @@ const messages: MessageSchema = {
             security: 'Sicurezza',
             appearance: 'Aspetto',
             language: 'Lingua',
+        },
+        appearance: {
+            title: 'Impostazioni aspetto',
+            description:
+                "Aggiorna le impostazioni dell'aspetto del tuo account",
         },
         language: {
             title: 'Impostazioni lingua',
@@ -91,6 +98,11 @@ const messages: MessageSchema = {
             enabledIntro:
                 "Ti verrà richiesto un pin sicuro e casuale durante l'accesso, che puoi recuperare dall'applicazione TOTP sul tuo telefono.",
             disable: 'Disattiva 2FA',
+            errors: {
+                qrCode: 'Impossibile recuperare il codice QR',
+                setupKey: 'Impossibile recuperare la chiave di configurazione',
+                recoveryCodes: 'Impossibile recuperare i codici di recupero',
+            },
             recoveryCodes: {
                 title: 'Codici di recupero 2FA',
                 description:
@@ -153,6 +165,7 @@ const messages: MessageSchema = {
         hide: 'Nascondi password',
     },
     nav: {
+        platform: 'Piattaforma',
         dashboard: 'Dashboard',
         customers: 'Clienti',
         companies: 'Aziende',
@@ -161,6 +174,10 @@ const messages: MessageSchema = {
         countries: 'Paesi',
         repository: 'Repository',
         documentation: 'Documentazione',
+    },
+    userMenu: {
+        settings: 'Impostazioni',
+        logout: 'Esci',
     },
     dashboard: {
         title: 'Dashboard',
@@ -210,8 +227,8 @@ const messages: MessageSchema = {
             headTitle: 'Password dimenticata',
             email: 'Indirizzo email',
             submit: 'Invia link di reimpostazione password',
-            returnPrefix: 'Oppure, torna al',
-            logIn: 'accesso',
+            returnPrefix: 'Oppure, torna',
+            logIn: "all'accesso",
         },
         resetPassword: {
             layoutTitle: 'Reimposta password',
@@ -252,7 +269,7 @@ const messages: MessageSchema = {
             layoutDescription:
                 'Verifica il tuo indirizzo email cliccando sul link che ti abbiamo appena inviato.',
             headTitle: 'Verifica email',
-            sent: 'Un nuovo link di verifica è stato inviato allindirizzo email fornito in fase di registrazione.',
+            sent: "Un nuovo link di verifica è stato inviato all'indirizzo email fornito in fase di registrazione.",
             resend: 'Invia di nuovo email di verifica',
             logout: 'Esci',
         },
@@ -394,7 +411,6 @@ const messages: MessageSchema = {
             note: 'Nota',
             notePlaceholder: 'Nota opzionale',
             rows: 'Righe',
-            addRow: 'Aggiungi riga',
             rowDescription: 'Descrizione',
             rowQuantity: 'Quantità',
             rowPrice: 'Prezzo',

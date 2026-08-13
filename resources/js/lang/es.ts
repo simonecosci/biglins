@@ -8,6 +8,7 @@ const messages: MessageSchema = {
             edit: 'Editar',
             previous: 'Anterior',
             next: 'Siguiente',
+            addRow: 'Añadir línea',
         },
         fields: {
             name: 'Nombre',
@@ -19,6 +20,7 @@ const messages: MessageSchema = {
             selectCountry: 'Selecciona un país',
             phone: 'Número de teléfono',
         },
+        errorTitle: 'Algo salió mal.',
     },
     appearance: {
         light: 'Claro',
@@ -33,6 +35,11 @@ const messages: MessageSchema = {
             security: 'Seguridad',
             appearance: 'Apariencia',
             language: 'Idioma',
+        },
+        appearance: {
+            title: 'Configuración de apariencia',
+            description:
+                'Actualiza la configuración de apariencia de tu cuenta',
         },
         language: {
             title: 'Configuración de idioma',
@@ -94,6 +101,12 @@ const messages: MessageSchema = {
             enabledIntro:
                 'Se te pedirá un PIN seguro y aleatorio durante el inicio de sesión, que puedes obtener desde la aplicación TOTP en tu teléfono.',
             disable: 'Desactivar 2FA',
+            errors: {
+                qrCode: 'No se pudo obtener el código QR',
+                setupKey: 'No se pudo obtener la clave de configuración',
+                recoveryCodes:
+                    'No se pudieron obtener los códigos de recuperación',
+            },
             recoveryCodes: {
                 title: 'Códigos de recuperación 2FA',
                 description:
@@ -157,6 +170,7 @@ const messages: MessageSchema = {
         hide: 'Ocultar contraseña',
     },
     nav: {
+        platform: 'Plataforma',
         dashboard: 'Panel',
         customers: 'Clientes',
         companies: 'Empresas',
@@ -165,6 +179,10 @@ const messages: MessageSchema = {
         countries: 'Países',
         repository: 'Repositorio',
         documentation: 'Documentación',
+    },
+    userMenu: {
+        settings: 'Configuración',
+        logout: 'Cerrar sesión',
     },
     dashboard: {
         title: 'Panel',
@@ -399,7 +417,6 @@ const messages: MessageSchema = {
             note: 'Nota',
             notePlaceholder: 'Nota opcional',
             rows: 'Líneas',
-            addRow: 'Añadir línea',
             rowDescription: 'Descripción',
             rowQuantity: 'Cantidad',
             rowPrice: 'Precio',

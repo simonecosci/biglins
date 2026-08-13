@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, setLayoutProps } from '@inertiajs/vue3';
 import type { AcceptableValue } from 'reka-ui';
 import { useI18n } from 'vue-i18n';
 import LanguageController from '@/actions/App/Http/Controllers/Settings/LanguageController';
@@ -19,15 +19,13 @@ const props = defineProps<{
     locales: string[];
 }>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            { title: 'Language settings', href: edit() },
-        ] satisfies BreadcrumbItem[],
-    },
-});
-
 const { t, locale: activeLocale } = useI18n();
+
+setLayoutProps({
+    breadcrumbs: [
+        { title: t('settings.language.title'), href: edit() },
+    ] satisfies BreadcrumbItem[],
+});
 
 function updateLocale(value: AcceptableValue): void {
     if (typeof value !== 'string') {

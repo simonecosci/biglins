@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Country;
 use App\Models\User;
 
 test('flash messages are translated for an Italian-locale user', function () {
