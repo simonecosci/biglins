@@ -32,6 +32,7 @@ type InvoiceRowForm = {
     quantity: number;
     price: number;
     vat_rate: number;
+    expiration_date: string | null;
 };
 
 const props = defineProps<{
@@ -61,7 +62,13 @@ const form = useForm({
     note: props.duplicate?.note ?? '',
     language: props.duplicate?.language ?? 'es',
     rows: props.duplicate?.rows ?? [
-        { description: '', quantity: 1, price: 0, vat_rate: 0 },
+        {
+            description: '',
+            quantity: 1,
+            price: 0,
+            vat_rate: 0,
+            expiration_date: null,
+        },
     ],
 });
 
@@ -70,7 +77,13 @@ const selectedProducts = ref<(PickedProduct | undefined)[]>(
 );
 
 function addRow(): void {
-    form.rows.push({ description: '', quantity: 1, price: 0, vat_rate: 0 });
+    form.rows.push({
+        description: '',
+        quantity: 1,
+        price: 0,
+        vat_rate: 0,
+        expiration_date: null,
+    });
     selectedProducts.value.push(undefined);
 }
 
@@ -104,6 +117,9 @@ const total = computed(() =>
 );
 
 function submit(): void {
+    form.rows.forEach((row) => {
+        row.expiration_date ||= null;
+    });
     form.post(InvoiceController.store().url);
 }
 </script>
@@ -218,20 +234,21 @@ function submit(): void {
                 <InputError :message="form.errors.rows" />
 
                 <div
-                    class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_2.5rem] gap-2 text-sm text-muted-foreground"
+                    class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_8rem_2.5rem] gap-2 text-sm text-muted-foreground"
                 >
                     <span></span>
                     <span>{{ t('invoices.create.rowDescription') }}</span>
                     <span>{{ t('invoices.create.rowQuantity') }}</span>
                     <span>{{ t('invoices.create.rowPrice') }}</span>
                     <span>{{ t('invoices.create.rowVat') }}</span>
+                    <span>{{ t('invoices.create.rowExpirationDate') }}</span>
                     <span></span>
                 </div>
 
                 <div
                     v-for="(row, i) in form.rows"
                     :key="i"
-                    class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_2.5rem] items-start gap-2"
+                    class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_8rem_2.5rem] items-start gap-2"
                 >
                     <ProductPicker
                         :selected-label="productLabel(selectedProducts[i])"
@@ -281,6 +298,21 @@ function submit(): void {
                         />
                         <InputError
                             :message="form.errors[`rows.${i}.vat_rate`]"
+                        />
+                    </div>
+                    <div class="grid gap-1">
+                        <Input
+                            :model-value="row.expiration_date ?? undefined"
+                            type="date"
+                            @update:model-value="
+                                (value) =>
+                                    (row.expiration_date = value
+                                        ? String(value)
+                                        : null)
+                            "
+                        />
+                        <InputError
+                            :message="form.errors[`rows.${i}.expiration_date`]"
                         />
                     </div>
                     <Button

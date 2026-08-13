@@ -418,6 +418,7 @@ const messages: MessageSchema = {
             rowPrice: 'Prezzo',
             rowVat: 'IVA (%)',
             rowVatPlaceholder: 'IVA %',
+            rowExpirationDate: 'Data di scadenza',
             total: 'Totale: {amount}',
         },
         edit: {

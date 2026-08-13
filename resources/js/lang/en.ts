@@ -407,6 +407,7 @@ const messages = {
             rowPrice: 'Price',
             rowVat: 'VAT (%)',
             rowVatPlaceholder: 'VAT %',
+            rowExpirationDate: 'Expiration date',
             total: 'Total: {amount}',
         },
         edit: {

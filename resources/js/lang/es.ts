@@ -424,6 +424,7 @@ const messages: MessageSchema = {
             rowPrice: 'Precio',
             rowVat: 'IGIC (%)',
             rowVatPlaceholder: 'IGIC %',
+            rowExpirationDate: 'Fecha de vencimiento',
             total: 'Total: {amount}',
         },
         edit: {
