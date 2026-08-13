@@ -247,6 +247,27 @@ const messages = {
             deleteButton: 'Delete company',
         },
     },
+    countries: {
+        index: {
+            title: 'Countries',
+            description: 'Manage the countries available to customers',
+            newButton: 'New country',
+            searchPlaceholder: 'Search countries...',
+            column: 'Name',
+            empty: 'No countries found.',
+        },
+        create: {
+            title: 'New country',
+            description: 'Add a country to the list available to customers',
+            namePlaceholder: 'Country name',
+        },
+        edit: {
+            title: 'Edit country',
+            description: 'Update {name}',
+            confirmDelete: 'Delete this country? This cannot be undone.',
+            deleteButton: 'Delete country',
+        },
+    },
 };
 
 export default messages;

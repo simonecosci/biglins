@@ -252,6 +252,27 @@ const messages: MessageSchema = {
             deleteButton: 'Elimina azienda',
         },
     },
+    countries: {
+        index: {
+            title: 'Paesi',
+            description: 'Gestisci i paesi disponibili per i clienti',
+            newButton: 'Nuovo paese',
+            searchPlaceholder: 'Cerca paesi...',
+            column: 'Nome',
+            empty: 'Nessun paese trovato.',
+        },
+        create: {
+            title: 'Nuovo paese',
+            description: 'Aggiungi un paese alla lista disponibile per i clienti',
+            namePlaceholder: 'Nome del paese',
+        },
+        edit: {
+            title: 'Modifica paese',
+            description: 'Aggiorna {name}',
+            confirmDelete: "Eliminare questo paese? L'azione non può essere annullata.",
+            deleteButton: 'Elimina paese',
+        },
+    },
 };
 
 export default messages;

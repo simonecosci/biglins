@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/vue3';
 import { Pencil, Plus } from '@lucide/vue';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +32,8 @@ const props = defineProps<{
 
 const search = ref(props.filters.search);
 
+const { t } = useI18n();
+
 function onSearch(): void {
     router.get(
         index().url,
@@ -39,41 +42,44 @@ function onSearch(): void {
     );
 }
 
-defineOptions({
-    layout: () => ({
-        breadcrumbs: [
-            { title: 'Countries', href: index() },
-        ] satisfies BreadcrumbItem[],
-    }),
+setLayoutProps({
+    breadcrumbs: [
+        { title: t('countries.index.title'), href: index() },
+    ] satisfies BreadcrumbItem[],
 });
 </script>
 
 <template>
-    <Head title="Countries" />
+    <Head :title="t('countries.index.title')" />
 
     <div class="flex flex-col space-y-6">
         <div class="flex items-center justify-between">
             <Heading
-                title="Countries"
-                description="Manage the countries available to customers"
+                :title="t('countries.index.title')"
+                :description="t('countries.index.description')"
             />
             <Button as-child>
                 <Link :href="create()">
                     <Plus />
-                    New country
+                    {{ t('countries.index.newButton') }}
                 </Link>
             </Button>
         </div>
 
         <form class="max-w-sm" @submit.prevent="onSearch">
-            <Input v-model="search" placeholder="Search countries..." />
+            <Input
+                v-model="search"
+                :placeholder="t('countries.index.searchPlaceholder')"
+            />
         </form>
 
         <div class="overflow-hidden rounded-lg border">
             <table class="w-full text-sm">
                 <thead class="bg-muted/50 text-left">
                     <tr>
-                        <th class="px-4 py-2 font-medium">Name</th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('countries.index.column') }}
+                        </th>
                         <th class="px-4 py-2"></th>
                     </tr>
                 </thead>
@@ -89,7 +95,7 @@ defineOptions({
                                 as-child
                                 variant="ghost"
                                 size="icon-sm"
-                                title="Edit"
+                                :title="t('common.actions.edit')"
                             >
                                 <Link :href="edit(country.id)">
                                     <Pencil />
@@ -102,7 +108,7 @@ defineOptions({
                             colspan="2"
                             class="px-4 py-6 text-center text-muted-foreground"
                         >
-                            No countries found.
+                            {{ t('countries.index.empty') }}
                         </td>
                     </tr>
                 </tbody>
