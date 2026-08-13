@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Company;
+use App\Support\CurrentCompany;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,6 +37,8 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $currentCompany = CurrentCompany::resolve();
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -45,6 +49,11 @@ class HandleInertiaRequests extends Middleware
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'locale' => app()->getLocale(),
             'locales' => SetLocale::SUPPORTED_LOCALES,
+            'currentCompany' => $currentCompany ? [
+                'id' => $currentCompany->id,
+                'name' => $currentCompany->name,
+            ] : null,
+            'companies' => Company::query()->orderBy('name')->get(['id', 'name']),
         ];
     }
 }
