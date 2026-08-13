@@ -6,7 +6,6 @@ const messages: MessageSchema = {
             save: 'Salva',
             cancel: 'Annulla',
             edit: 'Modifica',
-            addRow: 'Aggiungi riga',
             previous: 'Precedente',
             next: 'Successivo',
         },
@@ -92,6 +91,33 @@ const messages: MessageSchema = {
             enabledIntro:
                 "Ti verrà richiesto un pin sicuro e casuale durante l'accesso, che puoi recuperare dall'applicazione TOTP sul tuo telefono.",
             disable: 'Disattiva 2FA',
+            recoveryCodes: {
+                title: 'Codici di recupero 2FA',
+                description:
+                    "I codici di recupero ti permettono di riottenere l'accesso se perdi il dispositivo per il 2FA. Conservali in un password manager sicuro.",
+                viewButton: 'Visualizza codici di recupero',
+                hideButton: 'Nascondi codici di recupero',
+                regenerateButton: 'Rigenera codici',
+                helpTextPrefix:
+                    "Ogni codice di recupero può essere usato una sola volta per accedere al tuo account e verrà rimosso dopo l'uso. Se te ne servono altri, clicca su",
+                helpTextSuffix: 'qui sopra.',
+            },
+            setupModal: {
+                enabledTitle: 'Autenticazione a due fattori attivata',
+                enabledDescription:
+                    "L'autenticazione a due fattori è ora attiva. Scansiona il codice QR o inserisci la chiave di configurazione nella tua app di autenticazione.",
+                closeButton: 'Chiudi',
+                verifyTitle: 'Verifica il codice di autenticazione',
+                verifyDescription:
+                    'Inserisci il codice a 6 cifre dalla tua app di autenticazione',
+                enableTitle: "Attiva l'autenticazione a due fattori",
+                enableDescription:
+                    "Per completare l'attivazione dell'autenticazione a due fattori, scansiona il codice QR o inserisci la chiave di configurazione nella tua app di autenticazione",
+                continueButton: 'Continua',
+                manualEntryLabel: 'oppure, inserisci il codice manualmente',
+                backButton: 'Indietro',
+                confirmButton: 'Conferma',
+            },
         },
         passkeys: {
             title: 'Passkey',
@@ -99,6 +125,25 @@ const messages: MessageSchema = {
             emptyTitle: 'Nessuna passkey ancora',
             emptyDescription:
                 'Aggiungi una passkey per accedere senza password',
+            item: {
+                removeSrLabel: 'Rimuovi',
+                removeTitle: 'Rimuovi passkey',
+                removeDescription:
+                    'Sei sicuro di voler rimuovere la passkey "{name}"? Non potrai più utilizzarla per accedere.',
+                removeButton: 'Rimuovi passkey',
+                removingButton: 'Rimozione in corso...',
+                addedPrefix: 'Aggiunta',
+                lastUsedPrefix: 'Ultimo utilizzo',
+            },
+            register: {
+                notSupported: 'Le passkey non sono supportate in questo browser.',
+                addButton: 'Aggiungi passkey',
+                nameLabel: 'Nome passkey',
+                namePlaceholder: 'es. MacBook Pro, iPhone',
+                nameHelp: 'Un nome ti aiuta a identificare questa passkey in seguito.',
+                registerButton: 'Registra passkey',
+                registeringButton: 'Registrazione in corso...',
+            },
         },
     },
     passwordInput: {

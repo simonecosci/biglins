@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { KeyRound, Trash2 } from '@lucide/vue';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -21,6 +22,7 @@ const emit = defineEmits<{
     remove: [id: number, onError: () => void];
 }>();
 
+const { t } = useI18n();
 const isDeleting = ref(false);
 
 const handleDelete = () => {
@@ -50,10 +52,12 @@ const handleDelete = () => {
                     </span>
                 </div>
                 <p class="text-sm text-muted-foreground">
-                    Added {{ passkey.created_at_diff }}
+                    {{ t('settings.passkeys.item.addedPrefix') }}
+                    {{ passkey.created_at_diff }}
                     <template v-if="passkey.last_used_at_diff">
                         <span class="mx-1 text-muted-foreground/50">/</span>
-                        Last used {{ passkey.last_used_at_diff }}
+                        {{ t('settings.passkeys.item.lastUsedPrefix') }}
+                        {{ passkey.last_used_at_diff }}
                     </template>
                 </p>
             </div>
@@ -67,26 +71,29 @@ const handleDelete = () => {
                     class="text-destructive hover:bg-destructive/10 hover:text-destructive"
                 >
                     <Trash2 class="h-4 w-4" />
-                    <span class="sr-only">Remove</span>
+                    <span class="sr-only">{{ t('settings.passkeys.item.removeSrLabel') }}</span>
                 </Button>
             </DialogTrigger>
 
             <DialogContent>
-                <DialogTitle>Remove passkey</DialogTitle>
+                <DialogTitle>{{ t('settings.passkeys.item.removeTitle') }}</DialogTitle>
                 <DialogDescription>
-                    Are you sure you want to remove the "{{ passkey.name }}"
-                    passkey? You will no longer be able to use it to sign in.
+                    {{ t('settings.passkeys.item.removeDescription', { name: passkey.name }) }}
                 </DialogDescription>
                 <DialogFooter class="gap-2">
                     <DialogClose as-child>
-                        <Button variant="secondary">Cancel</Button>
+                        <Button variant="secondary">{{ t('common.actions.cancel') }}</Button>
                     </DialogClose>
                     <Button
                         variant="destructive"
                         :disabled="isDeleting"
                         @click="handleDelete"
                     >
-                        {{ isDeleting ? 'Removing...' : 'Remove passkey' }}
+                        {{
+                            isDeleting
+                                ? t('settings.passkeys.item.removingButton')
+                                : t('settings.passkeys.item.removeButton')
+                        }}
                     </Button>
                 </DialogFooter>
             </DialogContent>

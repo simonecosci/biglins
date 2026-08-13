@@ -4,7 +4,6 @@ const messages = {
             save: 'Save',
             cancel: 'Cancel',
             edit: 'Edit',
-            addRow: 'Add row',
             previous: 'Previous',
             next: 'Next',
         },
@@ -88,12 +87,58 @@ const messages = {
             enabledIntro:
                 'You will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.',
             disable: 'Disable 2FA',
+            recoveryCodes: {
+                title: '2FA recovery codes',
+                description:
+                    'Recovery codes let you regain access if you lose your 2FA device. Store them in a secure password manager.',
+                viewButton: 'View recovery codes',
+                hideButton: 'Hide recovery codes',
+                regenerateButton: 'Regenerate codes',
+                helpTextPrefix:
+                    'Each recovery code can be used once to access your account and will be removed after use. If you need more, click',
+                helpTextSuffix: 'above.',
+            },
+            setupModal: {
+                enabledTitle: 'Two-factor authentication enabled',
+                enabledDescription:
+                    'Two-factor authentication is now enabled. Scan the QR code or enter the setup key in your authenticator app.',
+                closeButton: 'Close',
+                verifyTitle: 'Verify authentication code',
+                verifyDescription:
+                    'Enter the 6-digit code from your authenticator app',
+                enableTitle: 'Enable two-factor authentication',
+                enableDescription:
+                    'To finish enabling two-factor authentication, scan the QR code or enter the setup key in your authenticator app',
+                continueButton: 'Continue',
+                manualEntryLabel: 'or, enter the code manually',
+                backButton: 'Back',
+                confirmButton: 'Confirm',
+            },
         },
         passkeys: {
             title: 'Passkeys',
             description: 'Manage your passkeys for passwordless sign-in',
             emptyTitle: 'No passkeys yet',
             emptyDescription: 'Add a passkey to sign in without a password',
+            item: {
+                removeSrLabel: 'Remove',
+                removeTitle: 'Remove passkey',
+                removeDescription:
+                    'Are you sure you want to remove the "{name}" passkey? You will no longer be able to use it to sign in.',
+                removeButton: 'Remove passkey',
+                removingButton: 'Removing...',
+                addedPrefix: 'Added',
+                lastUsedPrefix: 'Last used',
+            },
+            register: {
+                notSupported: 'Passkeys are not supported in this browser.',
+                addButton: 'Add passkey',
+                nameLabel: 'Passkey name',
+                namePlaceholder: 'e.g., MacBook Pro, iPhone',
+                nameHelp: 'A name helps you identify this passkey later.',
+                registerButton: 'Register passkey',
+                registeringButton: 'Registering...',
+            },
         },
     },
     passwordInput: {
