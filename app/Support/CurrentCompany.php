@@ -5,8 +5,10 @@ namespace App\Support;
 use App\Models\Company;
 use SortDirection;
 
-class CurrentCompany {
-    public static function resolve(): ?Company {
+class CurrentCompany
+{
+    public static function resolve(): ?Company
+    {
         $sessionId = session('current_company_id');
 
         if (is_string($sessionId)) {
