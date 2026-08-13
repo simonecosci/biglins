@@ -40,21 +40,45 @@ test('guests are redirected to the login page when visiting products', function 
 
 test('products index page can be rendered', function () {
     $user = User::factory()->create();
-    Product::factory()->count(3)->create();
+    $company = Company::factory()->create();
+    Product::factory()->count(3)->create(['company_id' => $company->id]);
 
-    $response = $this->actingAs($user)->get(route('products.index'));
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->get(route('products.index'));
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page->component('products/Index'));
 });
 
+test('products index only lists products for the current company', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $otherCompany = Company::factory()->create();
+    Product::factory()->count(2)->create(['company_id' => $company->id]);
+    Product::factory()->count(3)->create(['company_id' => $otherCompany->id]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->get(route('products.index'));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page->has('products.data', 2));
+});
+
+test('products index renders with an empty state when there is no company yet', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get(route('products.index'));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page->has('products.data', 0));
+});
+
 test('products index can be searched as json for the invoice picker', function () {
     $user = User::factory()->create();
-    Product::factory()->create(['code' => 'SKU-1', 'description' => 'Blue widget']);
-    Product::factory()->create(['code' => 'SKU-2', 'description' => 'Red widget']);
-    Product::factory()->create(['code' => 'SKU-3', 'description' => 'Consulting hour']);
+    $company = Company::factory()->create();
+    Product::factory()->create(['company_id' => $company->id, 'code' => 'SKU-1', 'description' => 'Blue widget']);
+    Product::factory()->create(['company_id' => $company->id, 'code' => 'SKU-2', 'description' => 'Red widget']);
+    Product::factory()->create(['company_id' => $company->id, 'code' => 'SKU-3', 'description' => 'Consulting hour']);
 
-    $response = $this->actingAs($user)->getJson(route('products.index', ['search' => 'widget']));
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->getJson(route('products.index', ['search' => 'widget']));
 
     $response->assertOk();
     expect($response->json('data'))->toHaveCount(2);
@@ -62,11 +86,26 @@ test('products index can be searched as json for the invoice picker', function (
         ->toBe(['SKU-1', 'SKU-2']);
 });
 
+test('the product picker json response does not include products from another company', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $otherCompany = Company::factory()->create();
+    Product::factory()->create(['company_id' => $company->id, 'code' => 'SKU-1', 'description' => 'Blue widget']);
+    Product::factory()->create(['company_id' => $otherCompany->id, 'code' => 'SKU-2', 'description' => 'Blue widget']);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->getJson(route('products.index', ['search' => 'widget']));
+
+    $response->assertOk();
+    expect($response->json('data'))->toHaveCount(1);
+    expect($response->json('data.0.code'))->toBe('SKU-1');
+});
+
 test('products index json response is paginated', function () {
     $user = User::factory()->create();
-    Product::factory()->count(20)->create();
+    $company = Company::factory()->create();
+    Product::factory()->count(20)->create(['company_id' => $company->id]);
 
-    $response = $this->actingAs($user)->getJson(route('products.index'));
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->getJson(route('products.index'));
 
     $response->assertOk();
     expect($response->json('data'))->toHaveCount(15);
@@ -75,6 +114,29 @@ test('products index json response is paginated', function () {
 
 test('product can be created without a code', function () {
     $user = User::factory()->create();
+    $company = Company::factory()->create();
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('products.store'), [
+        'type' => ProductType::Product->value,
+        'description' => 'Widget',
+        'price' => 9.99,
+    ]);
+
+    $response->assertSessionHasNoErrors()->assertRedirect(route('products.index'));
+    $product = Product::query()->where('description', 'Widget')->firstOrFail();
+    expect($product->company_id)->toBe($company->id);
+});
+
+test('product create page redirects to companies.create when there is no company yet', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get(route('products.create'));
+
+    $response->assertRedirect(route('companies.create'));
+});
+
+test('product store redirects to companies.create when there is no company yet', function () {
+    $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post(route('products.store'), [
         'type' => ProductType::Product->value,
@@ -82,14 +144,31 @@ test('product can be created without a code', function () {
         'price' => 9.99,
     ]);
 
-    $response->assertSessionHasNoErrors()->assertRedirect(route('products.index'));
-    expect(Product::query()->where('description', 'Widget')->exists())->toBeTrue();
+    $response->assertRedirect(route('companies.create'));
+    expect(Product::query()->where('description', 'Widget')->exists())->toBeFalse();
+});
+
+test('product store ignores a company_id sent in the payload and uses the current company instead', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $otherCompany = Company::factory()->create();
+
+    $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('products.store'), [
+        'company_id' => $otherCompany->id,
+        'type' => ProductType::Product->value,
+        'description' => 'Widget',
+        'price' => 9.99,
+    ]);
+
+    $product = Product::query()->where('description', 'Widget')->firstOrFail();
+    expect($product->company_id)->toBe($company->id);
 });
 
 test('product description is required', function () {
     $user = User::factory()->create();
+    $company = Company::factory()->create();
 
-    $response = $this->actingAs($user)->post(route('products.store'), [
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('products.store'), [
         'type' => ProductType::Product->value,
         'description' => '',
         'price' => 9.99,
@@ -100,8 +179,9 @@ test('product description is required', function () {
 
 test('product type must be a valid enum value', function () {
     $user = User::factory()->create();
+    $company = Company::factory()->create();
 
-    $response = $this->actingAs($user)->post(route('products.store'), [
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('products.store'), [
         'type' => 'invalid',
         'description' => 'Widget',
         'price' => 9.99,
@@ -112,8 +192,9 @@ test('product type must be a valid enum value', function () {
 
 test('product price is required', function () {
     $user = User::factory()->create();
+    $company = Company::factory()->create();
 
-    $response = $this->actingAs($user)->post(route('products.store'), [
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('products.store'), [
         'type' => ProductType::Product->value,
         'description' => 'Widget',
         'price' => '',
@@ -124,9 +205,10 @@ test('product price is required', function () {
 
 test('product code must be unique when present', function () {
     $user = User::factory()->create();
-    Product::factory()->create(['code' => 'SKU-1']);
+    $company = Company::factory()->create();
+    Product::factory()->create(['company_id' => $company->id, 'code' => 'SKU-1']);
 
-    $response = $this->actingAs($user)->post(route('products.store'), [
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('products.store'), [
         'code' => 'SKU-1',
         'type' => ProductType::Product->value,
         'description' => 'Widget',
@@ -138,8 +220,9 @@ test('product code must be unique when present', function () {
 
 test('product can be created with a code', function () {
     $user = User::factory()->create();
+    $company = Company::factory()->create();
 
-    $response = $this->actingAs($user)->post(route('products.store'), [
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('products.store'), [
         'code' => 'SKU-2',
         'type' => ProductType::Service->value,
         'description' => 'Consulting',
@@ -152,9 +235,10 @@ test('product can be created with a code', function () {
 
 test('product can be updated', function () {
     $user = User::factory()->create();
-    $product = Product::factory()->create(['description' => 'Old description']);
+    $company = Company::factory()->create();
+    $product = Product::factory()->create(['company_id' => $company->id, 'description' => 'Old description']);
 
-    $response = $this->actingAs($user)->put(route('products.update', $product), [
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->put(route('products.update', $product), [
         'code' => $product->code,
         'type' => $product->type->value,
         'description' => 'New description',
@@ -167,9 +251,10 @@ test('product can be updated', function () {
 
 test('product update keeps its own code as valid', function () {
     $user = User::factory()->create();
-    $product = Product::factory()->create(['code' => 'SKU-3']);
+    $company = Company::factory()->create();
+    $product = Product::factory()->create(['company_id' => $company->id, 'code' => 'SKU-3']);
 
-    $response = $this->actingAs($user)->put(route('products.update', $product), [
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->put(route('products.update', $product), [
         'code' => 'SKU-3',
         'type' => $product->type->value,
         'description' => $product->description,
@@ -181,10 +266,50 @@ test('product update keeps its own code as valid', function () {
 
 test('product can be deleted', function () {
     $user = User::factory()->create();
-    $product = Product::factory()->create();
+    $company = Company::factory()->create();
+    $product = Product::factory()->create(['company_id' => $company->id]);
 
-    $response = $this->actingAs($user)->delete(route('products.destroy', $product));
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->delete(route('products.destroy', $product));
 
     $response->assertRedirect(route('products.index'));
     expect(Product::query()->find($product->id))->toBeNull();
+});
+
+test('viewing the edit page of a product from another company is forbidden', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $otherCompany = Company::factory()->create();
+    $product = Product::factory()->create(['company_id' => $otherCompany->id]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->get(route('products.edit', $product));
+
+    $response->assertForbidden();
+});
+
+test('updating a product from another company is forbidden', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $otherCompany = Company::factory()->create();
+    $product = Product::factory()->create(['company_id' => $otherCompany->id]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->put(route('products.update', $product), [
+        'type' => $product->type->value,
+        'description' => 'Hacked description',
+        'price' => $product->price,
+    ]);
+
+    $response->assertForbidden();
+    expect($product->fresh()->description)->not->toBe('Hacked description');
+});
+
+test('deleting a product from another company is forbidden', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $otherCompany = Company::factory()->create();
+    $product = Product::factory()->create(['company_id' => $otherCompany->id]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->delete(route('products.destroy', $product));
+
+    $response->assertForbidden();
+    expect(Product::query()->find($product->id))->not->toBeNull();
 });
