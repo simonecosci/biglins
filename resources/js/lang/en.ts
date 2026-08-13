@@ -48,6 +48,28 @@ const messages = {
         show: 'Show password',
         hide: 'Hide password',
     },
+    nav: {
+        dashboard: 'Dashboard',
+        customers: 'Customers',
+        companies: 'Companies',
+        invoices: 'Invoices',
+        products: 'Products',
+        countries: 'Countries',
+        repository: 'Repository',
+        documentation: 'Documentation',
+    },
+    dashboard: {
+        title: 'Dashboard',
+    },
+    welcome: {
+        description:
+            'Invoicing application for freelancers: customer registry, invoice issuing with rows/VAT, automatic sequential numbering, PDF preview and generation, invoice duplication.',
+        readDocsPrefix: 'Read the',
+        documentation: 'Documentation',
+        dashboard: 'Dashboard',
+        logIn: 'Log in',
+        register: 'Register',
+    },
     auth: {
         login: {
             layoutTitle: 'Log in to your account',

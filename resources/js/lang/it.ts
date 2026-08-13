@@ -50,6 +50,28 @@ const messages: MessageSchema = {
         show: 'Mostra password',
         hide: 'Nascondi password',
     },
+    nav: {
+        dashboard: 'Dashboard',
+        customers: 'Clienti',
+        companies: 'Aziende',
+        invoices: 'Fatture',
+        products: 'Prodotti',
+        countries: 'Paesi',
+        repository: 'Repository',
+        documentation: 'Documentazione',
+    },
+    dashboard: {
+        title: 'Dashboard',
+    },
+    welcome: {
+        description:
+            'Applicazione di fatturazione per liberi professionisti: anagrafica clienti, emissione fatture con righe/IVA, numerazione progressiva automatica, anteprima e generazione PDF, duplicazione fattura.',
+        readDocsPrefix: 'Leggi la',
+        documentation: 'Documentazione',
+        dashboard: 'Dashboard',
+        logIn: 'Accedi',
+        register: 'Registrati',
+    },
     auth: {
         login: {
             layoutTitle: 'Accedi al tuo account',

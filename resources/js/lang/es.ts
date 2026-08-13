@@ -50,6 +50,28 @@ const messages: MessageSchema = {
         show: 'Mostrar contraseña',
         hide: 'Ocultar contraseña',
     },
+    nav: {
+        dashboard: 'Panel',
+        customers: 'Clientes',
+        companies: 'Empresas',
+        invoices: 'Facturas',
+        products: 'Productos',
+        countries: 'Países',
+        repository: 'Repositorio',
+        documentation: 'Documentación',
+    },
+    dashboard: {
+        title: 'Panel',
+    },
+    welcome: {
+        description:
+            'Aplicación de facturación para autónomos: registro de clientes, emisión de facturas con líneas/IVA, numeración secuencial automática, vista previa y generación de PDF, duplicación de facturas.',
+        readDocsPrefix: 'Lee la',
+        documentation: 'Documentación',
+        dashboard: 'Panel',
+        logIn: 'Iniciar sesión',
+        register: 'Registrarse',
+    },
     auth: {
         login: {
             layoutTitle: 'Inicia sesión en tu cuenta',

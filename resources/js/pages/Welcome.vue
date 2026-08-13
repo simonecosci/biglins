@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { dashboard, login } from '@/routes';
 import { register } from '@/routes';
+
+const { t } = useI18n();
 
 const dashboardUrl = computed(() => dashboard().url);
 </script>
@@ -24,20 +27,20 @@ const dashboardUrl = computed(() => dashboard().url);
                     :href="dashboardUrl"
                     class="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
                 >
-                    Dashboard
+                    {{ t('welcome.dashboard') }}
                 </Link>
                 <template v-else>
                     <Link
                         :href="login()"
                         class="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
                     >
-                        Log in
+                        {{ t('welcome.logIn') }}
                     </Link>
                     <Link
                         :href="register()"
                         class="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
                     >
-                        Register
+                        {{ t('welcome.register') }}
                     </Link>
                 </template>
             </nav>
@@ -60,10 +63,7 @@ const dashboardUrl = computed(() => dashboard().url);
                         >
                     </h1>
                     <p class="mb-2 text-[#706f6c] dark:text-[#A1A09A]">
-                        Applicazione di fatturazione per liberi professionisti:
-                        anagrafica clienti, emissione fatture con righe/IVA,
-                        numerazione progressiva automatica, anteprima e
-                        generazione PDF, duplicazione fattura.
+                        {{ t('welcome.description') }}
                     </p>
                     <ul class="mb-4 flex flex-col lg:mb-6">
                         <li class="relative flex items-center gap-4 py-2">
@@ -79,13 +79,13 @@ const dashboardUrl = computed(() => dashboard().url);
                                 </span>
                             </span>
                             <span>
-                                Read the
+                                {{ t('welcome.readDocsPrefix') }}
                                 <a
                                     href="https://github.com/simonecosci/biglins/wiki"
                                     target="_blank"
                                     class="ml-1 inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4 dark:text-[#FF4433]"
                                 >
-                                    <span>Documentation</span>
+                                    <span>{{ t('welcome.documentation') }}</span>
                                     <svg
                                         width="10"
                                         height="11"

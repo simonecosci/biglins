@@ -1,22 +1,24 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, setLayoutProps } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
 import { dashboard } from '@/routes';
+import type { BreadcrumbItem } from '@/types';
 
-defineOptions({
-    layout: () => ({
-        breadcrumbs: [
-            {
-                title: 'Dashboard',
-                href: dashboard(),
-            },
-        ],
-    }),
+const { t } = useI18n();
+
+setLayoutProps({
+    breadcrumbs: [
+        {
+            title: t('dashboard.title'),
+            href: dashboard(),
+        },
+    ] satisfies BreadcrumbItem[],
 });
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head :title="t('dashboard.title')" />
 
     <div
         class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
