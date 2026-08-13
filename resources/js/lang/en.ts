@@ -268,6 +268,37 @@ const messages = {
             deleteButton: 'Delete country',
         },
     },
+    customers: {
+        index: {
+            title: 'Customers',
+            description: 'Manage your customer registry',
+            newButton: 'New customer',
+            searchPlaceholder: 'Search by name or email...',
+            columns: { name: 'Name', city: 'City', country: 'Country', email: 'Email' },
+            empty: 'No customers found.',
+        },
+        create: {
+            title: 'New customer',
+            description: 'Add a customer to the registry',
+            namePlaceholder: 'Customer name',
+            addressPlaceholder: 'Address',
+            zipPlaceholder: 'ZIP code',
+            cityPlaceholder: 'City',
+            stateProvince: 'State / Province',
+            stateProvincePlaceholder: 'State or province',
+            emailPlaceholder: 'Email address',
+            website: 'Website',
+            phonePlaceholder: 'Phone number',
+            taxId: 'NIF',
+            taxIdPlaceholder: 'Tax identification number',
+        },
+        edit: {
+            title: 'Edit customer',
+            description: 'Update {name}',
+            confirmDelete: 'Delete this customer? This cannot be undone.',
+            deleteButton: 'Delete customer',
+        },
+    },
 };
 
 export default messages;

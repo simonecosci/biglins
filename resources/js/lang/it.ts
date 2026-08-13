@@ -273,6 +273,37 @@ const messages: MessageSchema = {
             deleteButton: 'Elimina paese',
         },
     },
+    customers: {
+        index: {
+            title: 'Clienti',
+            description: 'Gestisci la tua anagrafica clienti',
+            newButton: 'Nuovo cliente',
+            searchPlaceholder: 'Cerca per nome o email...',
+            columns: { name: 'Nome', city: 'Città', country: 'Paese', email: 'Email' },
+            empty: 'Nessun cliente trovato.',
+        },
+        create: {
+            title: 'Nuovo cliente',
+            description: "Aggiungi un cliente all'anagrafica",
+            namePlaceholder: 'Nome cliente',
+            addressPlaceholder: 'Indirizzo',
+            zipPlaceholder: 'CAP',
+            cityPlaceholder: 'Città',
+            stateProvince: 'Stato / Provincia',
+            stateProvincePlaceholder: 'Stato o provincia',
+            emailPlaceholder: 'Indirizzo email',
+            website: 'Sito web',
+            phonePlaceholder: 'Numero di telefono',
+            taxId: 'Codice fiscale',
+            taxIdPlaceholder: 'Numero identificativo fiscale',
+        },
+        edit: {
+            title: 'Modifica cliente',
+            description: 'Aggiorna {name}',
+            confirmDelete: "Eliminare questo cliente? L'azione non può essere annullata.",
+            deleteButton: 'Elimina cliente',
+        },
+    },
 };
 
 export default messages;

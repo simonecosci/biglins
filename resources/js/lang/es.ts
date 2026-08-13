@@ -278,6 +278,37 @@ const messages: MessageSchema = {
             deleteButton: 'Eliminar país',
         },
     },
+    customers: {
+        index: {
+            title: 'Clientes',
+            description: 'Gestiona tu registro de clientes',
+            newButton: 'Nuevo cliente',
+            searchPlaceholder: 'Buscar por nombre o correo...',
+            columns: { name: 'Nombre', city: 'Ciudad', country: 'País', email: 'Correo electrónico' },
+            empty: 'No se encontraron clientes.',
+        },
+        create: {
+            title: 'Nuevo cliente',
+            description: 'Añade un cliente al registro',
+            namePlaceholder: 'Nombre del cliente',
+            addressPlaceholder: 'Dirección',
+            zipPlaceholder: 'Código postal',
+            cityPlaceholder: 'Ciudad',
+            stateProvince: 'Estado / Provincia',
+            stateProvincePlaceholder: 'Estado o provincia',
+            emailPlaceholder: 'Correo electrónico',
+            website: 'Sitio web',
+            phonePlaceholder: 'Número de teléfono',
+            taxId: 'NIF',
+            taxIdPlaceholder: 'Número de identificación fiscal',
+        },
+        edit: {
+            title: 'Editar cliente',
+            description: 'Actualizar {name}',
+            confirmDelete: '¿Eliminar este cliente? Esta acción no se puede deshacer.',
+            deleteButton: 'Eliminar cliente',
+        },
+    },
 };
 
 export default messages;

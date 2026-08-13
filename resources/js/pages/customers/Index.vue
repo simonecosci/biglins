@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/vue3';
 import { Pencil, Plus } from '@lucide/vue';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +35,8 @@ const props = defineProps<{
 
 const search = ref(props.filters.search);
 
+const { t } = useI18n();
+
 function onSearch(): void {
     router.get(
         index().url,
@@ -42,44 +45,42 @@ function onSearch(): void {
     );
 }
 
-defineOptions({
-    layout: () => ({
-        breadcrumbs: [
-            { title: 'Customers', href: index() },
-        ] satisfies BreadcrumbItem[],
-    }),
+setLayoutProps({
+    breadcrumbs: [
+        { title: t('customers.index.title'), href: index() },
+    ] satisfies BreadcrumbItem[],
 });
 </script>
 
 <template>
-    <Head title="Customers" />
+    <Head :title="t('customers.index.title')" />
 
     <div class="flex flex-col space-y-6">
         <div class="flex items-center justify-between">
             <Heading
-                title="Customers"
-                description="Manage your customer registry"
+                :title="t('customers.index.title')"
+                :description="t('customers.index.description')"
             />
             <Button as-child>
                 <Link :href="create()">
                     <Plus />
-                    New customer
+                    {{ t('customers.index.newButton') }}
                 </Link>
             </Button>
         </div>
 
         <form class="max-w-sm" @submit.prevent="onSearch">
-            <Input v-model="search" placeholder="Search by name or email..." />
+            <Input v-model="search" :placeholder="t('customers.index.searchPlaceholder')" />
         </form>
 
         <div class="overflow-hidden rounded-lg border">
             <table class="w-full text-sm">
                 <thead class="bg-muted/50 text-left">
                     <tr>
-                        <th class="px-4 py-2 font-medium">Name</th>
-                        <th class="px-4 py-2 font-medium">City</th>
-                        <th class="px-4 py-2 font-medium">Country</th>
-                        <th class="px-4 py-2 font-medium">Email</th>
+                        <th class="px-4 py-2 font-medium">{{ t('customers.index.columns.name') }}</th>
+                        <th class="px-4 py-2 font-medium">{{ t('customers.index.columns.city') }}</th>
+                        <th class="px-4 py-2 font-medium">{{ t('customers.index.columns.country') }}</th>
+                        <th class="px-4 py-2 font-medium">{{ t('customers.index.columns.email') }}</th>
                         <th class="px-4 py-2"></th>
                     </tr>
                 </thead>
@@ -100,7 +101,7 @@ defineOptions({
                                 as-child
                                 variant="ghost"
                                 size="icon-sm"
-                                title="Edit"
+                                :title="t('common.actions.edit')"
                             >
                                 <Link :href="edit(customer.id)">
                                     <Pencil />
@@ -113,7 +114,7 @@ defineOptions({
                             colspan="5"
                             class="px-4 py-6 text-center text-muted-foreground"
                         >
-                            No customers found.
+                            {{ t('customers.index.empty') }}
                         </td>
                     </tr>
                 </tbody>
