@@ -15,3 +15,4 @@ require __DIR__.'/countries.php';
 require __DIR__.'/customers.php';
 require __DIR__.'/invoices.php';
 require __DIR__.'/products.php';
+require __DIR__.'/subscriptions.php';
