@@ -7,6 +7,7 @@ use App\Http\Middleware\SetLocale;
 use App\Http\Requests\Settings\LanguageUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,6 +32,8 @@ class LanguageController extends Controller
         $user = $request->user();
         $user->locale = $request->validated('locale');
         $user->save();
+
+        App::setLocale($user->locale);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Language updated.')]);
 
