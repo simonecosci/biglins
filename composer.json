@@ -1,12 +1,13 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/vue-starter-kit",
+    "name": "simonecosci/biglins",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Invoicing application for Small Businesses.",
     "version": "1.0.0",
     "keywords": [
-        "laravel",
-        "framework"
+        "invoice",
+        "fattura",
+        "factura"
     ],
     "license": "MIT",
     "require": {
