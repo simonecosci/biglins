@@ -1,5 +1,9 @@
 import { createInertiaApp } from '@inertiajs/vue3';
+import { createI18n } from 'vue-i18n';
 import { initializeTheme } from '@/composables/useAppearance';
+import en from '@/lang/en';
+import es from '@/lang/es';
+import it from '@/lang/it';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
@@ -20,6 +24,17 @@ createInertiaApp({
             default:
                 return AppLayout;
         }
+    },
+    withApp(app, { page }) {
+        app.use(
+            createI18n({
+                legacy: false,
+                globalInjection: true,
+                locale: page.props.locale,
+                fallbackLocale: 'en',
+                messages: { en, it, es },
+            }),
+        );
     },
     progress: {
         color: '#4B5563',
