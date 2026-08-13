@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, setLayoutProps } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import {
     index as confirmOptions,
     store as confirmStore,
@@ -12,26 +13,25 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { store } from '@/routes/password/confirm';
 
-defineOptions({
-    layout: {
-        title: 'Confirm password',
-        description:
-            'This is a secure area of the application. Please confirm your password before continuing.',
-    },
+const { t } = useI18n();
+
+setLayoutProps({
+    title: t('auth.confirmPassword.layoutTitle'),
+    description: t('auth.confirmPassword.layoutDescription'),
 });
 </script>
 
 <template>
-    <Head title="Confirm password" />
+    <Head :title="t('auth.confirmPassword.headTitle')" />
 
     <PasskeyVerify
         :routes="{
             options: confirmOptions(),
             submit: confirmStore(),
         }"
-        label="Confirm with passkey"
-        loading-label="Confirming..."
-        separator="Or confirm with password"
+        :label="t('auth.confirmPassword.passkeyLabel')"
+        :loading-label="t('auth.confirmPassword.passkeyLoading')"
+        :separator="t('auth.confirmPassword.passkeySeparator')"
     />
 
     <Form
@@ -41,7 +41,7 @@ defineOptions({
     >
         <div class="space-y-6">
             <div class="grid gap-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{{ t('auth.confirmPassword.password') }}</Label>
                 <PasswordInput
                     id="password"
                     name="password"
@@ -61,7 +61,7 @@ defineOptions({
                     data-test="confirm-password-button"
                 >
                     <Spinner v-if="processing" />
-                    Confirm password
+                    {{ t('auth.confirmPassword.submit') }}
                 </Button>
             </div>
         </div>
