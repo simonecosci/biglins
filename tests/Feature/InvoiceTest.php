@@ -773,3 +773,18 @@ test('updating an invoice persists a row expiration date change', function () {
     $response->assertSessionHasNoErrors();
     expect($row->fresh()->expiration_date->format('Y-m-d'))->toBe('2027-03-01');
 });
+
+test('invoice edit page shares the row expiration date as a plain date string', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $invoice = Invoice::factory()->create(['company_id' => $company->id]);
+    InvoiceRow::factory()->create(['invoice_id' => $invoice->id, 'expiration_date' => '2026-09-01']);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->get(route('invoices.edit', $invoice));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('invoices/Edit')
+        ->where('invoice.rows.0.expiration_date', '2026-09-01')
+    );
+});

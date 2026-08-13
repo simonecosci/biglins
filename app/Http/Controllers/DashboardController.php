@@ -19,6 +19,7 @@ class DashboardController extends Controller
             ->subscriptions()
             ->whereHas('invoice', fn ($query) => $query->where('company_id', $currentCompanyId))
             ->with('invoice.customer')
+            ->orderBy('expiration_date')
             ->get();
 
         $groups = $rows

@@ -48,6 +48,61 @@ test('renewing a group creates a new invoice with copied rows one year later and
     Carbon::setTestNow();
 });
 
+test('renewing a group only touches active subscription rows, leaving cancelled and plain rows untouched', function () {
+    Carbon::setTestNow('2026-08-13');
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $customer = Customer::factory()->create();
+    $invoice = Invoice::factory()->create(['company_id' => $company->id, 'customer_id' => $customer->id, 'language' => 'it']);
+    $activeRowA = InvoiceRow::factory()->create([
+        'invoice_id' => $invoice->id,
+        'description' => 'Hosting',
+        'expiration_date' => '2026-08-01',
+        'subscription_status' => SubscriptionStatus::Active,
+    ]);
+    $activeRowB = InvoiceRow::factory()->create([
+        'invoice_id' => $invoice->id,
+        'description' => 'Domain',
+        'expiration_date' => '2026-09-15',
+        'subscription_status' => SubscriptionStatus::Active,
+    ]);
+    $cancelledRow = InvoiceRow::factory()->create([
+        'invoice_id' => $invoice->id,
+        'description' => 'Old service',
+        'expiration_date' => '2026-08-01',
+        'subscription_status' => SubscriptionStatus::Cancelled,
+    ]);
+    $plainRow = InvoiceRow::factory()->create([
+        'invoice_id' => $invoice->id,
+        'description' => 'One-off',
+        'expiration_date' => null,
+    ]);
+
+    $response = $this->actingAs($user)
+        ->withSession(['current_company_id' => $company->id])
+        ->post(route('subscriptions.renew', $invoice));
+
+    $newInvoice = Invoice::query()->where('id', '!=', $invoice->id)->firstOrFail();
+    $response->assertRedirect(route('invoices.edit', $newInvoice));
+
+    expect($newInvoice->rows)->toHaveCount(2);
+    expect($newInvoice->rows->firstWhere('description', 'Hosting')->expiration_date->format('Y-m-d'))->toBe('2027-08-01');
+    expect($newInvoice->rows->firstWhere('description', 'Domain')->expiration_date->format('Y-m-d'))->toBe('2027-09-15');
+
+    expect($activeRowA->fresh()->subscription_status)->toBe(SubscriptionStatus::Cancelled);
+    expect($activeRowB->fresh()->subscription_status)->toBe(SubscriptionStatus::Cancelled);
+
+    expect($cancelledRow->fresh()->subscription_status)->toBe(SubscriptionStatus::Cancelled);
+    expect($cancelledRow->fresh()->expiration_date->format('Y-m-d'))->toBe('2026-08-01');
+    expect($plainRow->fresh()->subscription_status)->toBe(SubscriptionStatus::Active);
+    expect($plainRow->fresh()->expiration_date)->toBeNull();
+
+    expect($newInvoice->rows->pluck('description'))->not->toContain('Old service');
+    expect($newInvoice->rows->pluck('description'))->not->toContain('One-off');
+
+    Carbon::setTestNow();
+});
+
 test('renewing a group with no active subscription rows returns a 404', function () {
     $user = User::factory()->create();
     $company = Company::factory()->create();

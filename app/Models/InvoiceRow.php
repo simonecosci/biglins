@@ -45,7 +45,7 @@ class InvoiceRow extends Model
             'quantity' => 'float',
             'price' => 'float',
             'vat_rate' => 'float',
-            'expiration_date' => 'date',
+            'expiration_date' => 'date:Y-m-d',
             'subscription_status' => SubscriptionStatus::class,
         ];
     }
@@ -58,6 +58,10 @@ class InvoiceRow extends Model
         return $this->belongsTo(Invoice::class);
     }
 
+    /**
+     * @param  Builder<InvoiceRow>  $query
+     * @return Builder<InvoiceRow>
+     */
     public function scopeSubscriptions(Builder $query): Builder
     {
         return $query
