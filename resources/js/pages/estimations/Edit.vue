@@ -186,7 +186,7 @@ function onFileSelected(event: Event): void {
     router.post(
         EstimationAttachmentController.store(props.estimation.id).url,
         { file },
-        { forceFormData: true, preserveScroll: true },
+        { forceFormData: true, preserveScroll: true, preserveState: true },
     );
 
     (event.target as HTMLInputElement).value = '';
@@ -202,7 +202,7 @@ function deleteAttachment(attachmentId: string): void {
             props.estimation.id,
             attachmentId,
         ]).url,
-        { preserveScroll: true },
+        { preserveScroll: true, preserveState: true },
     );
 }
 
@@ -287,190 +287,201 @@ function formatSize(bytes: number): string {
         </Button>
 
         <form class="space-y-4" @submit.prevent="submit">
-            <div class="grid grid-cols-3 gap-4">
-                <div class="grid gap-2">
-                    <Label for="estimation_date">{{
-                        t('estimations.create.date')
-                    }}</Label>
-                    <Input
-                        id="estimation_date"
-                        v-model="form.estimation_date"
-                        type="date"
-                    />
-                    <InputError :message="form.errors.estimation_date" />
+            <fieldset :disabled="isConverted" class="space-y-4">
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="grid gap-2">
+                        <Label for="estimation_date">{{
+                            t('estimations.create.date')
+                        }}</Label>
+                        <Input
+                            id="estimation_date"
+                            v-model="form.estimation_date"
+                            type="date"
+                        />
+                        <InputError :message="form.errors.estimation_date" />
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="expiration_date">{{
+                            t('estimations.create.expirationDate')
+                        }}</Label>
+                        <Input
+                            id="expiration_date"
+                            v-model="form.expiration_date"
+                            type="date"
+                        />
+                        <InputError :message="form.errors.expiration_date" />
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="status">{{
+                            t('estimations.edit.status')
+                        }}</Label>
+                        <Select v-model="form.status">
+                            <SelectTrigger id="status" class="w-full">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="pending">{{
+                                    t('estimations.status.pending')
+                                }}</SelectItem>
+                                <SelectItem value="accepted">{{
+                                    t('estimations.status.accepted')
+                                }}</SelectItem>
+                                <SelectItem value="rejected">{{
+                                    t('estimations.status.rejected')
+                                }}</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <InputError :message="form.errors.status" />
+                    </div>
                 </div>
+
                 <div class="grid gap-2">
-                    <Label for="expiration_date">{{
-                        t('estimations.create.expirationDate')
+                    <Label for="language">{{
+                        t('estimations.create.language')
                     }}</Label>
-                    <Input
-                        id="expiration_date"
-                        v-model="form.expiration_date"
-                        type="date"
-                    />
-                    <InputError :message="form.errors.expiration_date" />
-                </div>
-                <div class="grid gap-2">
-                    <Label for="status">{{
-                        t('estimations.edit.status')
-                    }}</Label>
-                    <Select v-model="form.status">
-                        <SelectTrigger id="status" class="w-full">
+                    <Select v-model="form.language">
+                        <SelectTrigger id="language" class="w-full max-w-xs">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="pending">{{
-                                t('estimations.status.pending')
-                            }}</SelectItem>
-                            <SelectItem value="accepted">{{
-                                t('estimations.status.accepted')
-                            }}</SelectItem>
-                            <SelectItem value="rejected">{{
-                                t('estimations.status.rejected')
-                            }}</SelectItem>
+                            <SelectItem value="it">Italiano</SelectItem>
+                            <SelectItem value="en">English</SelectItem>
+                            <SelectItem value="es">Español</SelectItem>
                         </SelectContent>
                     </Select>
-                    <InputError :message="form.errors.status" />
+                    <InputError :message="form.errors.language" />
                 </div>
-            </div>
 
-            <div class="grid gap-2">
-                <Label for="language">{{
-                    t('estimations.create.language')
-                }}</Label>
-                <Select v-model="form.language">
-                    <SelectTrigger id="language" class="w-full max-w-xs">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="it">Italiano</SelectItem>
-                        <SelectItem value="en">English</SelectItem>
-                        <SelectItem value="es">Español</SelectItem>
-                    </SelectContent>
-                </Select>
-                <InputError :message="form.errors.language" />
-            </div>
+                <MarkdownField
+                    v-model="form.body"
+                    :label="t('estimations.create.body')"
+                    :placeholder="t('estimations.create.bodyPlaceholder')"
+                    :error="form.errors.body"
+                />
 
-            <MarkdownField
-                v-model="form.body"
-                :label="t('estimations.create.body')"
-                :placeholder="t('estimations.create.bodyPlaceholder')"
-                :error="form.errors.body"
-            />
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <Label>{{ t('estimations.create.rows') }}</Label>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            @click="addRow"
+                        >
+                            <Plus />
+                            {{ t('common.actions.addRow') }}
+                        </Button>
+                    </div>
+                    <InputError :message="form.errors.rows" />
 
-            <div class="space-y-3">
-                <div class="flex items-center justify-between">
-                    <Label>{{ t('estimations.create.rows') }}</Label>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        @click="addRow"
+                    <div
+                        class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_1fr_2.5rem] gap-2 text-sm text-muted-foreground"
                     >
-                        <Plus />
-                        {{ t('common.actions.addRow') }}
-                    </Button>
-                </div>
-                <InputError :message="form.errors.rows" />
+                        <span></span>
+                        <span>{{
+                            t('estimations.create.rowDescription')
+                        }}</span>
+                        <span>{{ t('estimations.create.rowQuantity') }}</span>
+                        <span>{{ t('estimations.create.rowPrice') }}</span>
+                        <span>{{ t('estimations.create.rowVat') }}</span>
+                        <span>{{ t('estimations.create.rowNote') }}</span>
+                        <span></span>
+                    </div>
 
-                <div
-                    class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_1fr_2.5rem] gap-2 text-sm text-muted-foreground"
-                >
-                    <span></span>
-                    <span>{{ t('estimations.create.rowDescription') }}</span>
-                    <span>{{ t('estimations.create.rowQuantity') }}</span>
-                    <span>{{ t('estimations.create.rowPrice') }}</span>
-                    <span>{{ t('estimations.create.rowVat') }}</span>
-                    <span>{{ t('estimations.create.rowNote') }}</span>
-                    <span></span>
-                </div>
-
-                <div
-                    v-for="(row, i) in form.rows"
-                    :key="row.id ?? `new-${i}`"
-                    class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_1fr_2.5rem] items-start gap-2"
-                >
-                    <ProductPicker
-                        :selected-label="productLabel(selectedProducts[i])"
-                        @select="(product) => applyProduct(i, product)"
-                    />
-                    <div class="grid gap-1">
-                        <Input
-                            v-model="row.description"
-                            :placeholder="
-                                t('estimations.create.rowDescription')
-                            "
-                        />
-                        <InputError
-                            :message="form.errors[`rows.${i}.description`]"
-                        />
-                    </div>
-                    <div class="grid gap-1">
-                        <Input
-                            v-model.number="row.quantity"
-                            type="number"
-                            step="0.01"
-                            min="0.01"
-                            :placeholder="t('estimations.create.rowQuantity')"
-                        />
-                        <InputError
-                            :message="form.errors[`rows.${i}.quantity`]"
-                        />
-                    </div>
-                    <div class="grid gap-1">
-                        <Input
-                            v-model.number="row.price"
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            :placeholder="t('estimations.create.rowPrice')"
-                        />
-                        <InputError :message="form.errors[`rows.${i}.price`]" />
-                    </div>
-                    <div class="grid gap-1">
-                        <Input
-                            v-model.number="row.vat_rate"
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            max="100"
-                            :placeholder="
-                                t('estimations.create.rowVatPlaceholder')
-                            "
-                        />
-                        <InputError
-                            :message="form.errors[`rows.${i}.vat_rate`]"
-                        />
-                    </div>
-                    <div class="grid gap-1">
-                        <Input
-                            :model-value="row.note ?? ''"
-                            :placeholder="t('estimations.create.rowNote')"
-                            @update:model-value="
-                                (value) => (row.note = String(value) || null)
-                            "
-                        />
-                        <InputError :message="form.errors[`rows.${i}.note`]" />
-                    </div>
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        :disabled="form.rows.length === 1"
-                        @click="removeRow(i)"
+                    <div
+                        v-for="(row, i) in form.rows"
+                        :key="row.id ?? `new-${i}`"
+                        class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_1fr_2.5rem] items-start gap-2"
                     >
-                        <Trash2 />
-                    </Button>
-                </div>
+                        <ProductPicker
+                            :selected-label="productLabel(selectedProducts[i])"
+                            @select="(product) => applyProduct(i, product)"
+                        />
+                        <div class="grid gap-1">
+                            <Input
+                                v-model="row.description"
+                                :placeholder="
+                                    t('estimations.create.rowDescription')
+                                "
+                            />
+                            <InputError
+                                :message="form.errors[`rows.${i}.description`]"
+                            />
+                        </div>
+                        <div class="grid gap-1">
+                            <Input
+                                v-model.number="row.quantity"
+                                type="number"
+                                step="0.01"
+                                min="0.01"
+                                :placeholder="
+                                    t('estimations.create.rowQuantity')
+                                "
+                            />
+                            <InputError
+                                :message="form.errors[`rows.${i}.quantity`]"
+                            />
+                        </div>
+                        <div class="grid gap-1">
+                            <Input
+                                v-model.number="row.price"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                :placeholder="t('estimations.create.rowPrice')"
+                            />
+                            <InputError
+                                :message="form.errors[`rows.${i}.price`]"
+                            />
+                        </div>
+                        <div class="grid gap-1">
+                            <Input
+                                v-model.number="row.vat_rate"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="100"
+                                :placeholder="
+                                    t('estimations.create.rowVatPlaceholder')
+                                "
+                            />
+                            <InputError
+                                :message="form.errors[`rows.${i}.vat_rate`]"
+                            />
+                        </div>
+                        <div class="grid gap-1">
+                            <Input
+                                :model-value="row.note ?? ''"
+                                :placeholder="t('estimations.create.rowNote')"
+                                @update:model-value="
+                                    (value) =>
+                                        (row.note = String(value) || null)
+                                "
+                            />
+                            <InputError
+                                :message="form.errors[`rows.${i}.note`]"
+                            />
+                        </div>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            :disabled="form.rows.length === 1"
+                            @click="removeRow(i)"
+                        >
+                            <Trash2 />
+                        </Button>
+                    </div>
 
-                <p class="text-right text-sm text-muted-foreground">
-                    {{
-                        t('estimations.create.total', {
-                            amount: total.toFixed(2),
-                        })
-                    }}
-                </p>
-            </div>
+                    <p class="text-right text-sm text-muted-foreground">
+                        {{
+                            t('estimations.create.total', {
+                                amount: total.toFixed(2),
+                            })
+                        }}
+                    </p>
+                </div>
+            </fieldset>
 
             <div class="flex items-center gap-4 pt-2">
                 <Button
@@ -491,7 +502,7 @@ function formatSize(bytes: number): string {
             <Button
                 variant="destructive"
                 type="button"
-                :disabled="isConverted"
+                :disabled="isConverted || estimation.status === 'accepted'"
                 @click="onDelete"
             >
                 {{ t('estimations.edit.deleteButton') }}
