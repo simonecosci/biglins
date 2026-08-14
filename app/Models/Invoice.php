@@ -55,16 +55,17 @@ class Invoice extends Model
     {
         static::creating(function (Invoice $invoice): void {
             if (! $invoice->number) {
-                $invoice->number = static::nextNumber();
+                $invoice->number = static::nextNumber($invoice->company_id);
             }
         });
     }
 
-    public static function nextNumber(?string $year = null): string
+    public static function nextNumber(string $companyId, ?string $year = null): string
     {
         $year ??= now()->format('Y');
 
         $lastNumber = static::query()
+            ->where('company_id', $companyId)
             ->where('number', 'like', "{$year}-%")
             ->orderByDesc('number')
             ->value('number');

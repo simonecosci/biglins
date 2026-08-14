@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ScopesToCurrentCompany;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
-use App\Models\Company;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceRow;
+use App\Support\CurrentCompany;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -20,12 +21,16 @@ use Inertia\Response;
 
 class InvoiceController extends Controller
 {
+    use ScopesToCurrentCompany;
+
     public function index(Request $request): Response
     {
         $search = $request->string('search')->trim()->toString();
+        $currentCompanyId = CurrentCompany::resolve()?->id;
 
         $invoices = Invoice::query()
             ->with(['customer', 'rows'])
+            ->where('company_id', $currentCompanyId)
             ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
                 $query->where('number', 'like', "%{$search}%")
                     ->orWhereHas('customer', fn ($query) => $query->where('name', 'like', "%{$search}%"));
@@ -40,8 +45,14 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function create(Request $request): Response
+    public function create(Request $request): Response|RedirectResponse
     {
+        $currentCompany = CurrentCompany::resolve();
+
+        if ($currentCompany === null) {
+            return $this->redirectToCreateCompany();
+        }
+
         $duplicateId = is_string($id = $request->query('duplicate')) ? trim($id) : '';
 
         $source = $duplicateId !== ''
@@ -50,12 +61,9 @@ class InvoiceController extends Controller
 
         return Inertia::render('invoices/Create', [
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'companies' => Company::query()->orderBy('name')->get(['id', 'name']),
-            'defaultCompanyId' => Company::query()->where('is_default', true)->value('id'),
-            'nextNumber' => Invoice::nextNumber(),
+            'nextNumber' => Invoice::nextNumber($currentCompany->id),
             'duplicate' => $source ? [
                 'customer_id' => $source->customer_id,
-                'company_id' => $source->company_id,
                 'note' => $source->note,
                 'language' => $source->language,
                 'rows' => $source->rows->map(fn (InvoiceRow $row): array => [
@@ -63,6 +71,7 @@ class InvoiceController extends Controller
                     'quantity' => $row->quantity,
                     'price' => $row->price,
                     'vat_rate' => $row->vat_rate,
+                    'expiration_date' => $row->expiration_date?->format('Y-m-d'),
                 ])->all(),
             ] : null,
         ]);
@@ -70,8 +79,17 @@ class InvoiceController extends Controller
 
     public function store(StoreInvoiceRequest $request): RedirectResponse
     {
-        DB::transaction(function () use ($request) {
-            $invoice = Invoice::query()->create($request->safe()->except('rows'));
+        $currentCompany = CurrentCompany::resolve();
+
+        if ($currentCompany === null) {
+            return $this->redirectToCreateCompany();
+        }
+
+        DB::transaction(function () use ($request, $currentCompany) {
+            $invoice = Invoice::query()->create([
+                ...$request->safe()->except('rows'),
+                'company_id' => $currentCompany->id,
+            ]);
 
             $invoice->rows()->createMany($request->safe()->input('rows'));
         });
@@ -83,15 +101,18 @@ class InvoiceController extends Controller
 
     public function edit(Invoice $invoice): Response
     {
+        $this->authorizeCurrentCompany($invoice);
+
         return Inertia::render('invoices/Edit', [
             'invoice' => $invoice->load('rows'),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'companies' => Company::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
     public function update(UpdateInvoiceRequest $request, Invoice $invoice): RedirectResponse
     {
+        $this->authorizeCurrentCompany($invoice);
+
         DB::transaction(function () use ($request, $invoice) {
             $invoice->update($request->safe()->except('rows'));
 
@@ -126,6 +147,8 @@ class InvoiceController extends Controller
 
     public function destroy(Invoice $invoice): RedirectResponse
     {
+        $this->authorizeCurrentCompany($invoice);
+
         $invoice->delete();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Invoice deleted.')]);

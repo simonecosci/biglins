@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\LanguageController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
 use Illuminate\Auth\Middleware\RequirePassword;
@@ -10,6 +11,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    Route::get('settings/language', [LanguageController::class, 'edit'])->name('language.edit');
+    Route::put('settings/language', [LanguageController::class, 'update'])->name('language.update');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

@@ -1,0 +1,505 @@
+import type { MessageSchema } from '@/lang/en';
+
+const messages: MessageSchema = {
+    common: {
+        actions: {
+            save: 'Guardar',
+            cancel: 'Cancelar',
+            edit: 'Editar',
+            previous: 'Anterior',
+            next: 'Siguiente',
+            addRow: 'Añadir línea',
+        },
+        fields: {
+            name: 'Nombre',
+            email: 'Correo electrónico',
+            address: 'Dirección',
+            city: 'Ciudad',
+            zip: 'Código postal',
+            country: 'País',
+            selectCountry: 'Selecciona un país',
+            phone: 'Número de teléfono',
+        },
+        errorTitle: 'Algo salió mal.',
+    },
+    appearance: {
+        light: 'Claro',
+        dark: 'Oscuro',
+        system: 'Sistema',
+    },
+    settings: {
+        title: 'Configuración',
+        description: 'Gestiona tu perfil y la configuración de la cuenta',
+        nav: {
+            profile: 'Perfil',
+            security: 'Seguridad',
+            appearance: 'Apariencia',
+            language: 'Idioma',
+        },
+        appearance: {
+            title: 'Configuración de apariencia',
+            description:
+                'Actualiza la configuración de apariencia de tu cuenta',
+        },
+        language: {
+            title: 'Configuración de idioma',
+            description: 'Elige el idioma utilizado en toda la aplicación',
+            label: 'Idioma',
+            options: {
+                en: 'English',
+                it: 'Italiano',
+                es: 'Español',
+            },
+        },
+        profile: {
+            title: 'Perfil',
+            pageTitle: 'Configuración de perfil',
+            description:
+                'Actualiza tu nombre y dirección de correo electrónico',
+            namePlaceholder: 'Nombre completo',
+            emailPlaceholder: 'Correo electrónico',
+            unverified:
+                'Tu dirección de correo electrónico no está verificada.',
+            resendLink:
+                'Haz clic aquí para reenviar el correo de verificación.',
+            verificationSent:
+                'Se ha enviado un nuevo enlace de verificación a tu dirección de correo electrónico.',
+        },
+        security: {
+            title: 'Actualizar contraseña',
+            pageTitle: 'Configuración de seguridad',
+            description:
+                'Asegúrate de que tu cuenta use una contraseña larga y aleatoria para mantenerse segura',
+            currentPassword: 'Contraseña actual',
+            currentPasswordPlaceholder: 'Contraseña actual',
+            newPassword: 'Nueva contraseña',
+            newPasswordPlaceholder: 'Nueva contraseña',
+            confirmPassword: 'Confirmar contraseña',
+            confirmPasswordPlaceholder: 'Confirmar contraseña',
+        },
+        deleteAccount: {
+            title: 'Eliminar cuenta',
+            description: 'Elimina tu cuenta y todos sus recursos',
+            warningTitle: 'Advertencia',
+            warningBody:
+                'Procede con precaución, esta acción no se puede deshacer.',
+            deleteButton: 'Eliminar cuenta',
+            confirmTitle: '¿Seguro que quieres eliminar tu cuenta?',
+            confirmDescription:
+                'Una vez eliminada tu cuenta, todos sus recursos y datos también se eliminarán de forma permanente. Introduce tu contraseña para confirmar que deseas eliminar tu cuenta de forma permanente.',
+            passwordLabel: 'Contraseña',
+            passwordPlaceholder: 'Contraseña',
+        },
+        twoFactor: {
+            title: 'Autenticación de dos factores',
+            description:
+                'Gestiona la configuración de tu autenticación de dos factores',
+            disabledIntro:
+                'Cuando actives la autenticación de dos factores, se te pedirá un PIN seguro durante el inicio de sesión. Este PIN se puede obtener desde una aplicación TOTP en tu teléfono.',
+            continueSetup: 'Continuar configuración',
+            enable: 'Activar 2FA',
+            enabledIntro:
+                'Se te pedirá un PIN seguro y aleatorio durante el inicio de sesión, que puedes obtener desde la aplicación TOTP en tu teléfono.',
+            disable: 'Desactivar 2FA',
+            errors: {
+                qrCode: 'No se pudo obtener el código QR',
+                setupKey: 'No se pudo obtener la clave de configuración',
+                recoveryCodes:
+                    'No se pudieron obtener los códigos de recuperación',
+            },
+            recoveryCodes: {
+                title: 'Códigos de recuperación 2FA',
+                description:
+                    'Los códigos de recuperación te permiten recuperar el acceso si pierdes tu dispositivo de 2FA. Guárdalos en un gestor de contraseñas seguro.',
+                viewButton: 'Ver códigos de recuperación',
+                hideButton: 'Ocultar códigos de recuperación',
+                regenerateButton: 'Regenerar códigos',
+                helpTextPrefix:
+                    'Cada código de recuperación se puede usar una vez para acceder a tu cuenta y se eliminará después de usarlo. Si necesitas más, haz clic en',
+                helpTextSuffix: 'arriba.',
+            },
+            setupModal: {
+                enabledTitle: 'Autenticación de dos factores activada',
+                enabledDescription:
+                    'La autenticación de dos factores está ahora activada. Escanea el código QR o introduce la clave de configuración en tu aplicación de autenticación.',
+                closeButton: 'Cerrar',
+                verifyTitle: 'Verifica el código de autenticación',
+                verifyDescription:
+                    'Introduce el código de 6 dígitos de tu aplicación de autenticación',
+                enableTitle: 'Activar la autenticación de dos factores',
+                enableDescription:
+                    'Para terminar de activar la autenticación de dos factores, escanea el código QR o introduce la clave de configuración en tu aplicación de autenticación',
+                continueButton: 'Continuar',
+                manualEntryLabel: 'o introduce el código manualmente',
+                backButton: 'Atrás',
+                confirmButton: 'Confirmar',
+            },
+        },
+        passkeys: {
+            title: 'Passkeys',
+            description:
+                'Gestiona tus passkeys para iniciar sesión sin contraseña',
+            emptyTitle: 'Aún no hay passkeys',
+            emptyDescription:
+                'Añade una passkey para iniciar sesión sin contraseña',
+            item: {
+                removeSrLabel: 'Eliminar',
+                removeTitle: 'Eliminar passkey',
+                removeDescription:
+                    '¿Seguro que quieres eliminar la passkey "{name}"? Ya no podrás usarla para iniciar sesión.',
+                removeButton: 'Eliminar passkey',
+                removingButton: 'Eliminando...',
+                addedPrefix: 'Añadida',
+                lastUsedPrefix: 'Último uso',
+            },
+            register: {
+                notSupported:
+                    'Las passkeys no son compatibles con este navegador.',
+                addButton: 'Añadir passkey',
+                nameLabel: 'Nombre de la passkey',
+                namePlaceholder: 'p. ej., MacBook Pro, iPhone',
+                nameHelp:
+                    'Un nombre te ayuda a identificar esta passkey más adelante.',
+                registerButton: 'Registrar passkey',
+                registeringButton: 'Registrando...',
+            },
+        },
+    },
+    passwordInput: {
+        show: 'Mostrar contraseña',
+        hide: 'Ocultar contraseña',
+    },
+    nav: {
+        platform: 'Plataforma',
+        dashboard: 'Panel',
+        customers: 'Clientes',
+        companies: 'Empresas',
+        invoices: 'Facturas',
+        products: 'Productos',
+        countries: 'Países',
+        repository: 'Repositorio',
+        documentation: 'Documentación',
+    },
+    userMenu: {
+        settings: 'Configuración',
+        logout: 'Cerrar sesión',
+    },
+    dashboard: {
+        title: 'Panel',
+        revenue: {
+            label: 'Facturación {year} (desde principio de año)',
+        },
+        subscriptions: {
+            expiredLabel: 'Servicios caducados',
+            expiringSoonLabel: 'Vencen en 30 días',
+            empty: 'No hay servicios por vencer.',
+            status: {
+                expired: 'Caducado',
+                expiring_soon: 'Por vencer',
+                upcoming: 'Próximo',
+            },
+            cancelRow: 'Cancelar',
+            cancelGroup: 'Cancelar grupo',
+            renewGroup: 'Renovar grupo',
+            total: 'Total: {amount}',
+            confirmCancelRow: '¿Marcar este servicio como no renovable?',
+            confirmCancelGroup:
+                '¿Marcar todos los servicios del grupo como no renovables?',
+        },
+    },
+    welcome: {
+        description:
+            'Aplicación de facturación para autónomos: registro de clientes, emisión de facturas con líneas/IGIC, numeración secuencial automática, vista previa y generación de PDF, duplicación de facturas.',
+        readDocsPrefix: 'Lee la',
+        documentation: 'Documentación',
+        dashboard: 'Panel',
+        logIn: 'Iniciar sesión',
+        register: 'Registrarse',
+    },
+    auth: {
+        login: {
+            layoutTitle: 'Inicia sesión en tu cuenta',
+            layoutDescription:
+                'Introduce tu correo y contraseña para iniciar sesión',
+            headTitle: 'Iniciar sesión',
+            email: 'Correo electrónico',
+            password: 'Contraseña',
+            forgotPassword: '¿Olvidaste tu contraseña?',
+            remember: 'Recuérdame',
+            submit: 'Iniciar sesión',
+            noAccount: '¿No tienes una cuenta?',
+            signUp: 'Regístrate',
+            passkey: 'Iniciar sesión con una passkey',
+            passkeyLoading: 'Autenticando...',
+            passkeySeparator: 'O continúa con el correo electrónico',
+        },
+        register: {
+            layoutTitle: 'Crea una cuenta',
+            layoutDescription: 'Introduce tus datos para crear tu cuenta',
+            headTitle: 'Registrarse',
+            name: 'Nombre',
+            namePlaceholder: 'Nombre completo',
+            email: 'Correo electrónico',
+            password: 'Contraseña',
+            confirmPassword: 'Confirmar contraseña',
+            submit: 'Crear cuenta',
+            haveAccount: '¿Ya tienes una cuenta?',
+            logIn: 'Iniciar sesión',
+        },
+        forgotPassword: {
+            layoutTitle: 'Contraseña olvidada',
+            layoutDescription:
+                'Introduce tu correo para recibir el enlace de restablecimiento',
+            headTitle: 'Contraseña olvidada',
+            email: 'Correo electrónico',
+            submit: 'Enviar enlace de restablecimiento',
+            returnPrefix: 'O, vuelve a',
+            logIn: 'iniciar sesión',
+        },
+        resetPassword: {
+            layoutTitle: 'Restablecer contraseña',
+            layoutDescription: 'Introduce tu nueva contraseña a continuación',
+            headTitle: 'Restablecer contraseña',
+            email: 'Correo electrónico',
+            password: 'Contraseña',
+            confirmPassword: 'Confirmar contraseña',
+            submit: 'Restablecer contraseña',
+        },
+        confirmPassword: {
+            layoutTitle: 'Confirmar contraseña',
+            layoutDescription:
+                'Esta es un área segura de la aplicación. Confirma tu contraseña antes de continuar.',
+            headTitle: 'Confirmar contraseña',
+            passkeyLabel: 'Confirmar con passkey',
+            passkeyLoading: 'Confirmando...',
+            passkeySeparator: 'O confirma con la contraseña',
+            password: 'Contraseña',
+            submit: 'Confirmar contraseña',
+        },
+        twoFactorChallenge: {
+            headTitle: 'Autenticación de dos factores',
+            recoveryTitle: 'Código de recuperación',
+            recoveryDescription:
+                'Confirma el acceso a tu cuenta introduciendo uno de tus códigos de recuperación de emergencia.',
+            recoveryButton: 'iniciar sesión con un código de autenticación',
+            authTitle: 'Código de autenticación',
+            authDescription:
+                'Introduce el código de autenticación proporcionado por tu aplicación autenticadora.',
+            authButton: 'iniciar sesión con un código de recuperación',
+            recoveryPlaceholder: 'Introduce el código de recuperación',
+            continue: 'Continuar',
+            orYouCan: 'o puedes',
+        },
+        verifyEmail: {
+            layoutTitle: 'Verificación de correo',
+            layoutDescription:
+                'Verifica tu dirección de correo haciendo clic en el enlace que te acabamos de enviar.',
+            headTitle: 'Verificación de correo',
+            sent: 'Se ha enviado un nuevo enlace de verificación a la dirección de correo que proporcionaste durante el registro.',
+            resend: 'Reenviar correo de verificación',
+            logout: 'Cerrar sesión',
+        },
+    },
+    companies: {
+        index: {
+            title: 'Empresas',
+            description: 'Gestiona las empresas que pueden emitir facturas',
+            newButton: 'Nueva empresa',
+            searchPlaceholder: 'Buscar por nombre...',
+            columns: {
+                name: 'Nombre',
+                city: 'Ciudad',
+                country: 'País',
+                email: 'Correo electrónico',
+                default: 'Predeterminada',
+            },
+            yes: 'Sí',
+            empty: 'No se encontraron empresas.',
+        },
+        create: {
+            title: 'Nueva empresa',
+            description: 'Añade una empresa emisora al registro',
+            namePlaceholder: 'Nombre de la empresa',
+            taxId: 'NIF',
+            taxIdPlaceholder: 'Número de identificación fiscal',
+            addressPlaceholder: 'Dirección',
+            zipPlaceholder: 'Código postal',
+            cityPlaceholder: 'Ciudad',
+            emailPlaceholder: 'Correo electrónico',
+            phonePlaceholder: 'Número de teléfono',
+            iban: 'IBAN',
+            ibanPlaceholder: 'IBAN de la cuenta bancaria',
+            logo: 'Logotipo',
+            defaultCompany: 'Empresa predeterminada para nuevas facturas',
+        },
+        edit: {
+            title: 'Editar empresa',
+            description: 'Actualizar {name}',
+            currentLogoAlt: 'Logotipo actual',
+            removeLogo: 'Eliminar logotipo actual',
+            confirmDelete:
+                '¿Eliminar esta empresa? Esta acción no se puede deshacer.',
+            deleteButton: 'Eliminar empresa',
+        },
+    },
+    companySwitcher: {
+        label: 'Empresa',
+        createFirst: 'Crea tu primera empresa',
+    },
+    countries: {
+        index: {
+            title: 'Países',
+            description: 'Gestiona los países disponibles para los clientes',
+            newButton: 'Nuevo país',
+            searchPlaceholder: 'Buscar países...',
+            column: 'Nombre',
+            empty: 'No se encontraron países.',
+        },
+        create: {
+            title: 'Nuevo país',
+            description:
+                'Añade un país a la lista disponible para los clientes',
+            namePlaceholder: 'Nombre del país',
+        },
+        edit: {
+            title: 'Editar país',
+            description: 'Actualizar {name}',
+            confirmDelete:
+                '¿Eliminar este país? Esta acción no se puede deshacer.',
+            deleteButton: 'Eliminar país',
+        },
+    },
+    customers: {
+        index: {
+            title: 'Clientes',
+            description: 'Gestiona tu registro de clientes',
+            newButton: 'Nuevo cliente',
+            searchPlaceholder: 'Buscar por nombre o correo...',
+            columns: {
+                name: 'Nombre',
+                city: 'Ciudad',
+                country: 'País',
+                email: 'Correo electrónico',
+            },
+            empty: 'No se encontraron clientes.',
+        },
+        create: {
+            title: 'Nuevo cliente',
+            description: 'Añade un cliente al registro',
+            namePlaceholder: 'Nombre del cliente',
+            addressPlaceholder: 'Dirección',
+            zipPlaceholder: 'Código postal',
+            cityPlaceholder: 'Ciudad',
+            stateProvince: 'Estado / Provincia',
+            stateProvincePlaceholder: 'Estado o provincia',
+            emailPlaceholder: 'Correo electrónico',
+            website: 'Sitio web',
+            phonePlaceholder: 'Número de teléfono',
+            taxId: 'NIF',
+            taxIdPlaceholder: 'Número de identificación fiscal',
+        },
+        edit: {
+            title: 'Editar cliente',
+            description: 'Actualizar {name}',
+            confirmDelete:
+                '¿Eliminar este cliente? Esta acción no se puede deshacer.',
+            deleteButton: 'Eliminar cliente',
+        },
+    },
+    invoices: {
+        index: {
+            title: 'Facturas',
+            description: 'Gestiona tus facturas',
+            newButton: 'Nueva factura',
+            searchPlaceholder: 'Buscar por número o cliente...',
+            columns: {
+                number: 'Número',
+                date: 'Fecha',
+                customer: 'Cliente',
+                paid: 'Pagada',
+                total: 'Total',
+            },
+            paid: 'Pagada',
+            unpaid: 'Sin pagar',
+            preview: 'Vista previa',
+            pdf: 'PDF',
+            duplicate: 'Duplicar',
+            empty: 'No se encontraron facturas.',
+        },
+        create: {
+            title: 'Nueva factura',
+            description: 'Crea una nueva factura',
+            number: 'Número',
+            date: 'Fecha',
+            customer: 'Cliente',
+            selectCustomer: 'Selecciona un cliente',
+            language: 'Idioma',
+            selectLanguage: 'Selecciona un idioma',
+            paid: 'Pagada',
+            note: 'Nota',
+            notePlaceholder: 'Nota opcional',
+            rows: 'Líneas',
+            rowDescription: 'Descripción',
+            rowQuantity: 'Cantidad',
+            rowPrice: 'Precio',
+            rowVat: 'IGIC (%)',
+            rowVatPlaceholder: 'IGIC %',
+            rowIsSubscription: 'Renovable',
+            rowExpirationDate: 'Fecha de vencimiento',
+            rowSubscriptionActive: 'Activo',
+            total: 'Total: {amount}',
+            confirmRemoveRow: '¿Eliminar esta línea?',
+        },
+        edit: {
+            title: 'Editar factura',
+            description: 'Actualizar factura {number}',
+            confirmDelete:
+                '¿Eliminar esta factura? Esta acción no se puede deshacer.',
+            deleteButton: 'Eliminar factura',
+        },
+    },
+    productPicker: {
+        title: 'Elige un producto',
+        searchPlaceholder: 'Buscar por código o descripción...',
+        empty: 'No se encontraron productos.',
+        fallbackLabel: 'Del catálogo',
+        page: 'Página {current} de {last}',
+    },
+    products: {
+        type: { product: 'Producto', service: 'Servicio' },
+        index: {
+            title: 'Productos',
+            description: 'Gestiona tu catálogo de productos y servicios',
+            newButton: 'Nuevo producto',
+            searchPlaceholder: 'Buscar por código o descripción...',
+            columns: {
+                code: 'Código',
+                type: 'Tipo',
+                description: 'Descripción',
+                price: 'Precio',
+            },
+            empty: 'No se encontraron productos.',
+        },
+        create: {
+            title: 'Nuevo producto',
+            description: 'Añade un producto o servicio al catálogo',
+            code: 'Código',
+            codePlaceholder: 'Código opcional',
+            type: 'Tipo',
+            selectType: 'Selecciona un tipo',
+            descriptionLabel: 'Descripción',
+            descriptionPlaceholder: 'Descripción',
+            price: 'Precio',
+            pricePlaceholder: 'Precio',
+        },
+        edit: {
+            title: 'Editar producto',
+            description: 'Actualizar {name}',
+            confirmDelete:
+                '¿Eliminar este producto? Esta acción no se puede deshacer.',
+            deleteButton: 'Eliminar producto',
+        },
+    },
+};
+
+export default messages;

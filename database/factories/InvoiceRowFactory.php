@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\SubscriptionStatus;
 use App\Models\Invoice;
 use App\Models\InvoiceRow;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -25,5 +26,13 @@ class InvoiceRowFactory extends Factory
             'price' => fake()->randomFloat(2, 10, 1000),
             'vat_rate' => fake()->randomElement([7, 0]),
         ];
+    }
+
+    public function subscription(): static
+    {
+        return $this->state(fn (): array => [
+            'expiration_date' => fake()->dateTimeBetween('-60 days', '+120 days')->format('Y-m-d'),
+            'subscription_status' => SubscriptionStatus::Active,
+        ]);
     }
 }

@@ -42,14 +42,14 @@ UUID primary key. The invoicing entities (issuers). Belongs to `countries` (`cou
 | `tax_id`, `address`, `zip`, `city`, `email`, `phone`, `iban` | all nullable |
 | `country_id` | FK → `countries.id`, nullable |
 | `logo` | nullable path relative to `public/` (`images/companies/{id}.{ext}`), file not versioned |
-| `is_default` | boolean, default `false` — at most one company is the default preselected on new invoices |
+| `is_default` | boolean, default `false` — at most one company is the default; it's the fallback `App\Support\CurrentCompany::resolve()` uses when no company is selected in the session yet |
 
 ### `invoices`
 UUID primary key. Belongs to `customers` (`customer_id`, `restrictOnDelete` — a customer with invoices can't be deleted) and to `companies` (`company_id`, `restrictOnDelete`).
 
 | Column | Notes |
 |---|---|
-| `number` | unique, auto-generated as `{year}-{4-digit sequence}` (`Invoice::nextNumber()`), resets per year |
+| `number` | unique per company (`unique(company_id, number)`), auto-generated as `{year}-{4-digit sequence}` (`Invoice::nextNumber(string $companyId, ?string $year = null)`), resets per year and per company |
 | `invoice_date` | date |
 | `paid` | boolean, default `false` |
 | `customer_id` | FK → `customers.id` |
@@ -68,6 +68,21 @@ UUID primary key. Belongs to `invoices` (`invoice_id`, `cascadeOnDelete` — del
 | `quantity` | `decimal(10,2)`, default `1.00`, multiplied against `price` |
 | `price` | `decimal(10,2)` |
 | `vat_rate` | `decimal(5,2)`, percentage applied to `price * quantity` |
+| `expiration_date` | nullable date — set only when the row is a recurring/renewable service (domain, hosting, maintenance, ...); `NULL` means a one-off row |
+| `subscription_status` | string, cast to `App\Enums\SubscriptionStatus` (`active` \| `cancelled`), default `active` — only meaningful when `expiration_date` is set |
+
+`InvoiceRow::scopeSubscriptions()` filters to rows with a non-null `expiration_date` and `subscription_status = active`; this is what powers the Dashboard's scadenziario widget (see the wiki's [Dashboard](https://github.com/simonecosci/biglins/wiki/Dashboard) page).
+
+### `products`
+UUID primary key. Belongs to `companies` (`company_id`, required, `restrictOnDelete` — a company with products can't be deleted).
+
+| Column | Notes |
+|---|---|
+| `code` | nullable, unique globally (not per-company) |
+| `type` | string, cast to `App\Enums\ProductType` |
+| `description` | required |
+| `price` | `decimal(10,2)` |
+| `company_id` | FK → `companies.id`, **not nullable** |
 
 ## Factories & seeding
 

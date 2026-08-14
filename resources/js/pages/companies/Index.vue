@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
-import { Plus } from '@lucide/vue';
+import { Head, Link, router, setLayoutProps } from '@inertiajs/vue3';
+import { Pencil, Plus } from '@lucide/vue';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +36,8 @@ const props = defineProps<{
 
 const search = ref(props.filters.search);
 
+const { t } = useI18n();
+
 function onSearch(): void {
     router.get(
         index().url,
@@ -43,45 +46,56 @@ function onSearch(): void {
     );
 }
 
-defineOptions({
-    layout: () => ({
-        breadcrumbs: [
-            { title: 'Companies', href: index() },
-        ] satisfies BreadcrumbItem[],
-    }),
+setLayoutProps({
+    breadcrumbs: [
+        { title: t('companies.index.title'), href: index() },
+    ] satisfies BreadcrumbItem[],
 });
 </script>
 
 <template>
-    <Head title="Companies" />
+    <Head :title="t('companies.index.title')" />
 
     <div class="flex flex-col space-y-6">
         <div class="flex items-center justify-between">
             <Heading
-                title="Companies"
-                description="Manage the companies that can issue invoices"
+                :title="t('companies.index.title')"
+                :description="t('companies.index.description')"
             />
             <Button as-child>
                 <Link :href="create()">
                     <Plus />
-                    New company
+                    {{ t('companies.index.newButton') }}
                 </Link>
             </Button>
         </div>
 
         <form class="max-w-sm" @submit.prevent="onSearch">
-            <Input v-model="search" placeholder="Search by name..." />
+            <Input
+                v-model="search"
+                :placeholder="t('companies.index.searchPlaceholder')"
+            />
         </form>
 
         <div class="overflow-hidden rounded-lg border">
             <table class="w-full text-sm">
                 <thead class="bg-muted/50 text-left">
                     <tr>
-                        <th class="px-4 py-2 font-medium">Name</th>
-                        <th class="px-4 py-2 font-medium">City</th>
-                        <th class="px-4 py-2 font-medium">Country</th>
-                        <th class="px-4 py-2 font-medium">Email</th>
-                        <th class="px-4 py-2 font-medium">Default</th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('companies.index.columns.name') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('companies.index.columns.city') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('companies.index.columns.country') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('companies.index.columns.email') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('companies.index.columns.default') }}
+                        </th>
                         <th class="px-4 py-2"></th>
                     </tr>
                 </thead>
@@ -98,15 +112,23 @@ defineOptions({
                         </td>
                         <td class="px-4 py-2">{{ company.email ?? '—' }}</td>
                         <td class="px-4 py-2">
-                            {{ company.is_default ? 'Yes' : '—' }}
+                            {{
+                                company.is_default
+                                    ? t('companies.index.yes')
+                                    : '—'
+                            }}
                         </td>
                         <td class="px-4 py-2 text-right">
-                            <Link
-                                :href="edit(company.id)"
-                                class="text-primary underline-offset-4 hover:underline"
+                            <Button
+                                as-child
+                                variant="ghost"
+                                size="icon-sm"
+                                :title="t('common.actions.edit')"
                             >
-                                Edit
-                            </Link>
+                                <Link :href="edit(company.id)">
+                                    <Pencil />
+                                </Link>
+                            </Button>
                         </td>
                     </tr>
                     <tr v-if="companies.data.length === 0">
@@ -114,7 +136,7 @@ defineOptions({
                             colspan="6"
                             class="px-4 py-6 text-center text-muted-foreground"
                         >
-                            No companies found.
+                            {{ t('companies.index.empty') }}
                         </td>
                     </tr>
                 </tbody>

@@ -1,47 +1,82 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
-import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
+import { Head, setLayoutProps } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
+import SubscriptionsWidget from '@/components/dashboard/SubscriptionsWidget.vue';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { dashboard } from '@/routes';
+import type { BreadcrumbItem } from '@/types';
 
-defineOptions({
-    layout: () => ({
-        breadcrumbs: [
-            {
-                title: 'Dashboard',
-                href: dashboard(),
-            },
-        ],
-    }),
+type SubscriptionStatus = 'expired' | 'expiring_soon' | 'upcoming';
+
+type SubscriptionRow = {
+    id: string;
+    description: string;
+    price: number;
+    quantity: number;
+    expiration_date: string;
+    urgency: SubscriptionStatus;
+};
+
+type SubscriptionGroup = {
+    invoice_id: string;
+    invoice_number: string;
+    customer_name: string | null;
+    status: SubscriptionStatus;
+    total: number;
+    rows: SubscriptionRow[];
+};
+
+const props = defineProps<{
+    revenue: {
+        year: number;
+        yearToDate: number;
+    };
+    subscriptions: {
+        expiredCount: number;
+        expiringSoonCount: number;
+        groups: SubscriptionGroup[];
+    };
+}>();
+
+const { t } = useI18n();
+
+setLayoutProps({
+    breadcrumbs: [
+        {
+            title: t('dashboard.title'),
+            href: dashboard(),
+        },
+    ] satisfies BreadcrumbItem[],
 });
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head :title="t('dashboard.title')" />
 
     <div
         class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
     >
-        <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div
-                class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-            >
-                <PlaceholderPattern />
-            </div>
-            <div
-                class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-            >
-                <PlaceholderPattern />
-            </div>
-            <div
-                class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-            >
-                <PlaceholderPattern />
-            </div>
-        </div>
-        <div
-            class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border"
-        >
-            <PlaceholderPattern />
-        </div>
+        <Card>
+            <CardHeader>
+                <CardTitle class="text-sm font-medium text-muted-foreground">
+                    {{
+                        t('dashboard.revenue.label', {
+                            year: props.revenue.year,
+                        })
+                    }}
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p class="text-3xl font-bold">
+                    {{ props.revenue.yearToDate.toFixed(2) }}
+                </p>
+            </CardContent>
+        </Card>
+
+        <SubscriptionsWidget
+            :expired-count="props.subscriptions.expiredCount"
+            :expiring-soon-count="props.subscriptions.expiringSoonCount"
+            :groups="props.subscriptions.groups"
+        />
     </div>
 </template>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\CurrentCompany;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -18,11 +19,13 @@ class StoreInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'number' => ['nullable', 'string', 'max:20', 'unique:invoices,number'],
+            'number' => [
+                'nullable', 'string', 'max:20',
+                Rule::unique('invoices', 'number')->where('company_id', CurrentCompany::resolve()?->id),
+            ],
             'invoice_date' => ['required', 'date'],
             'paid' => ['boolean'],
             'customer_id' => ['required', 'uuid', 'exists:customers,id'],
-            'company_id' => ['required', 'uuid', 'exists:companies,id'],
             'note' => ['nullable', 'string'],
             'language' => ['required', 'string', Rule::in(['it', 'en', 'es'])],
             'rows' => ['required', 'array', 'min:1'],
@@ -30,6 +33,7 @@ class StoreInvoiceRequest extends FormRequest
             'rows.*.quantity' => ['required', 'numeric', 'min:0.01'],
             'rows.*.price' => ['required', 'numeric', 'min:0'],
             'rows.*.vat_rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'rows.*.expiration_date' => ['nullable', 'date'],
         ];
     }
 }

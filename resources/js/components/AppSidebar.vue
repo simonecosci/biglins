@@ -6,10 +6,12 @@ import {
     FolderGit2,
     Globe,
     LayoutGrid,
+    Package,
     Receipt,
     Users,
 } from '@lucide/vue';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -28,50 +30,58 @@ import { index as companiesIndex } from '@/routes/companies';
 import { index as countriesIndex } from '@/routes/countries';
 import { index as customersIndex } from '@/routes/customers';
 import { index as invoicesIndex } from '@/routes/invoices';
+import { index as productsIndex } from '@/routes/products';
 import type { NavItem } from '@/types';
+
+const { t } = useI18n();
 
 const dashboardUrl = computed(() => dashboard().url);
 
 const mainNavItems = computed<NavItem[]>(() => [
     {
-        title: 'Dashboard',
+        title: t('nav.dashboard'),
         href: dashboardUrl.value,
         icon: LayoutGrid,
     },
     {
-        title: 'Customers',
+        title: t('nav.customers'),
         href: customersIndex().url,
         icon: Users,
     },
     {
-        title: 'Companies',
+        title: t('nav.companies'),
         href: companiesIndex().url,
         icon: Building2,
     },
     {
-        title: 'Invoices',
+        title: t('nav.invoices'),
         href: invoicesIndex().url,
         icon: Receipt,
     },
     {
-        title: 'Countries',
+        title: t('nav.products'),
+        href: productsIndex().url,
+        icon: Package,
+    },
+    {
+        title: t('nav.countries'),
         href: countriesIndex().url,
         icon: Globe,
     },
 ]);
 
-const footerNavItems: NavItem[] = [
+const footerNavItems = computed<NavItem[]>(() => [
     {
-        title: 'Repository',
+        title: t('nav.repository'),
         href: 'https://github.com/simonecosci/biglins',
         icon: FolderGit2,
     },
     {
-        title: 'Documentation',
+        title: t('nav.documentation'),
         href: 'https://github.com/simonecosci/biglins/wiki',
         icon: BookOpen,
     },
-];
+]);
 </script>
 
 <template>

@@ -37,6 +37,7 @@ test('company is_default defaults to false and casts to boolean', function () {
 });
 
 use App\Models\Invoice;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Str;
 
@@ -160,6 +161,17 @@ test('a company with invoices cannot be deleted', function () {
     $user = User::factory()->create();
     $company = Company::factory()->create();
     Invoice::factory()->create(['company_id' => $company->id]);
+
+    $response = $this->actingAs($user)->delete(route('companies.destroy', $company));
+
+    $response->assertRedirect(route('companies.index'));
+    expect(Company::query()->find($company->id))->not->toBeNull();
+});
+
+test('a company with products cannot be deleted', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    Product::factory()->create(['company_id' => $company->id]);
 
     $response = $this->actingAs($user)->delete(route('companies.destroy', $company));
 
