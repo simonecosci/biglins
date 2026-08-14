@@ -3,6 +3,7 @@ import { Link } from '@inertiajs/vue3';
 import {
     BookOpen,
     Building2,
+    FileSignature,
     FolderGit2,
     Globe,
     LayoutGrid,
@@ -29,6 +30,7 @@ import { dashboard } from '@/routes';
 import { index as companiesIndex } from '@/routes/companies';
 import { index as countriesIndex } from '@/routes/countries';
 import { index as customersIndex } from '@/routes/customers';
+import { index as estimationsIndex } from '@/routes/estimations';
 import { index as invoicesIndex } from '@/routes/invoices';
 import { index as productsIndex } from '@/routes/products';
 import type { NavItem } from '@/types';
@@ -57,6 +59,11 @@ const mainNavItems = computed<NavItem[]>(() => [
         title: t('nav.invoices'),
         href: invoicesIndex().url,
         icon: Receipt,
+    },
+    {
+        title: t('nav.estimations'),
+        href: estimationsIndex().url,
+        icon: FileSignature,
     },
     {
         title: t('nav.products'),
