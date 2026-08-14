@@ -21,6 +21,7 @@ type Product = {
     id: string;
     code: string | null;
     type: 'product' | 'service';
+    duration: 'weekly' | 'monthly' | 'yearly' | null;
     description: string;
     price: number;
 };
@@ -91,6 +92,37 @@ function onDelete(): void {
                     </Select>
                     <InputError :message="errors.type" />
                 </div>
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="duration">{{
+                    t('products.create.duration')
+                }}</Label>
+                <Select
+                    name="duration"
+                    :default-value="product.duration ?? 'none'"
+                >
+                    <SelectTrigger id="duration" class="w-full">
+                        <SelectValue
+                            :placeholder="t('products.create.selectDuration')"
+                        />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="none">{{
+                            t('products.duration.none')
+                        }}</SelectItem>
+                        <SelectItem value="weekly">{{
+                            t('products.duration.weekly')
+                        }}</SelectItem>
+                        <SelectItem value="monthly">{{
+                            t('products.duration.monthly')
+                        }}</SelectItem>
+                        <SelectItem value="yearly">{{
+                            t('products.duration.yearly')
+                        }}</SelectItem>
+                    </SelectContent>
+                </Select>
+                <InputError :message="errors.duration" />
             </div>
 
             <div class="grid gap-2">

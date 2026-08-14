@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ProductDuration;
 use App\Enums\ProductType;
 use App\Models\Company;
 use App\Models\Product;
@@ -12,6 +13,13 @@ test('product factory creates a product', function () {
     expect($product->id)->toBeString();
     expect(strlen($product->id))->toBe(36);
     expect($product->type)->toBeInstanceOf(ProductType::class);
+    expect($product->duration)->toBeNull();
+});
+
+test('product factory can create a product with a duration', function () {
+    $product = Product::factory()->withDuration(ProductDuration::Monthly)->create();
+
+    expect($product->duration)->toBe(ProductDuration::Monthly);
 });
 
 test('product belongs to a company', function () {
@@ -86,6 +94,17 @@ test('products index can be searched as json for the invoice picker', function (
         ->toBe(['SKU-1', 'SKU-2']);
 });
 
+test('the product picker json response includes the duration', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    Product::factory()->withDuration(ProductDuration::Weekly)->create(['company_id' => $company->id, 'code' => 'SKU-1', 'description' => 'Blue widget']);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->getJson(route('products.index', ['search' => 'widget']));
+
+    $response->assertOk();
+    expect($response->json('data.0.duration'))->toBe(ProductDuration::Weekly->value);
+});
+
 test('the product picker json response does not include products from another company', function () {
     $user = User::factory()->create();
     $company = Company::factory()->create();
@@ -110,6 +129,52 @@ test('products index json response is paginated', function () {
     $response->assertOk();
     expect($response->json('data'))->toHaveCount(15);
     expect($response->json('last_page'))->toBe(2);
+});
+
+test('product can be created with a duration', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('products.store'), [
+        'type' => ProductType::Service->value,
+        'duration' => ProductDuration::Yearly->value,
+        'description' => 'Hosting',
+        'price' => 199,
+    ]);
+
+    $response->assertSessionHasNoErrors()->assertRedirect(route('products.index'));
+    expect(Product::query()->where('description', 'Hosting')->first()->duration)->toBe(ProductDuration::Yearly);
+});
+
+test('submitting duration as none clears it to null', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $product = Product::factory()->withDuration(ProductDuration::Monthly)->create(['company_id' => $company->id]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->put(route('products.update', $product), [
+        'code' => $product->code,
+        'type' => $product->type->value,
+        'duration' => 'none',
+        'description' => $product->description,
+        'price' => $product->price,
+    ]);
+
+    $response->assertSessionHasNoErrors();
+    expect($product->fresh()->duration)->toBeNull();
+});
+
+test('product duration must be a valid enum value', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('products.store'), [
+        'type' => ProductType::Service->value,
+        'duration' => 'invalid',
+        'description' => 'Hosting',
+        'price' => 199,
+    ]);
+
+    $response->assertSessionHasErrors('duration');
 });
 
 test('product can be created without a code', function () {

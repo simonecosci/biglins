@@ -467,6 +467,12 @@ const messages: MessageSchema = {
     },
     products: {
         type: { product: 'Producto', service: 'Servicio' },
+        duration: {
+            none: 'Sin duración',
+            weekly: 'Semanal',
+            monthly: 'Mensual',
+            yearly: 'Anual',
+        },
         index: {
             title: 'Productos',
             description: 'Gestiona tu catálogo de productos y servicios',
@@ -477,6 +483,7 @@ const messages: MessageSchema = {
                 type: 'Tipo',
                 description: 'Descripción',
                 price: 'Precio',
+                duration: 'Duración',
             },
             empty: 'No se encontraron productos.',
         },
@@ -487,6 +494,8 @@ const messages: MessageSchema = {
             codePlaceholder: 'Código opcional',
             type: 'Tipo',
             selectType: 'Selecciona un tipo',
+            duration: 'Duración',
+            selectDuration: 'Selecciona una duración',
             descriptionLabel: 'Descripción',
             descriptionPlaceholder: 'Descripción',
             price: 'Precio',

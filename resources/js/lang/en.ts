@@ -449,6 +449,12 @@ const messages = {
     },
     products: {
         type: { product: 'Product', service: 'Service' },
+        duration: {
+            none: 'No duration',
+            weekly: 'Weekly',
+            monthly: 'Monthly',
+            yearly: 'Yearly',
+        },
         index: {
             title: 'Products',
             description: 'Manage your product and service catalog',
@@ -459,6 +465,7 @@ const messages = {
                 type: 'Type',
                 description: 'Description',
                 price: 'Price',
+                duration: 'Duration',
             },
             empty: 'No products found.',
         },
@@ -469,6 +476,8 @@ const messages = {
             codePlaceholder: 'Optional code',
             type: 'Type',
             selectType: 'Select a type',
+            duration: 'Duration',
+            selectDuration: 'Select a duration',
             descriptionLabel: 'Description',
             descriptionPlaceholder: 'Description',
             price: 'Price',

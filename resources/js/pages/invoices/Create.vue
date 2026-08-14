@@ -19,6 +19,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { addDurationToDate } from '@/lib/productDuration';
 import { index } from '@/routes/invoices';
 import type { BreadcrumbItem } from '@/types';
 
@@ -117,6 +118,13 @@ function applyProduct(index: number, product: PickedProduct): void {
     selectedProducts.value[index] = product;
     form.rows[index].description = product.description;
     form.rows[index].price = product.price;
+
+    if (product.duration !== null) {
+        form.rows[index].expiration_date = addDurationToDate(
+            form.invoice_date,
+            product.duration,
+        );
+    }
 }
 
 const total = computed(() =>
