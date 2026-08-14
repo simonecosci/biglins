@@ -11,9 +11,13 @@ use App\Models\Estimation;
 use App\Models\EstimationRow;
 use App\Support\CurrentCompany;
 use App\Support\MarkdownRenderer;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -172,5 +176,25 @@ class EstimationController extends Controller
         return response()->json([
             'html' => MarkdownRenderer::toHtml($request->string('body')->toString()),
         ]);
+    }
+
+    public function preview(Estimation $estimation): View
+    {
+        App::setLocale($estimation->language);
+
+        return view('estimations.template', [
+            'estimation' => $estimation->load(['customer.country', 'company.country', 'rows']),
+            'bodyHtml' => MarkdownRenderer::toHtml($estimation->body),
+        ]);
+    }
+
+    public function pdf(Estimation $estimation): HttpResponse
+    {
+        App::setLocale($estimation->language);
+
+        return Pdf::loadView('estimations.template', [
+            'estimation' => $estimation->load(['customer.country', 'company.country', 'rows']),
+            'bodyHtml' => MarkdownRenderer::toHtml($estimation->body),
+        ])->download(str_replace(['/', '\\'], '-', $estimation->number).'.pdf');
     }
 }
