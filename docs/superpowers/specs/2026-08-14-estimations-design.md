@@ -140,7 +140,7 @@ file => required, file, mimes:pdf,jpg,jpeg,png,doc,docx,rtf,md, max:10240
 
 ### Markdown rendering
 A small `App\Support\MarkdownRenderer` wrapping a single configured `League\CommonMark\CommonMarkConverter` instance (default safe settings — no raw HTML passthrough), used by:
-- `POST estimations/{estimation}/markdown-preview` — accepts a `body` string in the request (not the stored value, so it reflects unsaved edits), returns `{ html }`, used by the Edit/Create form's live preview tab
+- `POST estimations/markdown-preview` — no `{estimation}` binding, since the Create form has no persisted estimation yet; accepts a `body` string in the request (not the stored value, so it reflects unsaved edits) and returns `{ html }`, used by both the Create and Edit form's live preview tab
 - `preview()`/`pdf()` — renders the persisted `body`
 
 ## Routes (`routes/estimations.php`, required from `routes/web.php`)
@@ -151,7 +151,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('estimations/{estimation}/pdf', [EstimationController::class, 'pdf'])->name('estimations.pdf');
     Route::get('estimations/{estimation}/zip', [EstimationController::class, 'zip'])->name('estimations.zip');
     Route::post('estimations/{estimation}/convert-to-invoice', [EstimationController::class, 'convertToInvoice'])->name('estimations.convert-to-invoice');
-    Route::post('estimations/{estimation}/markdown-preview', [EstimationController::class, 'markdownPreview'])->name('estimations.markdown-preview');
+    Route::post('estimations/markdown-preview', [EstimationController::class, 'markdownPreview'])->name('estimations.markdown-preview');
     Route::post('estimations/{estimation}/attachments', [EstimationAttachmentController::class, 'store'])->name('estimations.attachments.store');
     Route::delete('estimations/{estimation}/attachments/{attachment}', [EstimationAttachmentController::class, 'destroy'])->name('estimations.attachments.destroy');
     Route::resource('estimations', EstimationController::class)->except('show');
