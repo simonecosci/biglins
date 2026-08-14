@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/images/logo.png" alt="Biglins" width="360">
+</p>
+
 # Biglins
 
 [![tests](https://github.com/simonecosci/biglins/actions/workflows/tests.yml/badge.svg)](https://github.com/simonecosci/biglins/actions/workflows/tests.yml)
