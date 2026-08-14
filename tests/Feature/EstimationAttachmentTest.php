@@ -58,6 +58,31 @@ test('a disallowed extension is rejected', function () {
     $response->assertSessionHasErrors('file');
 });
 
+test('the stored file keeps the real extension instead of a mime-guessed one', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $estimation = Estimation::factory()->create(['company_id' => $company->id]);
+
+    $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('estimations.attachments.store', $estimation), [
+        'file' => UploadedFile::fake()->create('notes.md', 10, 'text/markdown'),
+    ]);
+
+    $path = $estimation->attachments->first()->path;
+    expect($path)->toEndWith('.md');
+});
+
+test('a non-file value posted as the attachment is rejected instead of causing a server error', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $estimation = Estimation::factory()->create(['company_id' => $company->id]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('estimations.attachments.store', $estimation), [
+        'file' => 'not-a-file',
+    ]);
+
+    $response->assertSessionHasErrors('file');
+});
+
 test('a file larger than 10MB is rejected', function () {
     $user = User::factory()->create();
     $company = Company::factory()->create();

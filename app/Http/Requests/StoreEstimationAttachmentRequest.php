@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\UploadedFile;
 
 class StoreEstimationAttachmentRequest extends FormRequest
 {
@@ -22,6 +23,10 @@ class StoreEstimationAttachmentRequest extends FormRequest
             'file' => [
                 'required', 'file', 'max:10240',
                 function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! $value instanceof UploadedFile) {
+                        return; // the `file` rule already reported this
+                    }
+
                     $extension = strtolower($value->getClientOriginalExtension());
 
                     if (! in_array($extension, self::ALLOWED_EXTENSIONS, true)) {
