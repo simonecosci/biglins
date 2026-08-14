@@ -1,0 +1,108 @@
+<?php
+
+namespace App\Models;
+
+use App\Enums\EstimationStatus;
+use Database\Factories\EstimationFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
+
+/**
+ * @property string $id
+ * @property string $company_id
+ * @property string $customer_id
+ * @property string $number
+ * @property Carbon $estimation_date
+ * @property Carbon $expiration_date
+ * @property string $language
+ * @property string|null $body
+ * @property EstimationStatus $status
+ * @property string|null $invoice_id
+ * @property-read bool $is_expired
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
+#[Fillable(['company_id', 'customer_id', 'estimation_date', 'expiration_date', 'language', 'body', 'status'])]
+class Estimation extends Model
+{
+    /** @use HasFactory<EstimationFactory> */
+    use HasFactory, HasUuids;
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'estimation_date' => 'date:Y-m-d',
+            'expiration_date' => 'date:Y-m-d',
+            'status' => EstimationStatus::class,
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (Estimation $estimation): void {
+            if (! $estimation->number) {
+                $estimation->number = static::nextNumber($estimation->company_id);
+            }
+        });
+    }
+
+    public static function nextNumber(string $companyId, ?string $year = null): string
+    {
+        $year ??= now()->format('Y');
+
+        $lastNumber = static::query()
+            ->where('company_id', $companyId)
+            ->where('number', 'like', "{$year}-%")
+            ->orderByDesc('number')
+            ->value('number');
+
+        $sequence = $lastNumber
+            ? ((int) substr($lastNumber, strlen($year) + 1)) + 1
+            : 1;
+
+        return sprintf('%s-%04d', $year, $sequence);
+    }
+
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * @return BelongsTo<Company, $this>
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * @return BelongsTo<Invoice, $this>
+     */
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
+    }
+
+    /**
+     * @return Attribute<bool, never>
+     */
+    protected function isExpired(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): bool => $this->status === EstimationStatus::Pending
+                && $this->expiration_date->lt(Carbon::today()),
+        );
+    }
+}
