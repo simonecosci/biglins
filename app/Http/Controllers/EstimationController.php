@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateEstimationRequest;
 use App\Models\Customer;
 use App\Models\Estimation;
 use App\Models\EstimationRow;
+use App\Models\Invoice;
 use App\Support\CurrentCompany;
 use App\Support\MarkdownRenderer;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -169,6 +170,44 @@ class EstimationController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Estimation deleted.')]);
 
         return to_route('estimations.index');
+    }
+
+    public function convertToInvoice(Estimation $estimation): RedirectResponse
+    {
+        $this->authorizeCurrentCompany($estimation);
+
+        if ($estimation->status !== EstimationStatus::Accepted || $estimation->invoice_id !== null) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('Only an accepted, not yet converted estimation can become an invoice.')]);
+
+            return to_route('estimations.edit', $estimation);
+        }
+
+        $invoice = DB::transaction(function () use ($estimation): Invoice {
+            $invoice = Invoice::query()->create([
+                'company_id' => $estimation->company_id,
+                'customer_id' => $estimation->customer_id,
+                'invoice_date' => now()->toDateString(),
+                'paid' => false,
+                'language' => $estimation->language,
+            ]);
+
+            foreach ($estimation->rows as $row) {
+                $invoice->rows()->create([
+                    'description' => $row->description,
+                    'quantity' => $row->quantity,
+                    'price' => $row->price,
+                    'vat_rate' => $row->vat_rate,
+                ]);
+            }
+
+            $estimation->update(['invoice_id' => $invoice->id]);
+
+            return $invoice;
+        });
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Estimation converted to invoice.')]);
+
+        return to_route('invoices.edit', $invoice);
     }
 
     public function markdownPreview(Request $request): JsonResponse

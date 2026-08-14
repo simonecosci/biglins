@@ -10,5 +10,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('estimations/{estimation}/pdf', [EstimationController::class, 'pdf'])->name('estimations.pdf');
     Route::post('estimations/{estimation}/attachments', [EstimationAttachmentController::class, 'store'])->name('estimations.attachments.store');
     Route::delete('estimations/{estimation}/attachments/{attachment}', [EstimationAttachmentController::class, 'destroy'])->name('estimations.attachments.destroy');
+    Route::post('estimations/{estimation}/convert-to-invoice', [EstimationController::class, 'convertToInvoice'])->name('estimations.convert-to-invoice');
     Route::resource('estimations', EstimationController::class)->except('show');
 });

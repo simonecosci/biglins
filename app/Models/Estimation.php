@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\Storage;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['company_id', 'customer_id', 'estimation_date', 'expiration_date', 'language', 'body', 'status'])]
+#[Fillable(['company_id', 'customer_id', 'estimation_date', 'expiration_date', 'language', 'body', 'status', 'invoice_id'])]
 class Estimation extends Model
 {
     /** @use HasFactory<EstimationFactory> */
