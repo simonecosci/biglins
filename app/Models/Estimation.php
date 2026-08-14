@@ -11,7 +11,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @property string $id
@@ -61,6 +63,14 @@ class Estimation extends Model
                 $estimation->number = static::nextNumber($estimation->company_id);
             }
         });
+
+        static::deleting(function (Estimation $estimation): void {
+            foreach ($estimation->attachments as $attachment) {
+                Storage::disk($attachment->disk)->delete($attachment->path);
+            }
+
+            $estimation->attachments()->delete();
+        });
     }
 
     public static function nextNumber(string $companyId, ?string $year = null): string
@@ -102,6 +112,14 @@ class Estimation extends Model
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    /**
+     * @return MorphMany<Attachment, $this>
+     */
+    public function attachments(): MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachable');
     }
 
     /**

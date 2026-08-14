@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\EstimationStatus;
+use App\Models\Attachment;
 use App\Models\Company;
 use App\Models\Customer;
 use App\Models\Estimation;
@@ -113,4 +114,18 @@ test('estimation total accessors sum its rows', function () {
     expect((float) $estimation->subtotal)->toEqual(150.0);
     expect((float) $estimation->vat_total)->toEqual(27.0);
     expect((float) $estimation->total)->toEqual(177.0);
+});
+
+test('estimation has many attachments and attachments are deleted when the estimation is deleted', function () {
+    $estimation = Estimation::factory()->create();
+    Attachment::factory()->count(2)->create([
+        'attachable_type' => Estimation::class,
+        'attachable_id' => $estimation->id,
+    ]);
+
+    expect($estimation->attachments)->toHaveCount(2);
+
+    $estimation->delete();
+
+    expect(Attachment::query()->where('attachable_id', $estimation->id)->count())->toBe(0);
 });
