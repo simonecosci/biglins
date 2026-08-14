@@ -14,7 +14,7 @@ defineProps<Props>();
 
 <template>
     <img
-        src="/images/logo.png"
+        src="/images/logo-icon.png"
         alt="Logo"
         class="object-contain"
         :class="className"
