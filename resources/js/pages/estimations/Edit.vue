@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/vue3';
-import { Plus, Trash2 } from '@lucide/vue';
+import { Plus, Trash2, Upload } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import EstimationAttachmentController from '@/actions/App/Http/Controllers/EstimationAttachmentController';
 import EstimationController from '@/actions/App/Http/Controllers/EstimationController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -38,6 +39,13 @@ type EstimationRow = {
     note: string | null;
 };
 
+type Attachment = {
+    id: string;
+    original_name: string;
+    size: number;
+    mime_type: string;
+};
+
 type Estimation = {
     id: string;
     number: string;
@@ -49,6 +57,7 @@ type Estimation = {
     status: EstimationStatus;
     invoice_id: string | null;
     rows: EstimationRow[];
+    attachments: Attachment[];
 };
 
 type EstimationRowForm = {
@@ -147,6 +156,46 @@ function onDelete(): void {
     if (confirm(t('estimations.edit.confirmDelete'))) {
         router.delete(EstimationController.destroy(props.estimation.id).url);
     }
+}
+
+const fileInput = ref<HTMLInputElement | null>(null);
+
+function triggerUpload(): void {
+    fileInput.value?.click();
+}
+
+function onFileSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+
+    if (!file) {
+        return;
+    }
+
+    router.post(
+        EstimationAttachmentController.store(props.estimation.id).url,
+        { file },
+        { forceFormData: true, preserveScroll: true },
+    );
+
+    (event.target as HTMLInputElement).value = '';
+}
+
+function deleteAttachment(attachmentId: string): void {
+    if (!confirm(t('estimations.edit.attachments.confirmDelete'))) {
+        return;
+    }
+
+    router.delete(
+        EstimationAttachmentController.destroy([
+            props.estimation.id,
+            attachmentId,
+        ]).url,
+        { preserveScroll: true },
+    );
+}
+
+function formatSize(bytes: number): string {
+    return `${(bytes / 1024).toFixed(0)} KB`;
 }
 </script>
 
@@ -371,6 +420,57 @@ function onDelete(): void {
             >
                 {{ t('estimations.edit.deleteButton') }}
             </Button>
+        </div>
+
+        <div class="border-t pt-6">
+            <div class="flex items-center justify-between">
+                <Label>{{ t('estimations.edit.attachments.title') }}</Label>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    @click="triggerUpload"
+                >
+                    <Upload />
+                    {{ t('estimations.edit.attachments.uploadButton') }}
+                </Button>
+                <input
+                    ref="fileInput"
+                    type="file"
+                    class="hidden"
+                    @change="onFileSelected"
+                />
+            </div>
+
+            <ul
+                v-if="estimation.attachments.length > 0"
+                class="mt-3 divide-y rounded-md border"
+            >
+                <li
+                    v-for="attachment in estimation.attachments"
+                    :key="attachment.id"
+                    class="flex items-center justify-between px-3 py-2 text-sm"
+                >
+                    <span class="truncate">
+                        {{ attachment.original_name }}
+                        <span class="text-muted-foreground"
+                            >({{ formatSize(attachment.size) }})</span
+                        >
+                    </span>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        :title="t('estimations.edit.attachments.deleteButton')"
+                        @click="deleteAttachment(attachment.id)"
+                    >
+                        <Trash2 />
+                    </Button>
+                </li>
+            </ul>
+            <p v-else class="mt-3 text-sm text-muted-foreground">
+                {{ t('estimations.edit.attachments.empty') }}
+            </p>
         </div>
     </div>
 </template>

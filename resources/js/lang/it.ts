@@ -511,6 +511,13 @@ const messages: MessageSchema = {
             confirmDelete:
                 "Eliminare questo preventivo? L'azione non può essere annullata.",
             deleteButton: 'Elimina preventivo',
+            attachments: {
+                title: 'Allegati',
+                uploadButton: 'Carica file',
+                empty: 'Nessun allegato ancora.',
+                deleteButton: 'Elimina',
+                confirmDelete: 'Eliminare questo allegato?',
+            },
         },
     },
     productPicker: {

@@ -515,6 +515,13 @@ const messages: MessageSchema = {
             confirmDelete:
                 '¿Eliminar este presupuesto? Esta acción no se puede deshacer.',
             deleteButton: 'Eliminar presupuesto',
+            attachments: {
+                title: 'Archivos adjuntos',
+                uploadButton: 'Subir archivo',
+                empty: 'Todavía no hay archivos adjuntos.',
+                deleteButton: 'Eliminar',
+                confirmDelete: '¿Eliminar este archivo adjunto?',
+            },
         },
     },
     productPicker: {

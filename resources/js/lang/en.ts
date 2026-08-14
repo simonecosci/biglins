@@ -497,6 +497,13 @@ const messages = {
             status: 'Status',
             confirmDelete: 'Delete this estimate? This cannot be undone.',
             deleteButton: 'Delete estimate',
+            attachments: {
+                title: 'Attachments',
+                uploadButton: 'Upload file',
+                empty: 'No attachments yet.',
+                deleteButton: 'Delete',
+                confirmDelete: 'Delete this attachment?',
+            },
         },
     },
     productPicker: {
