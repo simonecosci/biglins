@@ -20,8 +20,11 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use ZipArchive;
 
 class EstimationController extends Controller
 {
@@ -235,5 +238,32 @@ class EstimationController extends Controller
             'estimation' => $estimation->load(['customer.country', 'company.country', 'rows']),
             'bodyHtml' => MarkdownRenderer::toHtml($estimation->body),
         ])->download(str_replace(['/', '\\'], '-', $estimation->number).'.pdf');
+    }
+
+    public function zip(Estimation $estimation): BinaryFileResponse
+    {
+        App::setLocale($estimation->language);
+
+        $estimation->load(['customer.country', 'company.country', 'rows', 'attachments']);
+
+        $pdfContent = Pdf::loadView('estimations.template', [
+            'estimation' => $estimation,
+            'bodyHtml' => MarkdownRenderer::toHtml($estimation->body),
+        ])->output();
+
+        $zipPath = tempnam(sys_get_temp_dir(), 'estimation-zip-');
+        $number = str_replace(['/', '\\'], '-', $estimation->number);
+
+        $zip = new ZipArchive;
+        $zip->open($zipPath, ZipArchive::OVERWRITE);
+        $zip->addFromString("{$number}.pdf", $pdfContent);
+
+        foreach ($estimation->attachments as $attachment) {
+            $zip->addFile(Storage::disk($attachment->disk)->path($attachment->path), $attachment->original_name);
+        }
+
+        $zip->close();
+
+        return response()->download($zipPath, "{$number}.zip")->deleteFileAfterSend();
     }
 }
