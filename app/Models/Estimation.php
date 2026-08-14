@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -24,6 +25,9 @@ use Illuminate\Support\Carbon;
  * @property EstimationStatus $status
  * @property string|null $invoice_id
  * @property-read bool $is_expired
+ * @property-read float $subtotal
+ * @property-read float $vat_total
+ * @property-read float $total
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -32,6 +36,11 @@ class Estimation extends Model
 {
     /** @use HasFactory<EstimationFactory> */
     use HasFactory, HasUuids;
+
+    /**
+     * @var list<string>
+     */
+    protected $appends = ['subtotal', 'vat_total', 'total'];
 
     /**
      * @return array<string, string>
@@ -103,6 +112,50 @@ class Estimation extends Model
         return Attribute::make(
             get: fn (): bool => $this->status === EstimationStatus::Pending
                 && $this->expiration_date->lt(Carbon::today()),
+        );
+    }
+
+    /**
+     * @return HasMany<EstimationRow, $this>
+     */
+    public function rows(): HasMany
+    {
+        return $this->hasMany(EstimationRow::class);
+    }
+
+    /**
+     * @return Attribute<float, never>
+     */
+    protected function subtotal(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): float => (float) $this->rows->sum(
+                fn (EstimationRow $row): float => (float) $row->price * (float) $row->quantity
+            ),
+        );
+    }
+
+    /**
+     * @return Attribute<float, never>
+     */
+    protected function vatTotal(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): float => (float) $this->rows->sum(function (EstimationRow $row): float {
+                $lineTotal = (float) $row->price * (float) $row->quantity;
+
+                return $lineTotal * (float) $row->vat_rate / 100;
+            }),
+        );
+    }
+
+    /**
+     * @return Attribute<float, never>
+     */
+    protected function total(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): float => $this->subtotal + $this->vat_total,
         );
     }
 }

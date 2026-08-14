@@ -4,6 +4,7 @@ use App\Enums\EstimationStatus;
 use App\Models\Company;
 use App\Models\Customer;
 use App\Models\Estimation;
+use App\Models\EstimationRow;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 
@@ -91,4 +92,25 @@ test('isExpired is false for an accepted estimation even with a past expiration 
     expect($estimation->isExpired)->toBeFalse();
 
     Carbon::setTestNow();
+});
+
+test('estimation has many rows and rows are deleted when the estimation is deleted', function () {
+    $estimation = Estimation::factory()->create();
+    EstimationRow::factory()->count(2)->create(['estimation_id' => $estimation->id]);
+
+    expect($estimation->rows)->toHaveCount(2);
+
+    $estimation->delete();
+
+    expect(EstimationRow::query()->where('estimation_id', $estimation->id)->count())->toBe(0);
+});
+
+test('estimation total accessors sum its rows', function () {
+    $estimation = Estimation::factory()->create();
+    EstimationRow::factory()->create(['estimation_id' => $estimation->id, 'quantity' => 1, 'price' => 100, 'vat_rate' => 22]);
+    EstimationRow::factory()->create(['estimation_id' => $estimation->id, 'quantity' => 1, 'price' => 50, 'vat_rate' => 10]);
+
+    expect((float) $estimation->subtotal)->toEqual(150.0);
+    expect((float) $estimation->vat_total)->toEqual(27.0);
+    expect((float) $estimation->total)->toEqual(177.0);
 });
