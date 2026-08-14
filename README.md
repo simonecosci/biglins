@@ -4,7 +4,7 @@
 [![docker-publish](https://github.com/simonecosci/biglins/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/simonecosci/biglins/actions/workflows/docker-publish.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](composer.json)
 
-Applicazione di fatturazione per liberi professionisti: anagrafica clienti, emissione fatture con righe/IVA, numerazione progressiva automatica, anteprima e generazione PDF, duplicazione fattura.
+Applicazione di fatturazione per liberi professionisti: anagrafica clienti, emissione fatture con righe/IVA, numerazione progressiva automatica, anteprima e generazione PDF, duplicazione fattura, scadenziario dei servizi a rinnovo (domini, hosting, manutenzioni) con rinnovo/annullamento da Dashboard, riepilogo del fatturato da inizio anno.
 
 ## Stack
 
@@ -59,8 +59,9 @@ L'app risponde su `http://localhost:8080` (porta configurabile con `APP_PORT` in
 
 ## Struttura del progetto
 
-- `app/Http/Controllers` — controller Inertia (`CustomerController`, `InvoiceController`, `CountryController`, ...)
+- `app/Http/Controllers` — controller Inertia (`CustomerController`, `InvoiceController`, `SubscriptionController`, `DashboardController`, `CountryController`, ...)
 - `app/Models` — `Customer`, `Invoice`, `InvoiceRow`, `Country`, `User` (chiavi primarie UUID tranne `User`)
+- `app/Enums` — `SubscriptionStatus`, `ExpirationUrgency`, `ProductType`
 - `app/Actions/Fortify` — azioni di autenticazione (Fortify)
 - `resources/js/pages` — pagine Inertia/Vue
 - `public/images/companies` — loghi delle aziende emittenti caricati dalla UI (**non versionati**, vedi `.gitignore`)

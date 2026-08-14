@@ -68,6 +68,10 @@ UUID primary key. Belongs to `invoices` (`invoice_id`, `cascadeOnDelete` — del
 | `quantity` | `decimal(10,2)`, default `1.00`, multiplied against `price` |
 | `price` | `decimal(10,2)` |
 | `vat_rate` | `decimal(5,2)`, percentage applied to `price * quantity` |
+| `expiration_date` | nullable date — set only when the row is a recurring/renewable service (domain, hosting, maintenance, ...); `NULL` means a one-off row |
+| `subscription_status` | string, cast to `App\Enums\SubscriptionStatus` (`active` \| `cancelled`), default `active` — only meaningful when `expiration_date` is set |
+
+`InvoiceRow::scopeSubscriptions()` filters to rows with a non-null `expiration_date` and `subscription_status = active`; this is what powers the Dashboard's scadenziario widget (see the wiki's [Dashboard](https://github.com/simonecosci/biglins/wiki/Dashboard) page).
 
 ### `products`
 UUID primary key. Belongs to `companies` (`company_id`, required, `restrictOnDelete` — a company with products can't be deleted).
