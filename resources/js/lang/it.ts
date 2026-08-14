@@ -164,6 +164,12 @@ const messages: MessageSchema = {
         show: 'Mostra password',
         hide: 'Nascondi password',
     },
+    markdownField: {
+        edit: 'Modifica',
+        preview: 'Anteprima',
+        loading: 'Rendering anteprima…',
+        empty: 'Niente da mostrare ancora.',
+    },
     nav: {
         platform: 'Piattaforma',
         dashboard: 'Dashboard',

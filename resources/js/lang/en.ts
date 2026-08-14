@@ -156,6 +156,12 @@ const messages = {
         show: 'Show password',
         hide: 'Hide password',
     },
+    markdownField: {
+        edit: 'Edit',
+        preview: 'Preview',
+        loading: 'Rendering preview…',
+        empty: 'Nothing to preview yet.',
+    },
     nav: {
         platform: 'Platform',
         dashboard: 'Dashboard',

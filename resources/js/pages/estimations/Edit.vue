@@ -6,6 +6,7 @@ import { useI18n } from 'vue-i18n';
 import EstimationController from '@/actions/App/Http/Controllers/EstimationController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import MarkdownField from '@/components/MarkdownField.vue';
 import ProductPicker from '@/components/ProductPicker.vue';
 import type { PickedProduct } from '@/components/ProductPicker.vue';
 import { Button } from '@/components/ui/button';
@@ -225,17 +226,12 @@ function onDelete(): void {
                 <InputError :message="form.errors.language" />
             </div>
 
-            <div class="grid gap-2">
-                <Label for="body">{{ t('estimations.create.body') }}</Label>
-                <textarea
-                    id="body"
-                    v-model="form.body"
-                    rows="8"
-                    class="w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm dark:bg-input/30"
-                    :placeholder="t('estimations.create.bodyPlaceholder')"
-                />
-                <InputError :message="form.errors.body" />
-            </div>
+            <MarkdownField
+                v-model="form.body"
+                :label="t('estimations.create.body')"
+                :placeholder="t('estimations.create.bodyPlaceholder')"
+                :error="form.errors.body"
+            />
 
             <div class="space-y-3">
                 <div class="flex items-center justify-between">
