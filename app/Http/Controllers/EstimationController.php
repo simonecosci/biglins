@@ -242,6 +242,8 @@ class EstimationController extends Controller
 
     public function zip(Estimation $estimation): BinaryFileResponse
     {
+        $this->authorizeCurrentCompany($estimation);
+
         App::setLocale($estimation->language);
 
         $estimation->load(['customer.country', 'company.country', 'rows', 'attachments']);

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Attachment;
+use App\Models\Company;
 use App\Models\Estimation;
 use App\Models\EstimationRow;
 use App\Models\User;
@@ -66,4 +67,17 @@ test('the zip works for an estimation with no attachments', function () {
     $response = $this->actingAs($user)->get(route('estimations.zip', $estimation));
 
     $response->assertOk();
+});
+
+test('downloading the zip of an estimation from another company is forbidden', function () {
+    Storage::fake('local');
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $otherCompany = Company::factory()->create();
+    $estimation = Estimation::factory()->create(['company_id' => $otherCompany->id]);
+    EstimationRow::factory()->create(['estimation_id' => $estimation->id]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->get(route('estimations.zip', $estimation));
+
+    $response->assertForbidden();
 });
