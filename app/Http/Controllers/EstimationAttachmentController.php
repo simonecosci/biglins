@@ -8,6 +8,7 @@ use App\Models\Attachment;
 use App\Models\Estimation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class EstimationAttachmentController extends Controller
@@ -19,7 +20,11 @@ class EstimationAttachmentController extends Controller
         $this->authorizeCurrentCompany($estimation);
 
         $file = $request->file('file');
-        $path = $file->store("estimations/{$estimation->id}/attachments", 'local');
+        $path = $file->storeAs(
+            "estimations/{$estimation->id}/attachments",
+            Str::uuid().'.'.strtolower($file->getClientOriginalExtension()),
+            'local'
+        );
 
         $estimation->attachments()->create([
             'disk' => 'local',
