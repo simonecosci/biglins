@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/vue3';
-import { Plus, Trash2, Upload } from '@lucide/vue';
+import { Eye, FileArchive, FileText, Plus, Trash2, Upload } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import EstimationAttachmentController from '@/actions/App/Http/Controllers/EstimationAttachmentController';
@@ -221,6 +221,43 @@ function formatSize(bytes: number): string {
                 t('estimations.edit.description', { number: estimation.number })
             "
         />
+
+        <div class="flex gap-1">
+            <Button
+                as-child
+                variant="ghost"
+                size="icon-sm"
+                :title="t('estimations.index.preview')"
+            >
+                <a
+                    :href="EstimationController.preview(estimation.id).url"
+                    target="_blank"
+                    rel="noopener"
+                >
+                    <Eye />
+                </a>
+            </Button>
+            <Button
+                as-child
+                variant="ghost"
+                size="icon-sm"
+                :title="t('estimations.index.pdf')"
+            >
+                <a :href="EstimationController.pdf(estimation.id).url">
+                    <FileText />
+                </a>
+            </Button>
+            <Button
+                as-child
+                variant="ghost"
+                size="icon-sm"
+                :title="t('estimations.index.zip')"
+            >
+                <a :href="EstimationController.zip(estimation.id).url">
+                    <FileArchive />
+                </a>
+            </Button>
+        </div>
 
         <div class="flex items-center gap-2">
             <Badge :variant="estimationStatusBadgeVariant(estimation.status)">

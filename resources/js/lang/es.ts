@@ -485,6 +485,10 @@ const messages: MessageSchema = {
                 total: 'Total',
             },
             empty: 'No se encontraron presupuestos.',
+            preview: 'Vista previa',
+            pdf: 'PDF',
+            zip: 'ZIP',
+            duplicate: 'Duplicar',
         },
         create: {
             title: 'Nuevo presupuesto',

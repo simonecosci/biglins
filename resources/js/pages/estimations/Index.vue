@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { Head, Link, router, setLayoutProps } from '@inertiajs/vue3';
-import { Pencil, Plus } from '@lucide/vue';
+import { Copy, Eye, FileArchive, FileText, Pencil, Plus } from '@lucide/vue';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import EstimationController from '@/actions/App/Http/Controllers/EstimationController';
 import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { estimationStatusBadgeVariant } from '@/lib/estimationStatus';
 import { create, edit, index } from '@/routes/estimations';
 import type { BreadcrumbItem } from '@/types';
 
@@ -63,20 +65,6 @@ function formatDate(date: string): string {
     const [year, month, day] = date.split('-');
 
     return `${day}/${month}/${year}`;
-}
-
-function statusBadgeVariant(
-    status: EstimationStatus,
-): 'default' | 'secondary' | 'destructive' {
-    if (status === 'accepted') {
-        return 'default';
-    }
-
-    if (status === 'rejected') {
-        return 'destructive';
-    }
-
-    return 'secondary';
 }
 </script>
 
@@ -141,7 +129,11 @@ function statusBadgeVariant(
                         </td>
                         <td class="px-4 py-2">
                             <Badge
-                                :variant="statusBadgeVariant(estimation.status)"
+                                :variant="
+                                    estimationStatusBadgeVariant(
+                                        estimation.status,
+                                    )
+                                "
                             >
                                 {{
                                     t(`estimations.status.${estimation.status}`)
@@ -156,10 +148,74 @@ function statusBadgeVariant(
                                 as-child
                                 variant="ghost"
                                 size="icon-sm"
+                                :title="t('estimations.index.preview')"
+                            >
+                                <a
+                                    :href="
+                                        EstimationController.preview(
+                                            estimation.id,
+                                        ).url
+                                    "
+                                    target="_blank"
+                                    rel="noopener"
+                                >
+                                    <Eye />
+                                </a>
+                            </Button>
+                            <Button
+                                as-child
+                                variant="ghost"
+                                size="icon-sm"
+                                :title="t('estimations.index.pdf')"
+                            >
+                                <a
+                                    :href="
+                                        EstimationController.pdf(estimation.id)
+                                            .url
+                                    "
+                                >
+                                    <FileText />
+                                </a>
+                            </Button>
+                            <Button
+                                as-child
+                                variant="ghost"
+                                size="icon-sm"
+                                :title="t('estimations.index.zip')"
+                            >
+                                <a
+                                    :href="
+                                        EstimationController.zip(estimation.id)
+                                            .url
+                                    "
+                                >
+                                    <FileArchive />
+                                </a>
+                            </Button>
+                            <Button
+                                as-child
+                                variant="ghost"
+                                size="icon-sm"
                                 :title="t('common.actions.edit')"
                             >
                                 <Link :href="edit(estimation.id)">
                                     <Pencil />
+                                </Link>
+                            </Button>
+                            <Button
+                                as-child
+                                variant="ghost"
+                                size="icon-sm"
+                                :title="t('estimations.index.duplicate')"
+                            >
+                                <Link
+                                    :href="
+                                        create({
+                                            query: { duplicate: estimation.id },
+                                        })
+                                    "
+                                >
+                                    <Copy />
                                 </Link>
                             </Button>
                         </td>

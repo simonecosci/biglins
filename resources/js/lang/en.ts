@@ -467,6 +467,10 @@ const messages = {
                 total: 'Total',
             },
             empty: 'No estimates found.',
+            preview: 'Preview',
+            pdf: 'PDF',
+            zip: 'ZIP',
+            duplicate: 'Duplicate',
         },
         create: {
             title: 'New estimate',

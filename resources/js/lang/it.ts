@@ -480,6 +480,10 @@ const messages: MessageSchema = {
                 total: 'Totale',
             },
             empty: 'Nessun preventivo trovato.',
+            preview: 'Anteprima',
+            pdf: 'PDF',
+            zip: 'ZIP',
+            duplicate: 'Duplica',
         },
         create: {
             title: 'Nuovo preventivo',
