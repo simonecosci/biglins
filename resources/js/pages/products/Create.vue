@@ -73,6 +73,34 @@ setLayoutProps({
             </div>
 
             <div class="grid gap-2">
+                <Label for="duration">{{
+                    t('products.create.duration')
+                }}</Label>
+                <Select name="duration" default-value="none">
+                    <SelectTrigger id="duration" class="w-full">
+                        <SelectValue
+                            :placeholder="t('products.create.selectDuration')"
+                        />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="none">{{
+                            t('products.duration.none')
+                        }}</SelectItem>
+                        <SelectItem value="weekly">{{
+                            t('products.duration.weekly')
+                        }}</SelectItem>
+                        <SelectItem value="monthly">{{
+                            t('products.duration.monthly')
+                        }}</SelectItem>
+                        <SelectItem value="yearly">{{
+                            t('products.duration.yearly')
+                        }}</SelectItem>
+                    </SelectContent>
+                </Select>
+                <InputError :message="errors.duration" />
+            </div>
+
+            <div class="grid gap-2">
                 <Label for="description">{{
                     t('products.create.descriptionLabel')
                 }}</Label>

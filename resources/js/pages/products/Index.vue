@@ -13,6 +13,7 @@ type Product = {
     id: string;
     code: string | null;
     type: 'product' | 'service';
+    duration: 'weekly' | 'monthly' | 'yearly' | null;
     description: string;
     price: number;
 };
@@ -40,6 +41,14 @@ const { t } = useI18n();
 const typeLabels = computed<Record<Product['type'], string>>(() => ({
     product: t('products.type.product'),
     service: t('products.type.service'),
+}));
+
+const durationLabels = computed<
+    Record<NonNullable<Product['duration']>, string>
+>(() => ({
+    weekly: t('products.duration.weekly'),
+    monthly: t('products.duration.monthly'),
+    yearly: t('products.duration.yearly'),
 }));
 
 function onSearch(): void {
@@ -97,6 +106,9 @@ setLayoutProps({
                         <th class="px-4 py-2 font-medium">
                             {{ t('products.index.columns.price') }}
                         </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('products.index.columns.duration') }}
+                        </th>
                         <th class="px-4 py-2"></th>
                     </tr>
                 </thead>
@@ -114,6 +126,13 @@ setLayoutProps({
                         <td class="px-4 py-2">
                             {{ product.price.toFixed(2) }}
                         </td>
+                        <td class="px-4 py-2">
+                            {{
+                                product.duration
+                                    ? durationLabels[product.duration]
+                                    : '—'
+                            }}
+                        </td>
                         <td class="px-4 py-2 text-right">
                             <Button
                                 as-child
@@ -129,7 +148,7 @@ setLayoutProps({
                     </tr>
                     <tr v-if="products.data.length === 0">
                         <td
-                            colspan="5"
+                            colspan="6"
                             class="px-4 py-6 text-center text-muted-foreground"
                         >
                             {{ t('products.index.empty') }}
