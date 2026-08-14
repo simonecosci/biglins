@@ -27,3 +27,25 @@ test('markdown preview returns an empty string for an empty body', function () {
     $response->assertOk();
     expect($response->json('html'))->toBe('');
 });
+
+test('markdown preview strips raw html so scripts cannot survive rendering', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->postJson(route('estimations.markdown-preview'), [
+        'body' => "Hello\n\n<script>alert(1)</script>",
+    ]);
+
+    $response->assertOk();
+    expect($response->json('html'))->not->toContain('<script>');
+});
+
+test('markdown preview does not emit a javascript: link as an href', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->postJson(route('estimations.markdown-preview'), [
+        'body' => '[click me](javascript:alert(1))',
+    ]);
+
+    $response->assertOk();
+    expect($response->json('html'))->not->toContain('href="javascript:');
+});
