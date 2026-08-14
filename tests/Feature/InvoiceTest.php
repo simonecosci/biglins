@@ -233,8 +233,8 @@ test('viewing the edit page of an invoice from another company is forbidden', fu
 
 test('invoice can be created with rows', function () {
     $user = User::factory()->create();
-    $customer = Customer::factory()->create();
     $company = Company::factory()->create();
+    $customer = Customer::factory()->create(['company_id' => $company->id]);
 
     $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('invoices.store'), [
         'invoice_date' => '2026-01-15',
@@ -258,28 +258,30 @@ test('invoice can be created with rows', function () {
     expect($invoice->rows->firstWhere('description', 'Consulting')->quantity)->toEqual(2.0);
 });
 
-test('invoice store redirects to companies.create when there is no company yet', function () {
+test('invoice store fails validation when there is no company yet', function () {
+    // Customers now require a company, so with no company at all there is no
+    // valid customer_id to submit either — validation rejects it before the
+    // controller's own "no current company" redirect is ever reached.
     $user = User::factory()->create();
-    $customer = Customer::factory()->create();
 
     $response = $this->actingAs($user)->post(route('invoices.store'), [
         'invoice_date' => '2026-01-15',
-        'customer_id' => $customer->id,
+        'customer_id' => (string) Str::uuid(),
         'language' => 'en',
         'rows' => [
             ['description' => 'Consulting', 'quantity' => 1, 'price' => 100, 'vat_rate' => 22],
         ],
     ]);
 
-    $response->assertRedirect(route('companies.create'));
-    expect(Invoice::query()->where('customer_id', $customer->id)->exists())->toBeFalse();
+    $response->assertSessionHasErrors('customer_id');
+    expect(Invoice::query()->count())->toBe(0);
 });
 
 test('invoice store ignores a company_id sent in the payload and uses the current company instead', function () {
     $user = User::factory()->create();
-    $customer = Customer::factory()->create();
     $company = Company::factory()->create();
     $otherCompany = Company::factory()->create();
+    $customer = Customer::factory()->create(['company_id' => $company->id]);
 
     $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('invoices.store'), [
         'company_id' => $otherCompany->id,
@@ -297,9 +299,9 @@ test('invoice store ignores a company_id sent in the payload and uses the curren
 
 test('a number already used by another company passes validation', function () {
     $user = User::factory()->create();
-    $customer = Customer::factory()->create();
     $company = Company::factory()->create();
     $otherCompany = Company::factory()->create();
+    $customer = Customer::factory()->create(['company_id' => $company->id]);
     Invoice::factory()->create(['company_id' => $otherCompany->id, 'number' => '2026-0050']);
 
     $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('invoices.store'), [
@@ -378,6 +380,41 @@ test('invoice customer_id must reference an existing customer', function () {
     $response->assertSessionHasErrors('customer_id');
 });
 
+test('invoice customer_id must belong to the current company', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $otherCompany = Company::factory()->create();
+    $foreignCustomer = Customer::factory()->create(['company_id' => $otherCompany->id]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('invoices.store'), [
+        'invoice_date' => '2026-01-15',
+        'customer_id' => $foreignCustomer->id,
+        'language' => 'en',
+        'rows' => [
+            ['description' => 'Consulting', 'quantity' => 1, 'price' => 100, 'vat_rate' => 22],
+        ],
+    ]);
+
+    $response->assertSessionHasErrors('customer_id');
+});
+
+test('invoice create page only lists customers for the current company', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $otherCompany = Company::factory()->create();
+    Customer::factory()->create(['company_id' => $company->id, 'name' => 'Own Customer']);
+    Customer::factory()->create(['company_id' => $otherCompany->id, 'name' => 'Foreign Customer']);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->get(route('invoices.create'));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('invoices/Create')
+        ->has('customers', 1)
+        ->where('customers.0.name', 'Own Customer')
+    );
+});
+
 test('invoice number can be set explicitly and must be unique', function () {
     $user = User::factory()->create();
     $customer = Customer::factory()->create();
@@ -436,12 +473,15 @@ test('updating an invoice from another company is forbidden', function () {
     $company = Company::factory()->create();
     $otherCompany = Company::factory()->create();
     $invoice = Invoice::factory()->create(['company_id' => $otherCompany->id, 'paid' => false]);
+    // Use a customer that is valid for the acting company so the request reaches the
+    // controller's company authorization check instead of failing customer_id validation first.
+    $customer = Customer::factory()->create(['company_id' => $company->id]);
 
     $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->put(route('invoices.update', $invoice), [
         'number' => $invoice->number,
         'invoice_date' => $invoice->invoice_date->format('Y-m-d'),
         'paid' => true,
-        'customer_id' => $invoice->customer_id,
+        'customer_id' => $customer->id,
         'language' => $invoice->language,
         'rows' => [
             ['description' => 'Hacked row', 'quantity' => 1, 'price' => 1, 'vat_rate' => 0],
@@ -583,12 +623,11 @@ test('invoice pdf download sanitizes slashes in the invoice number', function ()
 
 test('invoice create page prefills from a duplicate query param', function () {
     $user = User::factory()->create();
-    $customer = Customer::factory()->create();
     $currentCompany = Company::factory()->create();
-    $sourceCompany = Company::factory()->create();
+    $customer = Customer::factory()->create(['company_id' => $currentCompany->id]);
     $source = Invoice::factory()->create([
         'customer_id' => $customer->id,
-        'company_id' => $sourceCompany->id,
+        'company_id' => $currentCompany->id,
         'note' => 'Source note',
         'language' => 'en',
         'paid' => true,
@@ -616,6 +655,28 @@ test('invoice create page prefills from a duplicate query param', function () {
         ->missing('duplicate.company_id')
         ->missing('duplicate.paid')
         ->missing('duplicate.rows.0.id')
+    );
+});
+
+test('invoice create page omits the customer when duplicating an invoice from another company', function () {
+    // Customers are company-scoped, so a customer from the source invoice's
+    // company would not be a valid choice in the current company — leave the
+    // field blank for the user to pick a real one instead of prefilling it.
+    $user = User::factory()->create();
+    $currentCompany = Company::factory()->create();
+    $sourceCompany = Company::factory()->create();
+    $source = Invoice::factory()->create([
+        'company_id' => $sourceCompany->id,
+        'note' => 'Source note',
+    ]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $currentCompany->id])->get(route('invoices.create', ['duplicate' => $source->id]));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('invoices/Create')
+        ->missing('duplicate.customer_id')
+        ->where('duplicate.note', 'Source note')
     );
 });
 
@@ -728,6 +789,9 @@ test('a duplicated invoice can be saved as a new invoice', function () {
     InvoiceRow::factory()->create([
         'invoice_id' => $source->id, 'description' => 'Consulting', 'price' => 100, 'vat_rate' => 22,
     ]);
+    // The source belongs to another company, so its customer is not prefilled
+    // (see the dedicated "omits the customer" test) — pick one for the target company instead.
+    $customer = Customer::factory()->create(['company_id' => $currentCompany->id]);
 
     $page = $this->actingAs($user)->withSession(['current_company_id' => $currentCompany->id])->get(route('invoices.create', ['duplicate' => $source->id]));
     $duplicate = $page->viewData('page')['props']['duplicate'];
@@ -736,7 +800,7 @@ test('a duplicated invoice can be saved as a new invoice', function () {
         'number' => $duplicate['number'] ?? null,
         'invoice_date' => now()->toDateString(),
         'paid' => false,
-        'customer_id' => $duplicate['customer_id'],
+        'customer_id' => $customer->id,
         'note' => $duplicate['note'] ?? '',
         'language' => $duplicate['language'],
         'rows' => $duplicate['rows'],
@@ -765,8 +829,8 @@ test('invoice create page has no duplicate data without the query param', functi
 
 test('creating an invoice persists an optional row expiration date', function () {
     $user = User::factory()->create();
-    $customer = Customer::factory()->create();
     $company = Company::factory()->create();
+    $customer = Customer::factory()->create(['company_id' => $company->id]);
 
     $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('invoices.store'), [
         'invoice_date' => '2026-01-15',
@@ -787,8 +851,8 @@ test('creating an invoice persists an optional row expiration date', function ()
 
 test('creating an invoice ignores a client-supplied subscription_status', function () {
     $user = User::factory()->create();
-    $customer = Customer::factory()->create();
     $company = Company::factory()->create();
+    $customer = Customer::factory()->create(['company_id' => $company->id]);
 
     $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('invoices.store'), [
         'invoice_date' => '2026-01-15',

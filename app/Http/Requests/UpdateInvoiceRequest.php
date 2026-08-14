@@ -27,7 +27,10 @@ class UpdateInvoiceRequest extends FormRequest
             ],
             'invoice_date' => ['required', 'date'],
             'paid' => ['boolean'],
-            'customer_id' => ['required', 'uuid', 'exists:customers,id'],
+            'customer_id' => [
+                'required', 'uuid',
+                Rule::exists('customers', 'id')->where('company_id', CurrentCompany::resolve()?->id),
+            ],
             'note' => ['nullable', 'string'],
             'language' => ['required', 'string', Rule::in(['it', 'en', 'es'])],
             'rows' => ['required', 'array', 'min:1'],

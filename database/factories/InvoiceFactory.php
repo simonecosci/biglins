@@ -23,8 +23,8 @@ class InvoiceFactory extends Factory
             'number' => null,
             'invoice_date' => fake()->dateTimeBetween('-6 months', 'now')->format('Y-m-d'),
             'paid' => fake()->boolean(),
-            'customer_id' => Customer::factory(),
             'company_id' => Company::factory(),
+            'customer_id' => fn (array $attributes) => Customer::factory()->create(['company_id' => $attributes['company_id']])->id,
             'note' => fake()->optional()->sentence(),
             'language' => fake()->randomElement(['it', 'en', 'es']),
         ];

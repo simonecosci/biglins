@@ -16,7 +16,7 @@ trait ScopesToCurrentCompany
 
     private function redirectToCreateCompany(): RedirectResponse
     {
-        Inertia::flash('toast', ['type' => 'error', 'message' => __('Create a company before you can manage invoices or products.')]);
+        Inertia::flash('toast', ['type' => 'error', 'message' => __('Create a company before you can manage invoices, products, or customers.')]);
 
         return to_route('companies.create');
     }

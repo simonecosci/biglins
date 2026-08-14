@@ -91,7 +91,7 @@ No separate "expired" status is persisted. `Estimation` gets a computed, non-per
 
 ### `StoreEstimationRequest`
 ```
-customer_id       => required, uuid, exists:customers,id
+customer_id       => required, uuid, Rule::exists('customers', 'id')->where('company_id', CurrentCompany::resolve()?->id)
 estimation_date   => required, date
 expiration_date   => required, date, after_or_equal:estimation_date
 language          => required, string, in:it,en,es
@@ -124,7 +124,7 @@ file => required, file, mimes:pdf,jpg,jpeg,png,doc,docx,rtf,md, max:10240
 
 ### `EstimationController` (mirrors `InvoiceController`)
 - `index()` — search by number/customer name, paginate 15, scoped to `CurrentCompany`
-- `create()` — customers list, `nextNumber`, `?duplicate=` support (same as `InvoiceController::create`)
+- `create()` — customers list scoped to the current company (`Customer` is company-scoped, mirroring `invoices`), `nextNumber`, `?duplicate=` support (same as `InvoiceController::create`)
 - `store(StoreEstimationRequest)` — `DB::transaction`: create `Estimation` (`company_id` from `CurrentCompany`, `status` defaults `Pending`) + `rows()->createMany()`
 - `edit(Estimation $estimation)` — `authorizeCurrentCompany`; loads `rows`, `attachments`, `invoice`
 - `update(UpdateEstimationRequest, Estimation $estimation)` — `authorizeCurrentCompany`; blocked if `invoice_id` is set (see above); row diff as in `InvoiceController::update`

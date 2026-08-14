@@ -12,6 +12,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
+ * @property string $company_id
  * @property string $name
  * @property string|null $address
  * @property string|null $zip
@@ -25,11 +26,19 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'address', 'zip', 'city', 'country_id', 'state', 'email', 'web', 'phone', 'nif'])]
+#[Fillable(['company_id', 'name', 'address', 'zip', 'city', 'country_id', 'state', 'email', 'web', 'phone', 'nif'])]
 class Customer extends Model
 {
     /** @use HasFactory<CustomerFactory> */
     use HasFactory, HasUuids;
+
+    /**
+     * @return BelongsTo<Company, $this>
+     */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
 
     /**
      * @return BelongsTo<Country, $this>
