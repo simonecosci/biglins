@@ -2,6 +2,7 @@
 
 use App\Models\Company;
 use App\Models\Country;
+use App\Models\Estimation;
 use Illuminate\Support\Facades\File;
 
 /**
@@ -177,6 +178,18 @@ test('a company with products cannot be deleted', function () {
 
     $response->assertRedirect(route('companies.index'));
     expect(Company::query()->find($company->id))->not->toBeNull();
+});
+
+test('a company with an estimation cannot be deleted', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    Estimation::factory()->create(['company_id' => $company->id]);
+
+    $response = $this->actingAs($user)->delete(route('companies.destroy', $company));
+
+    $response->assertRedirect(route('companies.index'));
+    expect(Company::query()->find($company->id))->not->toBeNull();
+    expect(session('inertia.flash_data.toast.message'))->toBe('This company has invoices, estimates or products and cannot be deleted.');
 });
 
 use Illuminate\Http\UploadedFile;
