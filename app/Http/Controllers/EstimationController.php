@@ -10,6 +10,8 @@ use App\Models\Customer;
 use App\Models\Estimation;
 use App\Models\EstimationRow;
 use App\Support\CurrentCompany;
+use App\Support\MarkdownRenderer;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -163,5 +165,12 @@ class EstimationController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Estimation deleted.')]);
 
         return to_route('estimations.index');
+    }
+
+    public function markdownPreview(Request $request): JsonResponse
+    {
+        return response()->json([
+            'html' => MarkdownRenderer::toHtml($request->string('body')->toString()),
+        ]);
     }
 }
