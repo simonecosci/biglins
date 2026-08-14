@@ -169,6 +169,7 @@ const messages: MessageSchema = {
         preview: 'Anteprima',
         loading: 'Rendering anteprima…',
         empty: 'Niente da mostrare ancora.',
+        error: 'Rendering non riuscito.',
     },
     nav: {
         platform: 'Piattaforma',

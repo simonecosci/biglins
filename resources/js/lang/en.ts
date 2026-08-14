@@ -161,6 +161,7 @@ const messages = {
         preview: 'Preview',
         loading: 'Rendering preview…',
         empty: 'Nothing to preview yet.',
+        error: 'Failed to render preview.',
     },
     nav: {
         platform: 'Platform',

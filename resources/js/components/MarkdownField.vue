@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useHttp } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, useId } from 'vue';
 import { useI18n } from 'vue-i18n';
 import EstimationController from '@/actions/App/Http/Controllers/EstimationController';
 import InputError from '@/components/InputError.vue';
@@ -20,14 +20,33 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
+const fieldId = useId();
 const mode = ref<'edit' | 'preview'>('edit');
 const previewHtml = ref('');
+const previewError = ref(false);
 const http = useHttp<{ body: string }, { html: string }>({ body: '' });
 
+let requestGeneration = 0;
+
 async function showPreview(): Promise<void> {
+    const generation = ++requestGeneration;
     http.body = props.modelValue;
-    const response = await http.submit(EstimationController.markdownPreview());
-    previewHtml.value = response.html;
+    previewError.value = false;
+
+    try {
+        const response = await http.submit(
+            EstimationController.markdownPreview(),
+        );
+
+        if (generation === requestGeneration) {
+            previewHtml.value = response.html;
+        }
+    } catch {
+        if (generation === requestGeneration) {
+            previewHtml.value = '';
+            previewError.value = true;
+        }
+    }
 }
 
 function switchTo(next: 'edit' | 'preview'): void {
@@ -46,7 +65,7 @@ function onInput(event: Event): void {
 <template>
     <div class="grid gap-2">
         <div class="flex items-center justify-between">
-            <Label>{{ label }}</Label>
+            <Label :for="fieldId">{{ label }}</Label>
             <div class="flex gap-1">
                 <Button
                     type="button"
@@ -69,6 +88,7 @@ function onInput(event: Event): void {
 
         <textarea
             v-if="mode === 'edit'"
+            :id="fieldId"
             :value="modelValue"
             rows="8"
             class="w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm dark:bg-input/30"
@@ -81,6 +101,9 @@ function onInput(event: Event): void {
         >
             <p v-if="http.processing" class="text-muted-foreground">
                 {{ t('markdownField.loading') }}
+            </p>
+            <p v-else-if="previewError" class="text-destructive">
+                {{ t('markdownField.error') }}
             </p>
             <div v-else-if="previewHtml" v-html="previewHtml" />
             <p v-else class="text-muted-foreground">

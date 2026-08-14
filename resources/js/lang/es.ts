@@ -174,6 +174,7 @@ const messages: MessageSchema = {
         preview: 'Vista previa',
         loading: 'Generando vista previa…',
         empty: 'Nada que previsualizar todavía.',
+        error: 'No se pudo generar la vista previa.',
     },
     nav: {
         platform: 'Plataforma',
