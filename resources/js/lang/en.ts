@@ -497,6 +497,9 @@ const messages = {
             status: 'Status',
             confirmDelete: 'Delete this estimate? This cannot be undone.',
             deleteButton: 'Delete estimate',
+            convertButton: 'Convert to invoice',
+            convertedNotice: 'Converted to invoice',
+            expiredBadge: 'Expired',
             attachments: {
                 title: 'Attachments',
                 uploadButton: 'Upload file',

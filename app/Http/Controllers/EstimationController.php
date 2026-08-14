@@ -108,7 +108,7 @@ class EstimationController extends Controller
         $this->authorizeCurrentCompany($estimation);
 
         return Inertia::render('estimations/Edit', [
-            'estimation' => $estimation->load(['rows', 'attachments']),
+            'estimation' => $estimation->load(['rows', 'attachments'])->append('is_expired'),
             'customers' => Customer::query()->where('company_id', $estimation->company_id)->orderBy('name')->get(['id', 'name']),
         ]);
     }

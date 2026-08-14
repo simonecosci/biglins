@@ -511,6 +511,9 @@ const messages: MessageSchema = {
             confirmDelete:
                 "Eliminare questo preventivo? L'azione non può essere annullata.",
             deleteButton: 'Elimina preventivo',
+            convertButton: 'Converti in fattura',
+            convertedNotice: 'Convertito in fattura',
+            expiredBadge: 'Scaduto',
             attachments: {
                 title: 'Allegati',
                 uploadButton: 'Carica file',

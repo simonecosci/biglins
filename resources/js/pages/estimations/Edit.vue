@@ -10,6 +10,7 @@ import InputError from '@/components/InputError.vue';
 import MarkdownField from '@/components/MarkdownField.vue';
 import ProductPicker from '@/components/ProductPicker.vue';
 import type { PickedProduct } from '@/components/ProductPicker.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,7 +21,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { estimationStatusBadgeVariant } from '@/lib/estimationStatus';
 import { index } from '@/routes/estimations';
+import { edit as editInvoice } from '@/routes/invoices';
 import type { BreadcrumbItem } from '@/types';
 
 type Customer = {
@@ -56,6 +59,7 @@ type Estimation = {
     body: string | null;
     status: EstimationStatus;
     invoice_id: string | null;
+    is_expired: boolean;
     rows: EstimationRow[];
     attachments: Attachment[];
 };
@@ -99,6 +103,14 @@ const form = useForm({
 });
 
 const isConverted = computed(() => props.estimation.invoice_id !== null);
+
+const canConvert = computed(
+    () => props.estimation.status === 'accepted' && !isConverted.value,
+);
+
+function convertToInvoice(): void {
+    router.post(EstimationController.convertToInvoice(props.estimation.id).url);
+}
 
 const selectedProducts = ref<(PickedProduct | undefined)[]>(
     form.rows.map(() => undefined),
@@ -209,6 +221,33 @@ function formatSize(bytes: number): string {
                 t('estimations.edit.description', { number: estimation.number })
             "
         />
+
+        <div class="flex items-center gap-2">
+            <Badge :variant="estimationStatusBadgeVariant(estimation.status)">
+                {{ t(`estimations.status.${estimation.status}`) }}
+            </Badge>
+            <Badge v-if="estimation.is_expired" variant="outline">
+                {{ t('estimations.edit.expiredBadge') }}
+            </Badge>
+        </div>
+
+        <div v-if="isConverted">
+            <Link
+                :href="editInvoice(estimation.invoice_id!)"
+                class="text-sm text-primary hover:underline"
+            >
+                {{ t('estimations.edit.convertedNotice') }}
+            </Link>
+        </div>
+        <Button
+            v-else-if="canConvert"
+            type="button"
+            variant="outline"
+            size="sm"
+            @click="convertToInvoice"
+        >
+            {{ t('estimations.edit.convertButton') }}
+        </Button>
 
         <form class="space-y-4" @submit.prevent="submit">
             <div class="grid grid-cols-3 gap-4">

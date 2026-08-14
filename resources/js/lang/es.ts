@@ -515,6 +515,9 @@ const messages: MessageSchema = {
             confirmDelete:
                 '¿Eliminar este presupuesto? Esta acción no se puede deshacer.',
             deleteButton: 'Eliminar presupuesto',
+            convertButton: 'Convertir en factura',
+            convertedNotice: 'Convertido en factura',
+            expiredBadge: 'Caducado',
             attachments: {
                 title: 'Archivos adjuntos',
                 uploadButton: 'Subir archivo',
