@@ -19,11 +19,14 @@ import {
 } from '@/components/ui/tooltip';
 import { index } from '@/routes/products';
 
+export type ProductDuration = 'weekly' | 'monthly' | 'yearly';
+
 export type PickedProduct = {
     id: string;
     code: string | null;
     description: string;
     price: number;
+    duration: ProductDuration | null;
 };
 
 type ProductResult = PickedProduct & {
@@ -108,6 +111,7 @@ function choose(product: ProductResult): void {
         code: product.code,
         description: product.description,
         price: product.price,
+        duration: product.duration,
     });
     open.value = false;
 }
