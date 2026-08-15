@@ -114,6 +114,17 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
 
 `--start-period=30s` gives the certbot bootstrap step (first-run network round trip to Let's Encrypt) room before failed checks count toward the retry threshold.
 
+## Documentation updates
+
+- **`.env.example`** — add commented-out, documented entries near `APP_URL` for the new Docker-only variables (they're consumed by `entrypoint.sh`, not read by Laravel, but `.env.example`/`.env` is the file operators copy for both local dev and `docker compose`, per the existing README flow):
+  ```
+  # SSL_MODE=none          # none | selfsigned | certbot | custom — see README "Docker setup"
+  # CERTBOT_EMAIL=
+  ```
+- **`.env`** (local, untracked) — mirror the same two commented lines so the working file stays in sync with the example.
+- **`README.md`** — extend the existing `## Docker setup` section with the `SSL_MODE`/`CERTBOT_EMAIL`/`APP_HTTPS_PORT` variables and one line per mode (`none`/`selfsigned`/`certbot`/`custom`), matching the terse style already used there.
+- **Wiki (`Quick-Start.md`, `## Docker Setup` section)** — mirror the same addition so the public-facing wiki (separate `biglins.wiki` repo, cloned independently of this repo) stays in sync with the README. Pushing this is a separate, explicit step at implementation time since it's a distinct remote/shared resource — not bundled silently into the main repo commit.
+
 ## Non-goals
 
 - No automatic detection of "public vs internal" domain — `SSL_MODE` is explicit, per the issue.
