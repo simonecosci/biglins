@@ -52,16 +52,16 @@ The app runs at `http://localhost:8080` (port configurable via `APP_PORT` in `.e
 
 Set `SSL_MODE` in `.env` to terminate TLS at nginx (default `none` — HTTP only, unchanged):
 
-| `SSL_MODE` | Behavior |
-|---|---|
-| `none` (default) | HTTP only, on the HTTP port. |
-| `selfsigned` | Self-signed certificate generated for `APP_URL`'s host, persisted in the `certs` volume. The HTTP port redirects to the HTTPS port. |
-| `certbot` | Let's Encrypt certificate via HTTP-01, auto-renewed daily. Requires `APP_URL` to be a publicly reachable domain and `CERTBOT_EMAIL` to be set. |
-| `custom` | Bring your own certificate: place `fullchain.pem`/`privkey.pem` issued by your own CA into the `certs` volume under `custom/` before starting the container. |
+| `SSL_MODE`       | Behavior                                                                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `none` (default) | HTTP only, on the HTTP port.                                                                                                                                 |
+| `selfsigned`     | Self-signed certificate generated for `APP_URL`'s host, persisted in the `certs` volume. The HTTP port redirects to the HTTPS port.                          |
+| `certbot`        | Let's Encrypt certificate via HTTP-01, auto-renewed daily. Requires `APP_URL` to be a publicly reachable domain and `CERTBOT_EMAIL` to be set.               |
+| `custom`         | Bring your own certificate: place `fullchain.pem`/`privkey.pem` issued by your own CA into the `certs` volume under `custom/` before starting the container. |
 
-HTTPS is served on `${APP_HTTPS_PORT:-8443}` (host) → `:8443` (container).
+HTTPS is served on `8443` (host) → `:8443` (container).
 
-`certbot` and `custom` require a real `APP_URL` set in `.env` (not the default `http://localhost:8080`), since the certificate domain is derived from its host.
+`certbot` and `custom` require a real `APP_URL` set in `.env` (not the default `http://localhost`), since the certificate domain is derived from its host.
 
 ### Running rootless
 
@@ -101,16 +101,16 @@ set a matching `fsGroup` in the pod's `securityContext`.
 
 ## Useful commands
 
-| Command | Description |
-|---|---|
-| `php artisan test --compact` | Run the Pest test suite |
-| `composer lint` | Format PHP code with Pint |
-| `composer lint:check` | Check code style without modifying files |
-| `composer types:check` | Static analysis with Larastan/PHPStan |
-| `composer ci:check` | Lint + format + types + test (what runs in CI) |
-| `npm run lint` / `lint:check` | ESLint on `resources/` |
-| `npm run format` / `format:check` | Prettier on `resources/` |
-| `npm run types:check` | TypeScript type-check (`vue-tsc`) |
+| Command                           | Description                                    |
+| --------------------------------- | ---------------------------------------------- |
+| `php artisan test --compact`      | Run the Pest test suite                        |
+| `composer lint`                   | Format PHP code with Pint                      |
+| `composer lint:check`             | Check code style without modifying files       |
+| `composer types:check`            | Static analysis with Larastan/PHPStan          |
+| `composer ci:check`               | Lint + format + types + test (what runs in CI) |
+| `npm run lint` / `lint:check`     | ESLint on `resources/`                         |
+| `npm run format` / `format:check` | Prettier on `resources/`                       |
+| `npm run types:check`             | TypeScript type-check (`vue-tsc`)              |
 
 ## Project structure
 
