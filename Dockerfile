@@ -101,7 +101,7 @@ RUN mkdir -p storage/framework/{cache,sessions,testing,views} storage/logs boots
     && chmod -R g=u /app /data /certs /var/www/certbot /etc/nginx/certs /run /var/lib/nginx /var/log \
         /etc/nginx/sites-available /etc/nginx/sites-enabled "/etc/php/${PHP_VERSION}/fpm/pool.d"
 
-EXPOSE 80 443 8080 8443
+EXPOSE 8080 8443
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
     CMD ["/usr/local/bin/healthcheck.sh"]

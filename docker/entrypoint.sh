@@ -30,13 +30,12 @@ if [ "$IS_ROOT" != "1" ]; then
     umask 0002
 fi
 
-if [ "$IS_ROOT" = "1" ]; then
-    HTTP_PORT="${HTTP_PORT:-80}"
-    HTTPS_PORT="${HTTPS_PORT:-443}"
-else
-    HTTP_PORT="${HTTP_PORT:-8080}"
-    HTTPS_PORT="${HTTPS_PORT:-8443}"
-fi
+# Always bind unprivileged ports, root or not, so the container's listen
+# ports don't change depending on who's running it and CAP_NET_BIND_SERVICE
+# is never required. External port mapping (host 80/443 -> container
+# 8080/8443) is the orchestrator's responsibility either way.
+HTTP_PORT="${HTTP_PORT:-8080}"
+HTTPS_PORT="${HTTPS_PORT:-8443}"
 export HTTP_PORT HTTPS_PORT
 
 # --- rootless support: synthesize a passwd/group entry via nss_wrapper ------
