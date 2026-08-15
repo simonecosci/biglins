@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - '${APP_PORT:-8080}:80'
+      - '${APP_HTTPS_PORT:-8443}:443'
     env_file:
       - .env
     environment:
@@ -14,9 +15,11 @@ services:
       - storage:/app/storage
       - database:/data
       - logos:/app/public/images/companies
+      - certs:/data/certs
     restart: unless-stopped
 
 volumes:
   storage:
   database:
   logos:
+  certs:
