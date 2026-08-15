@@ -48,14 +48,9 @@ const mainNavItems = computed<NavItem[]>(() => [
         icon: LayoutGrid,
     },
     {
-        title: t('nav.customers'),
-        href: customersIndex().url,
-        icon: Users,
-    },
-    {
-        title: t('nav.companies'),
-        href: companiesIndex().url,
-        icon: Building2,
+        title: t('nav.estimations'),
+        href: estimationsIndex().url,
+        icon: FileSignature,
     },
     {
         title: t('nav.invoices'),
@@ -63,9 +58,9 @@ const mainNavItems = computed<NavItem[]>(() => [
         icon: Receipt,
     },
     {
-        title: t('nav.estimations'),
-        href: estimationsIndex().url,
-        icon: FileSignature,
+        title: t('nav.customers'),
+        href: customersIndex().url,
+        icon: Users,
     },
     {
         title: t('nav.products'),
@@ -81,6 +76,11 @@ const mainNavItems = computed<NavItem[]>(() => [
         title: t('nav.countries'),
         href: countriesIndex().url,
         icon: Globe,
+    },
+    {
+        title: t('nav.companies'),
+        href: companiesIndex().url,
+        icon: Building2,
     },
 ]);
 
