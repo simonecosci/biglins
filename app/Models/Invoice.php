@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\InvoiceType;
 use Database\Factories\InvoiceFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -15,6 +16,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property string $id
  * @property string $number
+ * @property InvoiceType $type
  * @property Carbon $invoice_date
  * @property bool $paid
  * @property string $customer_id
@@ -27,7 +29,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['number', 'invoice_date', 'paid', 'customer_id', 'company_id', 'note', 'language'])]
+#[Fillable(['number', 'type', 'invoice_date', 'paid', 'customer_id', 'company_id', 'note', 'language'])]
 class Invoice extends Model
 {
     /** @use HasFactory<InvoiceFactory> */
@@ -46,6 +48,7 @@ class Invoice extends Model
     protected function casts(): array
     {
         return [
+            'type' => InvoiceType::class,
             'invoice_date' => 'date:Y-m-d',
             'paid' => 'boolean',
         ];
@@ -57,7 +60,16 @@ class Invoice extends Model
             if (! $invoice->number) {
                 $invoice->number = static::nextNumber($invoice->company_id);
             }
+
+            if (! ($invoice->getAttributes()['type'] ?? null)) {
+                $invoice->type = InvoiceType::Invoice;
+            }
         });
+    }
+
+    public function isCreditNote(): bool
+    {
+        return $this->type === InvoiceType::CreditNote;
     }
 
     public static function nextNumber(string $companyId, ?string $year = null): string

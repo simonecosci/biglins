@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\InvoiceType;
 use App\Models\Company;
 use App\Models\Customer;
 use App\Models\Invoice;
@@ -142,6 +143,18 @@ test('invoice row total accessor multiplies price by quantity before applying va
     $row = InvoiceRow::factory()->create(['quantity' => 2, 'price' => 100, 'vat_rate' => 22]);
 
     expect((float) $row->total)->toEqual(244.0);
+});
+
+test('invoice factory defaults to invoice type', function () {
+    $invoice = Invoice::factory()->create();
+
+    expect($invoice->type)->toBe(InvoiceType::Invoice);
+});
+
+test('invoice factory can create a credit note', function () {
+    $invoice = Invoice::factory()->creditNote()->create();
+
+    expect($invoice->type)->toBe(InvoiceType::CreditNote);
 });
 
 use App\Enums\SubscriptionStatus;
@@ -315,6 +328,118 @@ test('a number already used by another company passes validation', function () {
     ]);
 
     $response->assertSessionHasNoErrors()->assertRedirect(route('invoices.index'));
+});
+
+test('invoice store request requires a valid type when provided', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $customer = Customer::factory()->create(['company_id' => $company->id]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('invoices.store'), [
+        'invoice_date' => '2026-01-15',
+        'customer_id' => $customer->id,
+        'language' => 'en',
+        'type' => 'bogus',
+        'rows' => [
+            ['description' => 'Consulting', 'quantity' => 1, 'price' => 100, 'vat_rate' => 22],
+        ],
+    ]);
+
+    $response->assertSessionHasErrors('type');
+});
+
+test('creating an invoice without a type defaults to invoice', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $customer = Customer::factory()->create(['company_id' => $company->id]);
+
+    $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('invoices.store'), [
+        'invoice_date' => '2026-01-15',
+        'customer_id' => $customer->id,
+        'language' => 'en',
+        'rows' => [
+            ['description' => 'Consulting', 'quantity' => 1, 'price' => 100, 'vat_rate' => 22],
+        ],
+    ]);
+
+    $invoice = Invoice::query()->where('customer_id', $customer->id)->firstOrFail();
+    expect($invoice->type)->toBe(InvoiceType::Invoice);
+});
+
+test('creating a credit note stores row prices as negative and totals negative', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $customer = Customer::factory()->create(['company_id' => $company->id]);
+
+    $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('invoices.store'), [
+        'invoice_date' => '2026-01-15',
+        'customer_id' => $customer->id,
+        'language' => 'en',
+        'type' => 'credit_note',
+        'rows' => [
+            ['description' => 'Refund', 'quantity' => 1, 'price' => 100, 'vat_rate' => 22],
+        ],
+    ]);
+
+    $invoice = Invoice::query()->where('customer_id', $customer->id)->firstOrFail();
+    expect($invoice->type)->toBe(InvoiceType::CreditNote);
+    expect((float) $invoice->rows->first()->price)->toEqual(-100.0);
+    expect((float) $invoice->subtotal)->toEqual(-100.0);
+    expect((float) $invoice->total)->toEqual(-122.0);
+});
+
+test('updating an invoice to a credit note negates its row prices', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $invoice = Invoice::factory()->create(['company_id' => $company->id, 'type' => InvoiceType::Invoice]);
+    $row = InvoiceRow::factory()->create(['invoice_id' => $invoice->id, 'quantity' => 1, 'price' => 50, 'vat_rate' => 10]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->put(route('invoices.update', $invoice), [
+        'number' => $invoice->number,
+        'invoice_date' => $invoice->invoice_date->format('Y-m-d'),
+        'paid' => $invoice->paid,
+        'customer_id' => $invoice->customer_id,
+        'language' => $invoice->language,
+        'type' => 'credit_note',
+        'rows' => [
+            ['id' => $row->id, 'description' => $row->description, 'quantity' => 1, 'price' => 50, 'vat_rate' => 10],
+        ],
+    ]);
+
+    $response->assertSessionHasNoErrors();
+    expect($invoice->fresh()->type)->toBe(InvoiceType::CreditNote);
+    expect((float) $row->fresh()->price)->toEqual(-50.0);
+});
+
+test('invoice edit page shows credit note row prices as positive even though they are stored negative', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $invoice = Invoice::factory()->create(['company_id' => $company->id, 'type' => InvoiceType::CreditNote]);
+    InvoiceRow::factory()->create(['invoice_id' => $invoice->id, 'price' => -75, 'quantity' => 1]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->get(route('invoices.edit', $invoice));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('invoices/Edit')
+        ->where('invoice.rows.0.price', 75)
+    );
+});
+
+test('duplicating a credit note carries over its type and shows positive row prices', function () {
+    $user = User::factory()->create();
+    $currentCompany = Company::factory()->create();
+    $source = Invoice::factory()->create(['company_id' => $currentCompany->id, 'type' => InvoiceType::CreditNote]);
+    InvoiceRow::factory()->create(['invoice_id' => $source->id, 'price' => -40, 'quantity' => 1]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $currentCompany->id])->get(route('invoices.create', ['duplicate' => $source->id]));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('invoices/Create')
+        ->where('duplicate.type', 'credit_note')
+        ->where('duplicate.rows.0.price', 40)
+    );
 });
 
 test('invoice requires at least one row', function () {

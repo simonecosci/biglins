@@ -14,6 +14,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { confirmDialog } from '@/lib/confirmDialog';
 import { index } from '@/routes/products';
 import type { BreadcrumbItem } from '@/types';
 
@@ -38,8 +39,8 @@ setLayoutProps({
     ] satisfies BreadcrumbItem[],
 });
 
-function onDelete(): void {
-    if (confirm(t('products.edit.confirmDelete'))) {
+async function onDelete(): Promise<void> {
+    if (await confirmDialog(t('products.edit.confirmDelete'))) {
         router.delete(ProductController.destroy(props.product.id).url);
     }
 }

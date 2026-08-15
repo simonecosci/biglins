@@ -25,6 +25,7 @@ class UpdateInvoiceRequest extends FormRequest
                     ->where('company_id', CurrentCompany::resolve()?->id)
                     ->ignore($this->route('invoice')),
             ],
+            'type' => ['sometimes', 'string', Rule::in(['invoice', 'credit_note'])],
             'invoice_date' => ['required', 'date'],
             'paid' => ['boolean'],
             'customer_id' => [

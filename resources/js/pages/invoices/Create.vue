@@ -19,6 +19,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { confirmDialog } from '@/lib/confirmDialog';
 import { addDurationToDate } from '@/lib/productDuration';
 import { index } from '@/routes/invoices';
 import type { BreadcrumbItem } from '@/types';
@@ -43,6 +44,7 @@ const props = defineProps<{
         customer_id: string;
         note: string | null;
         language: string;
+        type: string;
         rows: InvoiceRowForm[];
     } | null;
 }>();
@@ -62,6 +64,7 @@ const form = useForm({
     customer_id: props.duplicate?.customer_id ?? '',
     note: props.duplicate?.note ?? '',
     language: props.duplicate?.language ?? 'es',
+    type: props.duplicate?.type ?? 'invoice',
     rows: props.duplicate?.rows ?? [
         {
             description: '',
@@ -88,8 +91,8 @@ function addRow(): void {
     selectedProducts.value.push(undefined);
 }
 
-function removeRow(index: number): void {
-    if (!confirm(t('invoices.create.confirmRemoveRow'))) {
+async function removeRow(index: number): Promise<void> {
+    if (!(await confirmDialog(t('invoices.create.confirmRemoveRow')))) {
         return;
     }
 
@@ -223,6 +226,28 @@ function submit(): void {
                         </SelectContent>
                     </Select>
                     <InputError :message="form.errors.language" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="grid gap-2">
+                    <Label for="type">{{ t('invoices.create.type') }}</Label>
+                    <Select v-model="form.type">
+                        <SelectTrigger id="type" class="w-full">
+                            <SelectValue
+                                :placeholder="t('invoices.create.selectType')"
+                            />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="invoice">
+                                {{ t('invoices.type.invoice') }}
+                            </SelectItem>
+                            <SelectItem value="credit_note">
+                                {{ t('invoices.type.credit_note') }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <InputError :message="form.errors.type" />
                 </div>
             </div>
 

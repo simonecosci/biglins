@@ -5,10 +5,14 @@ const messages: MessageSchema = {
         actions: {
             save: 'Guardar',
             cancel: 'Cancelar',
+            confirm: 'Confirmar',
             edit: 'Editar',
             previous: 'Anterior',
             next: 'Siguiente',
             addRow: 'Añadir línea',
+        },
+        confirm: {
+            title: '¿Estás seguro?',
         },
         fields: {
             name: 'Nombre',
@@ -415,6 +419,7 @@ const messages: MessageSchema = {
         },
     },
     invoices: {
+        type: { invoice: 'Factura', credit_note: 'Nota de crédito' },
         index: {
             title: 'Facturas',
             description: 'Gestiona tus facturas',
@@ -424,6 +429,7 @@ const messages: MessageSchema = {
                 number: 'Número',
                 date: 'Fecha',
                 customer: 'Cliente',
+                type: 'Tipo',
                 paid: 'Pagada',
                 total: 'Total',
             },
@@ -443,6 +449,8 @@ const messages: MessageSchema = {
             selectCustomer: 'Selecciona un cliente',
             language: 'Idioma',
             selectLanguage: 'Selecciona un idioma',
+            type: 'Tipo',
+            selectType: 'Selecciona un tipo',
             paid: 'Pagada',
             note: 'Nota',
             notePlaceholder: 'Nota opcional',

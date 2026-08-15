@@ -15,6 +15,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { confirmDialog } from '@/lib/confirmDialog';
 import { index } from '@/routes/companies';
 import type { BreadcrumbItem } from '@/types';
 
@@ -86,8 +87,8 @@ function submit(): void {
     );
 }
 
-function onDelete(): void {
-    if (confirm(t('companies.edit.confirmDelete'))) {
+async function onDelete(): Promise<void> {
+    if (await confirmDialog(t('companies.edit.confirmDelete'))) {
         router.delete(CompanyController.destroy(props.company.id).url);
     }
 }

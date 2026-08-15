@@ -19,6 +19,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { confirmDialog } from '@/lib/confirmDialog';
 import { index } from '@/routes/estimations';
 import type { BreadcrumbItem } from '@/types';
 
@@ -83,8 +84,8 @@ function addRow(): void {
     selectedProducts.value.push(undefined);
 }
 
-function removeRow(index: number): void {
-    if (!confirm(t('estimations.create.confirmRemoveRow'))) {
+async function removeRow(index: number): Promise<void> {
+    if (!(await confirmDialog(t('estimations.create.confirmRemoveRow')))) {
         return;
     }
 

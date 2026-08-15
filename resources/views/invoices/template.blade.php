@@ -3,12 +3,13 @@
     $logoData = $logoPath && file_exists($logoPath)
         ? 'data:' . mime_content_type($logoPath) . ';base64,' . base64_encode(file_get_contents($logoPath))
         : null;
+    $documentTitle = $invoice->isCreditNote() ? __('invoice.credit_note_title') : __('invoice.title');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $invoice->language }}">
 <head>
     <meta charset="utf-8">
-    <title>{{ __('invoice.title') }} {{ $invoice->number }}</title>
+    <title>{{ $documentTitle }} {{ $invoice->number }}</title>
     <style>
         body { font-family: Helvetica, Arial, sans-serif; font-size: 12px; color: #1f2937; margin: 40px; }
         table { border-collapse: collapse; }
@@ -70,7 +71,7 @@
                 </div>
             </td>
             <td class="meta">
-                <h1>{{ __('invoice.title') }}</h1>
+                <h1>{{ $documentTitle }}</h1>
                 <div>{{ __('invoice.number') }}: {{ $invoice->number }}</div>
                 <div>{{ __('invoice.date') }}: {{ $invoice->invoice_date->format('d/m/Y') }}</div>
             </td>

@@ -19,6 +19,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { confirmDialog } from '@/lib/confirmDialog';
 import { addDurationToDate } from '@/lib/productDuration';
 import { index } from '@/routes/invoices';
 import type { BreadcrumbItem } from '@/types';
@@ -49,6 +50,7 @@ type Invoice = {
     company_id: string;
     note: string | null;
     language: string;
+    type: string;
     rows: InvoiceRow[];
 };
 
@@ -82,6 +84,7 @@ const form = useForm({
     customer_id: props.invoice.customer_id,
     note: props.invoice.note ?? '',
     language: props.invoice.language,
+    type: props.invoice.type,
     rows: props.invoice.rows.map((row) => ({
         id: row.id,
         description: row.description,
@@ -108,8 +111,8 @@ function addRow(): void {
     selectedProducts.value.push(undefined);
 }
 
-function removeRow(index: number): void {
-    if (!confirm(t('invoices.create.confirmRemoveRow'))) {
+async function removeRow(index: number): Promise<void> {
+    if (!(await confirmDialog(t('invoices.create.confirmRemoveRow')))) {
         return;
     }
 
@@ -169,8 +172,8 @@ function submit(): void {
     form.put(InvoiceController.update(props.invoice.id).url);
 }
 
-function onDelete(): void {
-    if (confirm(t('invoices.edit.confirmDelete'))) {
+async function onDelete(): Promise<void> {
+    if (await confirmDialog(t('invoices.edit.confirmDelete'))) {
         router.delete(InvoiceController.destroy(props.invoice.id).url);
     }
 }
@@ -285,6 +288,28 @@ function onDelete(): void {
                         </SelectContent>
                     </Select>
                     <InputError :message="form.errors.language" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="grid gap-2">
+                    <Label for="type">{{ t('invoices.create.type') }}</Label>
+                    <Select v-model="form.type">
+                        <SelectTrigger id="type" class="w-full">
+                            <SelectValue
+                                :placeholder="t('invoices.create.selectType')"
+                            />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="invoice">
+                                {{ t('invoices.type.invoice') }}
+                            </SelectItem>
+                            <SelectItem value="credit_note">
+                                {{ t('invoices.type.credit_note') }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <InputError :message="form.errors.type" />
                 </div>
             </div>
 

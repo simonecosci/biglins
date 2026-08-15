@@ -8,7 +8,7 @@
 [![docker-publish](https://github.com/simonecosci/biglins/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/simonecosci/biglins/actions/workflows/docker-publish.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Invoicing app for freelancers and sole proprietors: customer records, invoices with line items/VAT, automatic sequential numbering, PDF preview and generation, invoice duplication, a renewal schedule for recurring services (domains, hosting, maintenance) with renew/cancel actions from the dashboard, and a year-to-date revenue summary.
+Invoicing app for freelancers and sole proprietors: customer records, invoices with line items/VAT, credit notes to reverse a previous invoice, automatic sequential numbering, PDF preview and generation, invoice duplication, a renewal schedule for recurring services (domains, hosting, maintenance) with renew/cancel actions from the dashboard, and a year-to-date revenue summary.
 
 ## Stack
 
@@ -65,7 +65,7 @@ The app runs at `http://localhost:8080` (port configurable via `APP_PORT` in `.e
 
 - `app/Http/Controllers` — Inertia controllers (`CustomerController`, `InvoiceController`, `SubscriptionController`, `DashboardController`, `CountryController`, ...)
 - `app/Models` — `Customer`, `Invoice`, `InvoiceRow`, `Country`, `User` (UUID primary keys except `User`)
-- `app/Enums` — `SubscriptionStatus`, `ExpirationUrgency`, `ProductType`
+- `app/Enums` — `SubscriptionStatus`, `ExpirationUrgency`, `ProductType`, `InvoiceType` (`invoice` / `credit_note`)
 - `app/Actions/Fortify` — authentication actions (Fortify)
 - `resources/js/pages` — Inertia/Vue pages
 - `public/images/companies` — logos of issuing companies uploaded via the UI (**not versioned**, see `.gitignore`)

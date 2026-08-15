@@ -3,10 +3,14 @@ const messages = {
         actions: {
             save: 'Save',
             cancel: 'Cancel',
+            confirm: 'Confirm',
             edit: 'Edit',
             previous: 'Previous',
             next: 'Next',
             addRow: 'Add row',
+        },
+        confirm: {
+            title: 'Are you sure?',
         },
         fields: {
             name: 'Name',
@@ -398,6 +402,7 @@ const messages = {
         },
     },
     invoices: {
+        type: { invoice: 'Invoice', credit_note: 'Credit Note' },
         index: {
             title: 'Invoices',
             description: 'Manage your invoices',
@@ -407,6 +412,7 @@ const messages = {
                 number: 'Number',
                 date: 'Date',
                 customer: 'Customer',
+                type: 'Type',
                 paid: 'Paid',
                 total: 'Total',
             },
@@ -426,6 +432,8 @@ const messages = {
             selectCustomer: 'Select a customer',
             language: 'Language',
             selectLanguage: 'Select a language',
+            type: 'Type',
+            selectType: 'Select a type',
             paid: 'Paid',
             note: 'Note',
             notePlaceholder: 'Optional note',

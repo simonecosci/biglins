@@ -21,6 +21,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { confirmDialog } from '@/lib/confirmDialog';
 import { estimationStatusBadgeVariant } from '@/lib/estimationStatus';
 import { index } from '@/routes/estimations';
 import { edit as editInvoice } from '@/routes/invoices';
@@ -127,8 +128,8 @@ function addRow(): void {
     selectedProducts.value.push(undefined);
 }
 
-function removeRow(index: number): void {
-    if (!confirm(t('estimations.create.confirmRemoveRow'))) {
+async function removeRow(index: number): Promise<void> {
+    if (!(await confirmDialog(t('estimations.create.confirmRemoveRow')))) {
         return;
     }
 
@@ -164,8 +165,8 @@ function submit(): void {
     form.put(EstimationController.update(props.estimation.id).url);
 }
 
-function onDelete(): void {
-    if (confirm(t('estimations.edit.confirmDelete'))) {
+async function onDelete(): Promise<void> {
+    if (await confirmDialog(t('estimations.edit.confirmDelete'))) {
         router.delete(EstimationController.destroy(props.estimation.id).url);
     }
 }
@@ -192,8 +193,10 @@ function onFileSelected(event: Event): void {
     (event.target as HTMLInputElement).value = '';
 }
 
-function deleteAttachment(attachmentId: string): void {
-    if (!confirm(t('estimations.edit.attachments.confirmDelete'))) {
+async function deleteAttachment(attachmentId: string): Promise<void> {
+    if (
+        !(await confirmDialog(t('estimations.edit.attachments.confirmDelete')))
+    ) {
         return;
     }
 
