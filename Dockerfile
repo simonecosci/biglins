@@ -67,8 +67,13 @@ FROM php-base AS final
 ARG PHP_VERSION
 ENV PHP_VERSION=${PHP_VERSION}
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        nginx \
+# nginx is pulled from the official nginx.org repo, pinned to the first
+# version that fixes CVE-2026-42533 (map/regex heap overflow) — Debian's
+# own trixie package (1.26.3) does not have this backported yet.
+RUN curl -fsSL https://nginx.org/keys/nginx_signing.key | gpg --dearmor -o /usr/share/keyrings/nginx-archive-keyring.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian trixie nginx" > /etc/apt/sources.list.d/nginx.list \
+    && apt-get update && apt-get install -y --no-install-recommends \
+        nginx=1.30.4-1~trixie \
         supervisor \
         certbot \
         openssl \
@@ -76,11 +81,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libnss-wrapper \
     && rm -rf /var/lib/apt/lists/*
 
+COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
+RUN mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
 COPY docker/nginx/app.conf /etc/nginx/sites-available/app.conf
 COPY docker/nginx/app-ssl-http.conf /etc/nginx/sites-available/app-ssl-http.conf
 COPY docker/nginx/app-ssl-https.conf /etc/nginx/sites-available/app-ssl-https.conf
-RUN rm -f /etc/nginx/sites-enabled/default \
-    && ln -sf /etc/nginx/sites-available/app.conf /etc/nginx/sites-enabled/app.conf
+RUN ln -sf /etc/nginx/sites-available/app.conf /etc/nginx/sites-enabled/app.conf
 
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
@@ -95,9 +101,9 @@ RUN mkdir -p storage/framework/{cache,sessions,testing,views} storage/logs boots
         /data /certs /var/www/certbot /etc/nginx/certs \
     && chown -R www-data:www-data /app storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache \
-    && chgrp -R 0 /app /data /certs /var/www/certbot /etc/nginx/certs /run /var/lib/nginx /var/log \
+    && chgrp -R 0 /app /data /certs /var/www/certbot /etc/nginx/certs /run /var/cache/nginx /var/log \
         /etc/nginx/sites-available /etc/nginx/sites-enabled "/etc/php/${PHP_VERSION}/fpm/pool.d" \
-    && chmod -R g=u /app /data /certs /var/www/certbot /etc/nginx/certs /run /var/lib/nginx /var/log \
+    && chmod -R g=u /app /data /certs /var/www/certbot /etc/nginx/certs /run /var/cache/nginx /var/log \
         /etc/nginx/sites-available /etc/nginx/sites-enabled "/etc/php/${PHP_VERSION}/fpm/pool.d"
 
 EXPOSE 8080 8443
