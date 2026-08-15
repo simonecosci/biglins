@@ -120,7 +120,7 @@ database configuration needed.
 ### Building installers
 
 ```bash
-php artisan native:build win     # produces a Windows installer
+php artisan native:build win     # produces nativephp/electron/dist/win-unpacked/
 php artisan native:build mac     # produces a macOS .dmg — requires an Apple ID + team ID
                                   # and notarization, or other Macs will refuse to open it
 php artisan native:build linux   # produces a Linux AppImage and .deb package
@@ -129,7 +129,15 @@ php artisan native:build linux   # produces a Linux AppImage and .deb package
 Cross-compilation has limits: building Windows binaries from Linux needs
 Wine with 32-bit support, and macOS builds must be signed/notarized on
 Apple hardware to run on other Macs. `mac`/`linux` builds are not exercised
-by this project's CI — only `win` is currently verified.
+by this project's CI.
+
+**Windows note:** on a non-elevated account without Developer Mode enabled,
+`native:build win` reliably produces the runnable `win-unpacked/biglins.exe`
+folder, but the NSIS installer step needs Windows'
+`SeCreateSymbolicLinkPrivilege` to unpack its code-signing tooling and
+silently doesn't produce an installer `.exe` without it. Enable Developer
+Mode (Settings → Privacy & security → For developers) or build as an
+Administrator to get a proper installer.
 
 Auto-update is not configured; distribute new versions as new installers.
 
