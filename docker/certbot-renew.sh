@@ -7,10 +7,10 @@ if [ "$SSL_MODE" != "certbot" ]; then
     exec sleep infinity
 fi
 
-LE_DIR=/data/certs/letsencrypt
+LE_DIR=/certs/letsencrypt
 
 while true; do
     certbot renew --quiet --deploy-hook "nginx -s reload" \
-        --config-dir "$LE_DIR" --work-dir "$LE_DIR" --logs-dir "$LE_DIR"
+        --config-dir "$LE_DIR" --work-dir "$LE_DIR" --logs-dir "$LE_DIR" || true
     sleep 12h
 done

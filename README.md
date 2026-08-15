@@ -61,6 +61,8 @@ Set `SSL_MODE` in `.env` to terminate TLS at nginx (default `none` — HTTP only
 
 HTTPS is served on `${APP_HTTPS_PORT:-8443}` (host) → `:443` (container).
 
+`certbot` and `custom` require a real `APP_URL` set in `.env` (not the default `http://localhost:8080`), since the certificate domain is derived from its host.
+
 ## Useful commands
 
 | Command | Description |
