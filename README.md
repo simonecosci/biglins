@@ -37,7 +37,7 @@ Start the dev environment (server, queue worker, Vite) with a single command:
 composer run dev
 ```
 
-The app runs at `http://localhost:8080` (see `APP_URL` in `.env`).
+The app runs at `http://localhost` (see `APP_URL` in `.env`).
 
 ## Docker setup
 
@@ -46,7 +46,7 @@ docker compose up -d --build
 docker compose run --rm app php artisan migrate --force   # first run only
 ```
 
-The app runs at `http://localhost:8080` (port configurable via `APP_PORT` in `.env`). See [Dockerfile](Dockerfile) and [docker-compose.yml](docker-compose.yml) for image details: PHP-FPM + nginx + queue worker on Debian trixie, managed by supervisord.
+The app runs at `http://localhost` (port configurable via `APP_PORT` in `.env`). See [Dockerfile](Dockerfile) and [docker-compose.yml](docker-compose.yml) for image details: PHP-FPM + nginx + queue worker on Debian trixie, managed by supervisord.
 
 ### HTTPS
 
@@ -86,7 +86,7 @@ started as a non-root UID:
 Example with plain `docker run`:
 
 ```bash
-docker run --user 1000:0 -p 8080:8080 -p 8443:8443 --env-file .env simonecosci/biglins
+docker run --user 1000:0 -p 80:8080 -p 443:8443 --env-file .env simonecosci/biglins
 ```
 
 On Kubernetes/OpenShift, set `securityContext.runAsUser` to any UID and
