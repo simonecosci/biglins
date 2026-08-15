@@ -32,19 +32,20 @@ if [ "$IS_ROOT" != "1" ]; then
     fi
 fi
 
-# Create a dir and, when non-root, guarantee it's group-writable regardless
-# of umask. For dirs the process just created, it owns them and this chmod
-# always succeeds. For dirs that pre-exist from the image (owned by
-# www-data, group 0 already made writable at build time per Task 4), a
-# non-owning UID cannot chmod them even though it can already write into
-# them — chmod requires file ownership, not just group write access.
-# Failure is expected and harmless in that case (the baked group-write bit
-# already provides what we need), so stderr is discarded and the exit
-# status ignored rather than letting `set -e` abort startup or `chmod -R`
-# spam one "Operation not permitted" line per file it recurses into.
+# Create a dir and, when non-root and the process owns it, guarantee it's
+# group-writable regardless of umask. For dirs the process just created, it
+# owns them, so the chmod applies and is expected to succeed under `set -e`.
+# For dirs that pre-exist from the image (owned by www-data, group 0 already
+# made writable at build time per Task 4), a non-owning UID cannot chmod
+# them even though it can already write into them — chmod requires file
+# ownership, not just group write access — so the chmod is skipped entirely
+# rather than attempted-and-swallowed; the baked group-write bit already
+# provides what's needed there.
 ensure_writable_dir() {
     mkdir -p "$1"
-    [ "$IS_ROOT" = "1" ] || chmod -R g+rwX "$1" >/dev/null 2>&1 || true
+    if [ "$IS_ROOT" != "1" ] && [ "$(stat -c %u "$1")" = "$CURRENT_UID" ]; then
+        chmod -R g+rwX "$1"
+    fi
 }
 
 ensure_writable_dir storage/framework/cache
