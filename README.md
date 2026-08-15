@@ -59,7 +59,7 @@ Set `SSL_MODE` in `.env` to terminate TLS at nginx (default `none` — HTTP only
 | `certbot`        | Let's Encrypt certificate via HTTP-01, auto-renewed daily. Requires `APP_URL` to be a publicly reachable domain and `CERTBOT_EMAIL` to be set.               |
 | `custom`         | Bring your own certificate: place `fullchain.pem`/`privkey.pem` issued by your own CA into the `certs` volume under `custom/` before starting the container. |
 
-HTTPS is served on `8443` (host) → `:8443` (container).
+HTTPS is served on `443` (host) → `:8443` (container).
 
 `certbot` and `custom` require a real `APP_URL` set in `.env` (not the default `http://localhost`), since the certificate domain is derived from its host.
 
