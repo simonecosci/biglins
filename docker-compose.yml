@@ -11,6 +11,8 @@ services:
     environment:
       DB_DATABASE: /data/database.sqlite
       APP_URL: http://localhost:${APP_PORT:-8080}
+      SSL_MODE: ${SSL_MODE:-none}
+      CERTBOT_EMAIL: ${CERTBOT_EMAIL:-}
     volumes:
       - storage:/app/storage
       - database:/data
