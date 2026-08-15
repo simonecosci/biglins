@@ -49,7 +49,8 @@ UUID primary key. Belongs to `customers` (`customer_id`, `restrictOnDelete` — 
 
 | Column | Notes |
 |---|---|
-| `number` | unique per company (`unique(company_id, number)`), auto-generated as `{year}-{4-digit sequence}` (`Invoice::nextNumber(string $companyId, ?string $year = null)`), resets per year and per company |
+| `number` | unique per company (`unique(company_id, number)`), auto-generated as `{year}-{4-digit sequence}` (`Invoice::nextNumber(string $companyId, ?string $year = null)`), resets per year and per company — shared sequence between invoices and credit notes |
+| `type` | string, cast to `App\Enums\InvoiceType` (`invoice` \| `credit_note`), default `invoice` — a credit note reverses a previous invoice: its row prices are stored negative (entered as positive in the form, negated on save), so `subtotal`/`vat_total`/`total` come out negative too |
 | `invoice_date` | date |
 | `paid` | boolean, default `false` |
 | `customer_id` | FK → `customers.id` |
