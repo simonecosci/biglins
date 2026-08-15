@@ -6,6 +6,30 @@ cd /app
 IS_ROOT=0
 [ "$(id -u)" = "0" ] && IS_ROOT=1
 
+if [ "$IS_ROOT" != "1" ]; then
+    # Rootless support is scoped to arbitrary UID + GID 0 (primary or
+    # supplementary), per the design. Fail fast and loudly here rather than
+    # letting nginx/php-fpm silently fail to open their log files later
+    # (which otherwise manifests as unexplained 502s with nothing in the
+    # log naming the real cause).
+    case " $(id -G) " in
+        *" 0 "*) ;;
+        *)
+            echo "ERROR: rootless mode requires GID 0 (primary or supplementary group); got groups: $(id -G). Use --user <uid>:0, or set securityContext.runAsGroup: 0 on Kubernetes/OpenShift." >&2
+            exit 1
+            ;;
+    esac
+
+    # Runtime-created files/dirs (sqlite db, cache files, logs, certs, etc.)
+    # must be group-writable so the arbitrary-UID contract survives a later
+    # UID change against a persisted volume (e.g. an OpenShift namespace
+    # recreate, or a PVC restored into a different cluster). Docker's
+    # default umask (0022) would otherwise strip the group-write bit from
+    # everything created at runtime. Root-mode behavior must stay
+    # byte-for-byte unchanged, so this is confined to the non-root branch.
+    umask 0002
+fi
+
 if [ "$IS_ROOT" = "1" ]; then
     HTTP_PORT="${HTTP_PORT:-80}"
     HTTPS_PORT="${HTTPS_PORT:-443}"
@@ -44,7 +68,7 @@ fi
 ensure_writable_dir() {
     mkdir -p "$1"
     if [ "$IS_ROOT" != "1" ] && [ "$(stat -c %u "$1")" = "$CURRENT_UID" ]; then
-        chmod -R g+rwX "$1"
+        chmod g+rwX "$1"
     fi
 }
 
