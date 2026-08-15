@@ -35,6 +35,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY docker/php/local.ini /etc/php/${PHP_VERSION}/fpm/conf.d/99-local.ini
 COPY docker/php/local.ini /etc/php/${PHP_VERSION}/cli/conf.d/99-local.ini
 COPY docker/php/www.conf /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf
+COPY docker/php/www-rootless.conf /etc/php/${PHP_VERSION}/fpm/pool.d/www-rootless.conf.available
 
 WORKDIR /app
 
@@ -72,6 +73,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         supervisor \
         certbot \
         openssl \
+        gettext-base \
+        libnss-wrapper \
     && rm -rf /var/lib/apt/lists/*
 
 COPY docker/nginx/app.conf /etc/nginx/sites-available/app.conf
@@ -90,10 +93,15 @@ COPY docker/healthcheck.sh /usr/local/bin/healthcheck.sh
 RUN chmod +x /usr/local/bin/healthcheck.sh
 
 RUN mkdir -p storage/framework/{cache,sessions,testing,views} storage/logs bootstrap/cache \
+        /data /certs /var/www/certbot /etc/nginx/certs \
     && chown -R www-data:www-data /app storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+    && chmod -R 775 storage bootstrap/cache \
+    && chgrp -R 0 /app /data /certs /var/www/certbot /etc/nginx/certs /run /var/lib/nginx /var/log/nginx \
+        /etc/nginx/sites-available /etc/nginx/sites-enabled "/etc/php/${PHP_VERSION}/fpm/pool.d" \
+    && chmod -R g=u /app /data /certs /var/www/certbot /etc/nginx/certs /run /var/lib/nginx /var/log/nginx \
+        /etc/nginx/sites-available /etc/nginx/sites-enabled "/etc/php/${PHP_VERSION}/fpm/pool.d"
 
-EXPOSE 80 443
+EXPOSE 80 443 8080 8443
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
     CMD ["/usr/local/bin/healthcheck.sh"]
