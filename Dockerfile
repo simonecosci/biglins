@@ -14,7 +14,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
-        git \
         gnupg \
         unzip \
         php${PHP_VERSION}-cli \
@@ -48,7 +47,7 @@ WORKDIR /app
 FROM php-base AS vendor
 
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y --no-install-recommends nodejs \
+    && apt-get install -y --no-install-recommends nodejs git \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . .
