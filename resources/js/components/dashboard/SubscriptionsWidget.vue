@@ -5,6 +5,7 @@ import SubscriptionController from '@/actions/App/Http/Controllers/SubscriptionC
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { confirmDialog } from '@/lib/confirmDialog';
 
 type SubscriptionStatus = 'expired' | 'expiring_soon' | 'upcoming';
 
@@ -50,14 +51,14 @@ function renewGroup(invoiceId: string): void {
     router.post(SubscriptionController.renew(invoiceId).url);
 }
 
-function cancelGroup(invoiceId: string): void {
-    if (confirm(t('dashboard.subscriptions.confirmCancelGroup'))) {
+async function cancelGroup(invoiceId: string): Promise<void> {
+    if (await confirmDialog(t('dashboard.subscriptions.confirmCancelGroup'))) {
         router.post(SubscriptionController.cancelGroup(invoiceId).url);
     }
 }
 
-function cancelRow(rowId: string): void {
-    if (confirm(t('dashboard.subscriptions.confirmCancelRow'))) {
+async function cancelRow(rowId: string): Promise<void> {
+    if (await confirmDialog(t('dashboard.subscriptions.confirmCancelRow'))) {
         router.post(SubscriptionController.cancelRow(rowId).url);
     }
 }

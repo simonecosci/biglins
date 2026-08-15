@@ -7,6 +7,7 @@ import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { confirmDialog } from '@/lib/confirmDialog';
 import { index } from '@/routes/countries';
 import type { BreadcrumbItem } from '@/types';
 
@@ -27,8 +28,8 @@ setLayoutProps({
     ] satisfies BreadcrumbItem[],
 });
 
-function onDelete(): void {
-    if (confirm(t('countries.edit.confirmDelete'))) {
+async function onDelete(): Promise<void> {
+    if (await confirmDialog(t('countries.edit.confirmDelete'))) {
         router.delete(CountryController.destroy(props.country.id).url);
     }
 }
