@@ -48,6 +48,19 @@ docker compose run --rm app php artisan migrate --force   # first run only
 
 The app runs at `http://localhost:8080` (port configurable via `APP_PORT` in `.env`). See [Dockerfile](Dockerfile) and [docker-compose.yml](docker-compose.yml) for image details: PHP-FPM + nginx + queue worker on Debian trixie, managed by supervisord.
 
+### HTTPS
+
+Set `SSL_MODE` in `.env` to terminate TLS at nginx (default `none` — HTTP only, unchanged):
+
+| `SSL_MODE` | Behavior |
+|---|---|
+| `none` (default) | HTTP only on `:80`. |
+| `selfsigned` | Self-signed certificate generated for `APP_URL`'s host, persisted in the `certs` volume. `:80` redirects to `:443`. |
+| `certbot` | Let's Encrypt certificate via HTTP-01, auto-renewed daily. Requires `APP_URL` to be a publicly reachable domain and `CERTBOT_EMAIL` to be set. |
+| `custom` | Bring your own certificate: place `fullchain.pem`/`privkey.pem` issued by your own CA into the `certs` volume under `custom/` before starting the container. |
+
+HTTPS is served on `${APP_HTTPS_PORT:-8443}` (host) → `:443` (container).
+
 ## Useful commands
 
 | Command | Description |
