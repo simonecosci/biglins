@@ -35,21 +35,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::table('companies')
-            ->whereNotNull('logo')
-            ->where('logo', 'like', 'companies/%')
-            ->get()
-            ->each(function (object $company): void {
-                $filename = basename($company->logo);
-                $oldPath = 'images/companies/'.$filename;
-
-                if (Storage::disk('local')->exists($company->logo)) {
-                    File::ensureDirectoryExists(public_path('images/companies'));
-                    File::put(public_path($oldPath), Storage::disk('local')->get($company->logo));
-                    Storage::disk('local')->delete($company->logo);
-                }
-
-                DB::table('companies')->where('id', $company->id)->update(['logo' => $oldPath]);
-            });
+        // Intentionally a no-op: this migrates historical data (logos written by
+        // the old public_path()-based upload code) forward to match the new
+        // Storage::disk('local')-based code. There's no way to distinguish a
+        // company row this migration touched from one a user uploaded normally
+        // after the code changed (both end up in the same `companies/{id}.ext`
+        // format), so a real reversal risks corrupting unrelated, perfectly
+        // fine logos. This migration is one-way.
     }
 };

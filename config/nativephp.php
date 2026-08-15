@@ -86,6 +86,7 @@ return [
         'phpunit.xml',
         'phpstan.neon',
         '*.md',
+        'Dockerfile',
     ],
 
     /**
