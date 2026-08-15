@@ -8,7 +8,7 @@ The Docker image currently serves plain HTTP on port 80 only. Add first-class HT
 
 ## Scope
 
-Docker/infra only — no PHP application code changes. Touches `Dockerfile`, `docker/entrypoint.sh`, `docker/nginx/*`, `docker/supervisor/supervisord.conf`, `docker-compose.yml`. New files: `docker/nginx/app-ssl-http.conf`, `docker/nginx/app-ssl-https.conf`, `docker/certbot-renew.sh`.
+Docker/infra only — no PHP application code changes. Touches `Dockerfile`, `docker/entrypoint.sh`, `docker/nginx/*`, `docker/supervisor/supervisord.conf`, `docker-compose.yml`. New files: `docker/nginx/app-ssl-http.conf`, `docker/nginx/app-ssl-https.conf`, `docker/certbot-renew.sh`, `docker/healthcheck.sh`.
 
 ## Configuration
 
@@ -85,6 +85,35 @@ Install `certbot` and `openssl` (openssl is normally already present via base pa
 - New port mapping `${APP_HTTPS_PORT:-8443}:443`.
 - `SSL_MODE` and `CERTBOT_EMAIL` are left for the operator to set via `.env` / `environment:` — no default forced in the compose file beyond what the entrypoint already defaults (`none`).
 
+## Container healthcheck
+
+New `docker/healthcheck.sh` (new file), invoked via `HEALTHCHECK` in the `final` Dockerfile stage:
+
+```sh
+#!/bin/sh
+set -e
+
+if [ "$SSL_MODE" = "none" ]; then
+    curl -fsS http://localhost/ -o /dev/null
+else
+    curl -fsSk https://localhost/ -o /dev/null
+fi
+```
+
+Targets the container's own internal `localhost`, not `$APP_URL` — `APP_URL` reflects the externally-mapped host/port (e.g. `http://localhost:8080`), which doesn't necessarily match nginx's internal `:80`/`:443`, so curling it literally from inside the container would fail regardless of actual health. `-k` skips TLS verification for `selfsigned`/`custom`/`certbot` modes since this is an internal loopback check, not a security boundary. `curl` is already installed in the `php-base` stage, so no new package is needed.
+
+Dockerfile addition:
+
+```dockerfile
+COPY docker/healthcheck.sh /usr/local/bin/healthcheck.sh
+RUN chmod +x /usr/local/bin/healthcheck.sh
+...
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD ["/usr/local/bin/healthcheck.sh"]
+```
+
+`--start-period=30s` gives the certbot bootstrap step (first-run network round trip to Let's Encrypt) room before failed checks count toward the retry threshold.
+
 ## Non-goals
 
 - No automatic detection of "public vs internal" domain — `SSL_MODE` is explicit, per the issue.
@@ -101,4 +130,5 @@ No Pest coverage applies — this is Docker/shell infrastructure, not PHP applic
 - `SSL_MODE=selfsigned` → container starts, `:443` serves the app with a self-signed cert for `$APP_URL`'s host, `:80` redirects to `:443`, restarting the container reuses the same cert (no regeneration).
 - `SSL_MODE=custom` with test `fullchain.pem`/`privkey.pem` dropped into the volume → served as-is; missing files → container fails to start with a clear error.
 - `SSL_MODE=certbot` without `CERTBOT_EMAIL` → fails fast with a clear error. Full issuance against a real reachable domain isn't exercisable in this environment; validated instead via `certbot ... --dry-run` against the constructed command and a careful read-through of the bootstrap script logic.
-- `shellcheck` run against `entrypoint.sh` and `certbot-renew.sh` if available in the environment.
+- `docker inspect --format='{{json .State.Health}}'` shows `healthy` after `--start-period` in every `SSL_MODE`, including `selfsigned`/`custom` where the healthcheck's own TLS verification is skipped.
+- `shellcheck` run against `entrypoint.sh`, `certbot-renew.sh`, and `healthcheck.sh` if available in the environment.
