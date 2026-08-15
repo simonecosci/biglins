@@ -15,6 +15,7 @@ storage/framework/views/*
 storage/logs/*
 storage/inertia-devtools/*
 database/database.sqlite
+bootstrap/cache/*.php
 .env
 .env.*
 !.env.example
