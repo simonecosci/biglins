@@ -249,11 +249,11 @@ function submit(): void {
                     </Select>
                     <InputError :message="form.errors.type" />
                 </div>
-            </div>
 
-            <div class="flex items-center gap-2">
-                <Checkbox id="paid" v-model="form.paid" />
-                <Label for="paid">{{ t('invoices.create.paid') }}</Label>
+                <div class="flex items-center gap-2 self-end pb-2">
+                    <Checkbox id="paid" v-model="form.paid" />
+                    <Label for="paid">{{ t('invoices.create.paid') }}</Label>
+                </div>
             </div>
 
             <div class="grid gap-2">

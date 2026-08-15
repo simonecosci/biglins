@@ -111,9 +111,6 @@ function formatDate(date: string): string {
                             {{ t('invoices.index.columns.type') }}
                         </th>
                         <th class="px-4 py-2 font-medium">
-                            {{ t('invoices.index.columns.paid') }}
-                        </th>
-                        <th class="px-4 py-2 font-medium">
                             {{ t('invoices.index.columns.total') }}
                         </th>
                         <th class="px-4 py-2"></th>
@@ -133,28 +130,28 @@ function formatDate(date: string): string {
                             {{ invoice.customer?.name ?? '—' }}
                         </td>
                         <td class="px-4 py-2">
-                            <Badge
-                                :variant="
-                                    invoice.type === 'credit_note'
-                                        ? 'secondary'
-                                        : 'outline'
-                                "
-                            >
-                                {{ typeLabel(invoice.type) }}
-                            </Badge>
-                        </td>
-                        <td class="px-4 py-2">
-                            <Badge
-                                :variant="
-                                    invoice.paid ? 'default' : 'secondary'
-                                "
-                            >
-                                {{
-                                    invoice.paid
-                                        ? t('invoices.index.paid')
-                                        : t('invoices.index.unpaid')
-                                }}
-                            </Badge>
+                            <div class="flex items-center gap-1">
+                                <Badge
+                                    :variant="
+                                        invoice.type === 'credit_note'
+                                            ? 'secondary'
+                                            : 'outline'
+                                    "
+                                >
+                                    {{ typeLabel(invoice.type) }}
+                                </Badge>
+                                <Badge
+                                    :variant="
+                                        invoice.paid ? 'default' : 'secondary'
+                                    "
+                                >
+                                    {{
+                                        invoice.paid
+                                            ? t('invoices.index.paid')
+                                            : t('invoices.index.unpaid')
+                                    }}
+                                </Badge>
+                            </div>
                         </td>
                         <td class="px-4 py-2">
                             {{ formatTotal(invoice.total) }}
@@ -221,7 +218,7 @@ function formatDate(date: string): string {
                     </tr>
                     <tr v-if="invoices.data.length === 0">
                         <td
-                            colspan="7"
+                            colspan="6"
                             class="px-4 py-6 text-center text-muted-foreground"
                         >
                             {{ t('invoices.index.empty') }}
