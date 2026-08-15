@@ -96,9 +96,9 @@ RUN mkdir -p storage/framework/{cache,sessions,testing,views} storage/logs boots
         /data /certs /var/www/certbot /etc/nginx/certs \
     && chown -R www-data:www-data /app storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache \
-    && chgrp -R 0 /app /data /certs /var/www/certbot /etc/nginx/certs /run /var/lib/nginx /var/log/nginx \
+    && chgrp -R 0 /app /data /certs /var/www/certbot /etc/nginx/certs /run /var/lib/nginx /var/log \
         /etc/nginx/sites-available /etc/nginx/sites-enabled "/etc/php/${PHP_VERSION}/fpm/pool.d" \
-    && chmod -R g=u /app /data /certs /var/www/certbot /etc/nginx/certs /run /var/lib/nginx /var/log/nginx \
+    && chmod -R g=u /app /data /certs /var/www/certbot /etc/nginx/certs /run /var/lib/nginx /var/log \
         /etc/nginx/sites-available /etc/nginx/sites-enabled "/etc/php/${PHP_VERSION}/fpm/pool.d"
 
 EXPOSE 80 443 8080 8443
