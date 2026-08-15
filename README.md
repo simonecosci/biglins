@@ -99,6 +99,40 @@ first mount. Kubernetes PersistentVolumeClaims don't get this treatment —
 if your storage provisioner doesn't already grant group-0 write access,
 set a matching `fsGroup` in the pod's `securityContext`.
 
+## Desktop app (NativePHP)
+
+Biglins can also run as a standalone desktop app (Windows/macOS/Linux) via
+[NativePHP](https://nativephp.com/), independent of the Docker/web
+deployment above. Each installation is single-user and keeps its own local
+SQLite database — no server required.
+
+```bash
+composer require nativephp/desktop   # already in composer.json — only needed once
+php artisan native:install           # already run for this repo; re-run after upgrading nativephp/desktop
+php artisan native:run               # launch the desktop app in dev mode
+```
+
+NativePHP automatically creates and migrates a local SQLite database inside
+the OS's per-user application-data directory on first run, and does the
+same for anything stored on Laravel's `local` filesystem disk — no manual
+database configuration needed.
+
+### Building installers
+
+```bash
+php artisan native:build win     # produces a Windows installer
+php artisan native:build mac     # produces a macOS .dmg — requires an Apple ID + team ID
+                                  # and notarization, or other Macs will refuse to open it
+php artisan native:build linux   # produces a Linux AppImage
+```
+
+Cross-compilation has limits: building Windows binaries from Linux needs
+Wine with 32-bit support, and macOS builds must be signed/notarized on
+Apple hardware to run on other Macs. `mac`/`linux` builds are not exercised
+by this project's CI — only `win` is currently verified.
+
+Auto-update is not configured; distribute new versions as new installers.
+
 ## Useful commands
 
 | Command                           | Description                                    |
