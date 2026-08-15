@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Company;
 use App\Models\Country;
 use App\Models\Customer;
 use Faker\Provider\en_US\Address as EnUsAddress;
@@ -20,6 +21,7 @@ class CustomerFactory extends Factory
     public function definition(): array
     {
         return [
+            'company_id' => Company::factory(),
             'name' => fake()->company(),
             'address' => fake()->streetAddress(),
             'zip' => fake()->postcode(),

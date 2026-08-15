@@ -2,17 +2,18 @@
 
 namespace Database\Factories;
 
+use App\Enums\EstimationStatus;
 use App\Models\Company;
 use App\Models\Customer;
-use App\Models\Invoice;
+use App\Models\Estimation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Invoice>
+ * @extends Factory<Estimation>
  */
-class InvoiceFactory extends Factory
+class EstimationFactory extends Factory
 {
-    protected $model = Invoice::class;
+    protected $model = Estimation::class;
 
     /**
      * @return array<string, mixed>
@@ -21,12 +22,13 @@ class InvoiceFactory extends Factory
     {
         return [
             'number' => null,
-            'invoice_date' => fake()->dateTimeBetween('-6 months', 'now')->format('Y-m-d'),
-            'paid' => fake()->boolean(),
             'company_id' => Company::factory(),
             'customer_id' => fn (array $attributes) => Customer::factory()->create(['company_id' => $attributes['company_id']])->id,
-            'note' => fake()->optional()->sentence(),
+            'estimation_date' => fake()->dateTimeBetween('-2 months', 'now')->format('Y-m-d'),
+            'expiration_date' => fake()->dateTimeBetween('now', '+2 months')->format('Y-m-d'),
             'language' => fake()->randomElement(['it', 'en', 'es']),
+            'body' => fake()->optional()->paragraphs(3, true),
+            'status' => EstimationStatus::Pending,
         ];
     }
 }

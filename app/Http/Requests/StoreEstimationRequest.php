@@ -6,7 +6,7 @@ use App\Support\CurrentCompany;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateInvoiceRequest extends FormRequest
+class StoreEstimationRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -19,28 +19,20 @@ class UpdateInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'number' => [
-                'nullable', 'string', 'max:20',
-                Rule::unique('invoices', 'number')
-                    ->where('company_id', CurrentCompany::resolve()?->id)
-                    ->ignore($this->route('invoice')),
-            ],
-            'invoice_date' => ['required', 'date'],
-            'paid' => ['boolean'],
             'customer_id' => [
                 'required', 'uuid',
                 Rule::exists('customers', 'id')->where('company_id', CurrentCompany::resolve()?->id),
             ],
-            'note' => ['nullable', 'string'],
+            'estimation_date' => ['required', 'date'],
+            'expiration_date' => ['required', 'date', 'after_or_equal:estimation_date'],
             'language' => ['required', 'string', Rule::in(['it', 'en', 'es'])],
+            'body' => ['nullable', 'string'],
             'rows' => ['required', 'array', 'min:1'],
-            'rows.*.id' => ['nullable', 'uuid', 'exists:invoice_rows,id'],
             'rows.*.description' => ['required', 'string', 'max:255'],
             'rows.*.quantity' => ['required', 'numeric', 'min:0.01'],
             'rows.*.price' => ['required', 'numeric', 'min:0'],
             'rows.*.vat_rate' => ['required', 'numeric', 'min:0', 'max:100'],
-            'rows.*.expiration_date' => ['nullable', 'date'],
-            'rows.*.subscription_status' => ['nullable', Rule::in(['active', 'cancelled'])],
+            'rows.*.note' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

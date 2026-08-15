@@ -60,10 +60,12 @@ class InvoiceController extends Controller
             : null;
 
         return Inertia::render('invoices/Create', [
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            'customers' => Customer::query()->where('company_id', $currentCompany->id)->orderBy('name')->get(['id', 'name']),
             'nextNumber' => Invoice::nextNumber($currentCompany->id),
             'duplicate' => $source ? [
-                'customer_id' => $source->customer_id,
+                // A customer from another company would not be selectable here, so it is only
+                // carried over when duplicating within the same company.
+                ...($source->company_id === $currentCompany->id ? ['customer_id' => $source->customer_id] : []),
                 'note' => $source->note,
                 'language' => $source->language,
                 'rows' => $source->rows->map(fn (InvoiceRow $row): array => [
@@ -105,7 +107,7 @@ class InvoiceController extends Controller
 
         return Inertia::render('invoices/Edit', [
             'invoice' => $invoice->load('rows'),
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            'customers' => Customer::query()->where('company_id', $invoice->company_id)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
