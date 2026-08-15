@@ -175,6 +175,7 @@ const messages = {
         invoices: 'Invoices',
         estimations: 'Estimates',
         products: 'Products',
+        notes: 'Notes',
         countries: 'Countries',
         repository: 'Repository',
         documentation: 'Documentation',
@@ -569,6 +570,40 @@ const messages = {
             description: 'Update {name}',
             confirmDelete: 'Delete this product? This cannot be undone.',
             deleteButton: 'Delete product',
+        },
+    },
+    notePicker: {
+        title: 'Choose a note',
+        searchPlaceholder: 'Search by title or content...',
+        empty: 'No notes found.',
+        fallbackLabel: 'From saved notes',
+        page: 'Page {current} of {last}',
+    },
+    notes: {
+        index: {
+            title: 'Notes',
+            description: 'Manage reusable notes to quickly add to invoices',
+            newButton: 'New note',
+            searchPlaceholder: 'Search by title or content...',
+            columns: {
+                title: 'Title',
+                content: 'Content',
+            },
+            empty: 'No notes found.',
+        },
+        create: {
+            title: 'New note',
+            description: 'Add a note to reuse later',
+            titleLabel: 'Title',
+            titlePlaceholder: 'Title',
+            contentLabel: 'Content',
+            contentPlaceholder: 'Content',
+        },
+        edit: {
+            title: 'Edit note',
+            description: 'Update {name}',
+            confirmDelete: 'Delete this note? This cannot be undone.',
+            deleteButton: 'Delete note',
         },
     },
 };

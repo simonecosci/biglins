@@ -6,6 +6,8 @@ import { useI18n } from 'vue-i18n';
 import InvoiceController from '@/actions/App/Http/Controllers/InvoiceController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import NotePicker from '@/components/NotePicker.vue';
+import type { PickedNote } from '@/components/NotePicker.vue';
 import ProductPicker from '@/components/ProductPicker.vue';
 import type { PickedProduct } from '@/components/ProductPicker.vue';
 import { Button } from '@/components/ui/button';
@@ -155,6 +157,10 @@ function applyProduct(index: number, product: PickedProduct): void {
             product.duration,
         );
     }
+}
+
+function appendNote(note: PickedNote): void {
+    form.note = form.note ? `${form.note}\n${note.content}` : note.content;
 }
 
 const total = computed(() =>
@@ -319,7 +325,10 @@ async function onDelete(): Promise<void> {
             </div>
 
             <div class="grid gap-2">
-                <Label for="note">{{ t('invoices.create.note') }}</Label>
+                <div class="flex items-center justify-between">
+                    <Label for="note">{{ t('invoices.create.note') }}</Label>
+                    <NotePicker @select="appendNote" />
+                </div>
                 <textarea
                     id="note"
                     v-model="form.note"

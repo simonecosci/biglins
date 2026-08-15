@@ -82,4 +82,12 @@ class Company extends Model
     {
         return $this->hasMany(Estimation::class);
     }
+
+    /**
+     * @return HasMany<Note, $this>
+     */
+    public function notes(): HasMany
+    {
+        return $this->hasMany(Note::class);
+    }
 }

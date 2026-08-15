@@ -183,6 +183,7 @@ const messages: MessageSchema = {
         invoices: 'Fatture',
         estimations: 'Preventivi',
         products: 'Prodotti',
+        notes: 'Note',
         countries: 'Paesi',
         repository: 'Repository',
         documentation: 'Documentazione',
@@ -584,6 +585,42 @@ const messages: MessageSchema = {
             confirmDelete:
                 "Eliminare questo prodotto? L'azione non può essere annullata.",
             deleteButton: 'Elimina prodotto',
+        },
+    },
+    notePicker: {
+        title: 'Scegli una nota',
+        searchPlaceholder: 'Cerca per titolo o contenuto...',
+        empty: 'Nessuna nota trovata.',
+        fallbackLabel: 'Dalle note salvate',
+        page: 'Pagina {current} di {last}',
+    },
+    notes: {
+        index: {
+            title: 'Note',
+            description:
+                'Gestisci le note riutilizzabili da aggiungere rapidamente alle fatture',
+            newButton: 'Nuova nota',
+            searchPlaceholder: 'Cerca per titolo o contenuto...',
+            columns: {
+                title: 'Titolo',
+                content: 'Contenuto',
+            },
+            empty: 'Nessuna nota trovata.',
+        },
+        create: {
+            title: 'Nuova nota',
+            description: 'Aggiungi una nota da riutilizzare in seguito',
+            titleLabel: 'Titolo',
+            titlePlaceholder: 'Titolo',
+            contentLabel: 'Contenuto',
+            contentPlaceholder: 'Contenuto',
+        },
+        edit: {
+            title: 'Modifica nota',
+            description: 'Aggiorna {name}',
+            confirmDelete:
+                "Eliminare questa nota? L'azione non può essere annullata.",
+            deleteButton: 'Elimina nota',
         },
     },
 };

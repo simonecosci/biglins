@@ -9,6 +9,7 @@ import {
     LayoutGrid,
     Package,
     Receipt,
+    StickyNote,
     Users,
 } from '@lucide/vue';
 import { computed } from 'vue';
@@ -32,6 +33,7 @@ import { index as countriesIndex } from '@/routes/countries';
 import { index as customersIndex } from '@/routes/customers';
 import { index as estimationsIndex } from '@/routes/estimations';
 import { index as invoicesIndex } from '@/routes/invoices';
+import { index as notesIndex } from '@/routes/notes';
 import { index as productsIndex } from '@/routes/products';
 import type { NavItem } from '@/types';
 
@@ -69,6 +71,11 @@ const mainNavItems = computed<NavItem[]>(() => [
         title: t('nav.products'),
         href: productsIndex().url,
         icon: Package,
+    },
+    {
+        title: t('nav.notes'),
+        href: notesIndex().url,
+        icon: StickyNote,
     },
     {
         title: t('nav.countries'),

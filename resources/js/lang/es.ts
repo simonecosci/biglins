@@ -188,6 +188,7 @@ const messages: MessageSchema = {
         invoices: 'Facturas',
         estimations: 'Presupuestos',
         products: 'Productos',
+        notes: 'Notas',
         countries: 'Países',
         repository: 'Repositorio',
         documentation: 'Documentación',
@@ -588,6 +589,42 @@ const messages: MessageSchema = {
             confirmDelete:
                 '¿Eliminar este producto? Esta acción no se puede deshacer.',
             deleteButton: 'Eliminar producto',
+        },
+    },
+    notePicker: {
+        title: 'Elige una nota',
+        searchPlaceholder: 'Buscar por título o contenido...',
+        empty: 'No se encontraron notas.',
+        fallbackLabel: 'De notas guardadas',
+        page: 'Página {current} de {last}',
+    },
+    notes: {
+        index: {
+            title: 'Notas',
+            description:
+                'Gestiona notas reutilizables para añadir rápidamente a las facturas',
+            newButton: 'Nueva nota',
+            searchPlaceholder: 'Buscar por título o contenido...',
+            columns: {
+                title: 'Título',
+                content: 'Contenido',
+            },
+            empty: 'No se encontraron notas.',
+        },
+        create: {
+            title: 'Nueva nota',
+            description: 'Añade una nota para reutilizarla más tarde',
+            titleLabel: 'Título',
+            titlePlaceholder: 'Título',
+            contentLabel: 'Contenido',
+            contentPlaceholder: 'Contenido',
+        },
+        edit: {
+            title: 'Editar nota',
+            description: 'Actualizar {name}',
+            confirmDelete:
+                '¿Eliminar esta nota? Esta acción no se puede deshacer.',
+            deleteButton: 'Eliminar nota',
         },
     },
 };
