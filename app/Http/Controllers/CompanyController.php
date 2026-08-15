@@ -115,7 +115,7 @@ class CompanyController extends Controller
 
     public function logo(Company $company): StreamedResponse
     {
-        abort_unless($company->logo !== null, 404);
+        abort_unless($company->logo !== null && Storage::disk('local')->exists($company->logo), 404);
 
         return Storage::disk('local')->response($company->logo);
     }
@@ -129,6 +129,10 @@ class CompanyController extends Controller
 
             $file = $request->file('logo');
             $path = $file->storeAs('companies', $company->id.'.'.$file->extension(), 'local');
+
+            if ($path === false) {
+                return;
+            }
 
             $company->update(['logo' => $path]);
 

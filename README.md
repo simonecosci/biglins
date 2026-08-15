@@ -123,7 +123,7 @@ database configuration needed.
 php artisan native:build win     # produces a Windows installer
 php artisan native:build mac     # produces a macOS .dmg — requires an Apple ID + team ID
                                   # and notarization, or other Macs will refuse to open it
-php artisan native:build linux   # produces a Linux AppImage
+php artisan native:build linux   # produces a Linux AppImage and .deb package
 ```
 
 Cross-compilation has limits: building Windows binaries from Linux needs
@@ -132,6 +132,12 @@ Apple hardware to run on other Macs. `mac`/`linux` builds are not exercised
 by this project's CI — only `win` is currently verified.
 
 Auto-update is not configured; distribute new versions as new installers.
+
+**Never build a desktop release from a `.env` carrying the web deployment's
+real `APP_KEY` or other production secrets that can't be stripped.**
+`APP_KEY` specifically ships inside the bundle since the app needs it at
+runtime, so a desktop release must be built from its own freshly generated
+key, not a copy of the production web `.env`.
 
 ## Useful commands
 

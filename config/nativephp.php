@@ -61,9 +61,13 @@ return [
      * You may use wildcards to match multiple keys.
      */
     'cleanup_env_keys' => [
-        'AWS_ACCESS_KEY_ID',
-        'AWS_SECRET_ACCESS_KEY',
-        'MAIL_PASSWORD',
+        'AWS_*',
+        'MAIL_*',
+        'DB_*',
+        'REDIS_*',
+        'SSL_MODE',
+        'CERTBOT_EMAIL',
+        'RUN_MIGRATIONS',
     ],
 
     /**
@@ -77,6 +81,11 @@ return [
         'content',
         'node_modules',
         '*/tests',
+        'tests',
+        'docs',
+        'phpunit.xml',
+        'phpstan.neon',
+        '*.md',
     ],
 
     /**
@@ -88,7 +97,7 @@ return [
          * updater will only work when your application is bundled
          * for production.
          */
-        'enabled' => env('NATIVEPHP_UPDATER_ENABLED', true),
+        'enabled' => env('NATIVEPHP_UPDATER_ENABLED', false),
 
         /**
          * The updater provider to use.
@@ -141,14 +150,7 @@ return [
     /**
      * The queue workers that get auto-started on your application start.
      */
-    'queue_workers' => [
-        'default' => [
-            'queues' => ['default'],
-            'memory_limit' => 128,
-            'timeout' => 60,
-            'sleep' => 3,
-        ],
-    ],
+    'queue_workers' => [],
 
     /**
      * Define your own scripts to run before and after the build process.

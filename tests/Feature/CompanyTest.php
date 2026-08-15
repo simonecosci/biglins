@@ -3,6 +3,7 @@
 use App\Models\Company;
 use App\Models\Country;
 use App\Models\Estimation;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
@@ -321,6 +322,28 @@ test('requesting the logo of a company with no logo returns a 404', function () 
     $company = Company::factory()->create(['logo' => null]);
 
     $this->actingAs($user)->get(route('companies.logo', $company))->assertNotFound();
+});
+
+test('requesting a company logo whose file is missing returns a 404 instead of a server error', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create(['logo' => 'companies/missing.png']);
+
+    $this->actingAs($user)->get(route('companies.logo', $company))->assertNotFound();
+});
+
+test('the company-logo migration moves an existing public_path logo onto the local disk and rewrites the column', function () {
+    $company = Company::factory()->create(['logo' => 'images/companies/legacy.png']);
+    File::ensureDirectoryExists(public_path('images/companies'));
+    File::put(public_path('images/companies/legacy.png'), 'fake-image-bytes');
+
+    $migrationFile = File::glob(database_path('migrations/*_migrate_company_logos_to_local_disk.php'))[0];
+    (require $migrationFile)->up();
+
+    expect($company->fresh()->logo)->toBe('companies/legacy.png');
+    Storage::disk('local')->assertExists('companies/legacy.png');
+    expect(File::exists(public_path('images/companies/legacy.png')))->toBeFalse();
+
+    File::delete(public_path('images/companies/legacy.png')); // cleanup if the migration logic left it (it shouldn't)
 });
 
 /**
