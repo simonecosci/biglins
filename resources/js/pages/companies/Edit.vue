@@ -216,7 +216,7 @@ async function onDelete(): Promise<void> {
                 <Label for="logo">{{ t('companies.create.logo') }}</Label>
                 <img
                     v-if="company.logo && !form.remove_logo"
-                    :src="`/${company.logo}`"
+                    :src="CompanyController.logo(company.id).url"
                     :alt="t('companies.edit.currentLogoAlt')"
                     class="h-16 w-auto rounded border object-contain p-1"
                 />

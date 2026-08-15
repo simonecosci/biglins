@@ -3,17 +3,10 @@
 use App\Models\Company;
 use App\Models\Country;
 use App\Models\Estimation;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
-/**
- * Logos are written straight into `public/images/companies`, so wipe any file a
- * test left behind — regardless of whether that test passed. The glob skips the
- * tracked `.gitkeep`, which `File::cleanDirectory()` would remove.
- */
-afterEach(function () {
-    foreach (File::glob(public_path('images/companies/*')) as $file) {
-        File::delete($file);
-    }
+beforeEach(function () {
+    Storage::fake('local');
 });
 
 test('company factory creates a company belonging to a country', function () {
@@ -194,7 +187,7 @@ test('a company with an estimation cannot be deleted', function () {
 
 use Illuminate\Http\UploadedFile;
 
-test('company logo can be uploaded and is stored in public/images/companies', function () {
+test('company logo can be uploaded and is stored on the local disk', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($user)->post(route('companies.store'), [
@@ -205,8 +198,8 @@ test('company logo can be uploaded and is stored in public/images/companies', fu
     $response->assertSessionHasNoErrors()->assertRedirect(route('companies.index'));
 
     $company = Company::query()->where('name', 'Acme Corp')->firstOrFail();
-    expect($company->logo)->toBe("images/companies/{$company->id}.png");
-    expect(file_exists(public_path($company->logo)))->toBeTrue();
+    expect($company->logo)->toBe("companies/{$company->id}.png");
+    Storage::disk('local')->assertExists($company->logo);
 });
 
 /**
@@ -224,8 +217,8 @@ test('replacing a company logo deletes the previous file', function () {
         'logo' => UploadedFile::fake()->image('first.jpg'),
     ])->assertSessionHasNoErrors();
 
-    $firstPath = public_path($company->fresh()->logo);
-    expect(file_exists($firstPath))->toBeTrue();
+    $firstPath = $company->fresh()->logo;
+    Storage::disk('local')->assertExists($firstPath);
 
     $this->actingAs($user)->post(route('companies.update', $company), [
         '_method' => 'put',
@@ -234,9 +227,9 @@ test('replacing a company logo deletes the previous file', function () {
     ])->assertSessionHasNoErrors();
 
     $company->refresh();
-    expect(file_exists($firstPath))->toBeFalse();
-    expect(file_exists(public_path($company->logo)))->toBeTrue();
-    expect($company->logo)->toBe("images/companies/{$company->id}.png");
+    Storage::disk('local')->assertMissing($firstPath);
+    Storage::disk('local')->assertExists($company->logo);
+    expect($company->logo)->toBe("companies/{$company->id}.png");
 });
 
 test('a company logo can be removed without uploading a new one', function () {
@@ -248,8 +241,8 @@ test('a company logo can be removed without uploading a new one', function () {
         'name' => $company->name,
         'logo' => UploadedFile::fake()->image('logo.png'),
     ])->assertSessionHasNoErrors();
-    $logoPath = public_path($company->fresh()->logo);
-    expect(file_exists($logoPath))->toBeTrue();
+    $logoPath = $company->fresh()->logo;
+    Storage::disk('local')->assertExists($logoPath);
 
     $response = $this->actingAs($user)->put(route('companies.update', $company), [
         'name' => $company->name,
@@ -258,7 +251,7 @@ test('a company logo can be removed without uploading a new one', function () {
 
     $response->assertSessionHasNoErrors();
     expect($company->fresh()->logo)->toBeNull();
-    expect(file_exists($logoPath))->toBeFalse();
+    Storage::disk('local')->assertMissing($logoPath);
 });
 
 test('company logo must be an image', function () {
@@ -298,8 +291,36 @@ test('a company logo can be replaced through a spoofed multipart PUT from the ed
 
     $company->refresh();
     expect($company->name)->toBe('Renamed Corp');
-    expect($company->logo)->toBe("images/companies/{$company->id}.png");
-    expect(file_exists(public_path($company->logo)))->toBeTrue();
+    expect($company->logo)->toBe("companies/{$company->id}.png");
+    Storage::disk('local')->assertExists($company->logo);
+});
+
+test('the company logo can be downloaded by an authenticated user', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+
+    $this->actingAs($user)->post(route('companies.update', $company), [
+        '_method' => 'put',
+        'name' => $company->name,
+        'logo' => UploadedFile::fake()->image('logo.png'),
+    ])->assertSessionHasNoErrors();
+
+    $response = $this->actingAs($user)->get(route('companies.logo', $company->fresh()));
+
+    $response->assertOk();
+});
+
+test('guests cannot download a company logo', function () {
+    $company = Company::factory()->create(['logo' => 'companies/placeholder.png']);
+
+    $this->get(route('companies.logo', $company))->assertRedirect(route('login'));
+});
+
+test('requesting the logo of a company with no logo returns a 404', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create(['logo' => null]);
+
+    $this->actingAs($user)->get(route('companies.logo', $company))->assertNotFound();
 });
 
 /**

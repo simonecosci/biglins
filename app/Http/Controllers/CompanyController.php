@@ -9,9 +9,10 @@ use App\Models\Country;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CompanyController extends Controller
 {
@@ -112,6 +113,13 @@ class CompanyController extends Controller
         return to_route('companies.index');
     }
 
+    public function logo(Company $company): StreamedResponse
+    {
+        abort_unless($company->logo !== null, 404);
+
+        return Storage::disk('local')->response($company->logo);
+    }
+
     private function syncLogo(Company $company, StoreCompanyRequest|UpdateCompanyRequest $request): void
     {
         if ($request->hasFile('logo')) {
@@ -120,14 +128,9 @@ class CompanyController extends Controller
             }
 
             $file = $request->file('logo');
-            $directory = public_path('images/companies');
+            $path = $file->storeAs('companies', $company->id.'.'.$file->extension(), 'local');
 
-            File::ensureDirectoryExists($directory);
-
-            $filename = $company->id.'.'.$file->extension();
-            $file->move($directory, $filename);
-
-            $company->update(['logo' => 'images/companies/'.$filename]);
+            $company->update(['logo' => $path]);
 
             return;
         }
@@ -140,10 +143,6 @@ class CompanyController extends Controller
 
     private function deleteLogoFile(string $path): void
     {
-        $fullPath = public_path($path);
-
-        if (file_exists($fullPath)) {
-            unlink($fullPath);
-        }
+        Storage::disk('local')->delete($path);
     }
 }
