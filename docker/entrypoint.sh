@@ -3,16 +3,65 @@ set -e
 
 cd /app
 
-mkdir -p storage/framework/{cache,sessions,testing,views} storage/logs bootstrap/cache
-chown -R www-data:www-data storage bootstrap/cache
+IS_ROOT=0
+[ "$(id -u)" = "0" ] && IS_ROOT=1
 
-mkdir -p /run/php
-chown www-data:www-data /run/php
+if [ "$IS_ROOT" = "1" ]; then
+    HTTP_PORT="${HTTP_PORT:-80}"
+    HTTPS_PORT="${HTTPS_PORT:-443}"
+else
+    HTTP_PORT="${HTTP_PORT:-8080}"
+    HTTPS_PORT="${HTTPS_PORT:-8443}"
+fi
+export HTTP_PORT HTTPS_PORT
+
+# --- rootless support: synthesize a passwd/group entry via nss_wrapper ------
+# Arbitrary UIDs assigned by Kubernetes/OpenShift have no /etc/passwd entry,
+# which breaks getpwuid()-dependent tooling (openssl, some PHP extensions).
+if [ "$IS_ROOT" != "1" ]; then
+    CURRENT_UID="$(id -u)"
+    CURRENT_GID="$(id -g)"
+    if ! getent passwd "$CURRENT_UID" >/dev/null 2>&1; then
+        export NSS_WRAPPER_PASSWD=/tmp/nss-wrapper-passwd
+        export NSS_WRAPPER_GROUP=/tmp/nss-wrapper-group
+        cp /etc/passwd "$NSS_WRAPPER_PASSWD"
+        cp /etc/group "$NSS_WRAPPER_GROUP"
+        echo "appuser:x:${CURRENT_UID}:${CURRENT_GID}:App User:/tmp:/bin/false" >> "$NSS_WRAPPER_PASSWD"
+        getent group "$CURRENT_GID" >/dev/null 2>&1 || echo "appuser:x:${CURRENT_GID}:" >> "$NSS_WRAPPER_GROUP"
+        export LD_PRELOAD="libnss_wrapper.so"
+    fi
+fi
+
+# Create a dir and, when non-root, guarantee it's group-writable regardless
+# of umask. For dirs the process just created, it owns them and this chmod
+# always succeeds. For dirs that pre-exist from the image (owned by
+# www-data, group 0 already made writable at build time per Task 4), a
+# non-owning UID cannot chmod them even though it can already write into
+# them — chmod requires file ownership, not just group write access.
+# Failure is expected and harmless in that case (the baked group-write bit
+# already provides what we need), so stderr is discarded and the exit
+# status ignored rather than letting `set -e` abort startup or `chmod -R`
+# spam one "Operation not permitted" line per file it recurses into.
+ensure_writable_dir() {
+    mkdir -p "$1"
+    [ "$IS_ROOT" = "1" ] || chmod -R g+rwX "$1" >/dev/null 2>&1 || true
+}
+
+ensure_writable_dir storage/framework/cache
+ensure_writable_dir storage/framework/sessions
+ensure_writable_dir storage/framework/testing
+ensure_writable_dir storage/framework/views
+ensure_writable_dir storage/logs
+ensure_writable_dir bootstrap/cache
+[ "$IS_ROOT" = "1" ] && chown -R www-data:www-data storage bootstrap/cache
+
+ensure_writable_dir /run/php
+[ "$IS_ROOT" = "1" ] && chown www-data:www-data /run/php
 
 if [ "$DB_CONNECTION" = "sqlite" ] && [ -n "$DB_DATABASE" ]; then
-    mkdir -p "$(dirname "$DB_DATABASE")"
+    ensure_writable_dir "$(dirname "$DB_DATABASE")"
     [ -f "$DB_DATABASE" ] || touch "$DB_DATABASE"
-    chown -R www-data:www-data "$(dirname "$DB_DATABASE")"
+    [ "$IS_ROOT" = "1" ] && chown -R www-data:www-data "$(dirname "$DB_DATABASE")"
 fi
 
 if [ -z "$APP_KEY" ]; then
@@ -28,13 +77,29 @@ php artisan route:cache
 php artisan view:cache
 php artisan storage:link || true
 
-chown -R www-data:www-data storage bootstrap/cache
+[ "$IS_ROOT" = "1" ] && chown -R www-data:www-data storage bootstrap/cache
 
-# --- SSL certificate setup --------------------------------------------------
-# Only provision certificates when this invocation actually starts the server
-# process tree (the image's default CMD). One-off `docker compose run ...`
-# commands skip straight to `exec "$@"`.
+# --- SSL certificate setup + nginx/php-fpm runtime config -------------------
+# Only provision certificates and render server config when this invocation
+# actually starts the server process tree (the image's default CMD). One-off
+# `docker compose run ...` commands skip straight to `exec "$@"`.
 if [ "$1" = "/usr/bin/supervisord" ]; then
+    if [ "$IS_ROOT" != "1" ]; then
+        cp "/etc/php/${PHP_VERSION}/fpm/pool.d/www-rootless.conf.available" \
+            "/etc/php/${PHP_VERSION}/fpm/pool.d/www.conf"
+    fi
+
+    for conf in app.conf app-ssl-http.conf app-ssl-https.conf; do
+        envsubst '${HTTP_PORT} ${HTTPS_PORT}' \
+            < "/etc/nginx/sites-available/$conf" > "/tmp/$conf"
+        mv "/tmp/$conf" "/etc/nginx/sites-available/$conf"
+    done
+
+    {
+        echo "HTTP_PORT=$HTTP_PORT"
+        echo "HTTPS_PORT=$HTTPS_PORT"
+    } > /run/app-ports.env
+
     SSL_MODE="${SSL_MODE:-none}"
     CERTS_DIR=/certs
     NGINX_CERT_DIR=/etc/nginx/certs
@@ -43,7 +108,7 @@ if [ "$1" = "/usr/bin/supervisord" ]; then
 
     DOMAIN=$(echo "$APP_URL" | sed -E 's#^[a-zA-Z]+://##; s#[:/].*$##')
 
-    mkdir -p "$NGINX_CERT_DIR"
+    ensure_writable_dir "$NGINX_CERT_DIR"
 
     enable_http_only() {
         rm -f "$SITES_ENABLED"/app.conf "$SITES_ENABLED"/app-ssl-http.conf "$SITES_ENABLED"/app-ssl-https.conf
@@ -61,7 +126,7 @@ if [ "$1" = "/usr/bin/supervisord" ]; then
             enable_http_only
             ;;
         selfsigned)
-            mkdir -p "$CERTS_DIR/selfsigned"
+            ensure_writable_dir "$CERTS_DIR/selfsigned"
             if [ ! -f "$CERTS_DIR/selfsigned/fullchain.pem" ]; then
                 openssl req -x509 -newkey rsa:2048 -nodes -days 3650 \
                     -keyout "$CERTS_DIR/selfsigned/privkey.pem" \
@@ -88,7 +153,8 @@ if [ "$1" = "/usr/bin/supervisord" ]; then
                 exit 1
             fi
             LE_DIR="$CERTS_DIR/letsencrypt"
-            mkdir -p "$LE_DIR" /var/www/certbot
+            ensure_writable_dir "$LE_DIR"
+            ensure_writable_dir /var/www/certbot
             if [ ! -f "$LE_DIR/live/$DOMAIN/fullchain.pem" ]; then
                 rm -f "$SITES_ENABLED"/app.conf "$SITES_ENABLED"/app-ssl-http.conf "$SITES_ENABLED"/app-ssl-https.conf
                 ln -sf "$SITES_AVAILABLE"/app-ssl-http.conf "$SITES_ENABLED"/app-ssl-http.conf
