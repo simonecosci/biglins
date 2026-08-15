@@ -95,7 +95,7 @@ class InvoiceController extends Controller
                 'company_id' => $currentCompany->id,
             ]);
 
-            $rows = collect($request->safe()->input('rows'))
+            $rows = collect($this->rowsInput($request))
                 ->map(fn (array $row): array => $this->normalizeRowPrice($row, $invoice->type));
 
             $invoice->rows()->createMany($rows);
@@ -154,7 +154,7 @@ class InvoiceController extends Controller
     /**
      * @return array<int, array<string, mixed>>
      */
-    private function rowsInput(UpdateInvoiceRequest $request): array
+    private function rowsInput(StoreInvoiceRequest|UpdateInvoiceRequest $request): array
     {
         return $request->safe()->input('rows');
     }

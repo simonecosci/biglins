@@ -61,7 +61,7 @@ class Invoice extends Model
                 $invoice->number = static::nextNumber($invoice->company_id);
             }
 
-            if (! $invoice->type) {
+            if (! ($invoice->getAttributes()['type'] ?? null)) {
                 $invoice->type = InvoiceType::Invoice;
             }
         });
