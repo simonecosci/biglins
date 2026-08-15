@@ -54,23 +54,27 @@ Set `SSL_MODE` in `.env` to terminate TLS at nginx (default `none` — HTTP only
 
 | `SSL_MODE` | Behavior |
 |---|---|
-| `none` (default) | HTTP only on `:80`. |
-| `selfsigned` | Self-signed certificate generated for `APP_URL`'s host, persisted in the `certs` volume. `:80` redirects to `:443`. |
+| `none` (default) | HTTP only, on the HTTP port. |
+| `selfsigned` | Self-signed certificate generated for `APP_URL`'s host, persisted in the `certs` volume. The HTTP port redirects to the HTTPS port. |
 | `certbot` | Let's Encrypt certificate via HTTP-01, auto-renewed daily. Requires `APP_URL` to be a publicly reachable domain and `CERTBOT_EMAIL` to be set. |
 | `custom` | Bring your own certificate: place `fullchain.pem`/`privkey.pem` issued by your own CA into the `certs` volume under `custom/` before starting the container. |
 
-HTTPS is served on `${APP_HTTPS_PORT:-8443}` (host) → `:443` (container).
+HTTPS is served on `${APP_HTTPS_PORT:-8443}` (host) → `:8443` (container).
 
 `certbot` and `custom` require a real `APP_URL` set in `.env` (not the default `http://localhost:8080`), since the certificate domain is derived from its host.
 
 ### Running rootless
 
-The image auto-detects whether it's running as root or as an arbitrary
+The container always listens internally on the unprivileged ports `8080`/`8443`
+(mapped to host `80`/`443` — or whatever you choose — via `docker run -p` /
+`docker-compose.yml`), so no `CAP_NET_BIND_SERVICE` is ever required and the
+port mapping is identical whether the container runs as root or as an
+arbitrary non-root UID.
+
+The image also auto-detects whether it's running as root or as an arbitrary
 non-root UID and adjusts itself accordingly — no build flag needed. When
 started as a non-root UID:
 
-- Listen ports switch from `80`/`443` to `8080`/`8443` (unprivileged ports
-  don't require `CAP_NET_BIND_SERVICE`).
 - Ownership fixups (`chown`) are skipped in favor of group-writable
   permissions baked into the image at build time, following the OpenShift
   arbitrary-UID convention: the container's runtime GID must be **0** (as a
