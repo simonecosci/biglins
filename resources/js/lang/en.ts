@@ -208,7 +208,7 @@ const messages = {
     },
     welcome: {
         description:
-            'Invoicing application for freelancers: customer registry, invoice issuing with rows/VAT, automatic sequential numbering, PDF preview and generation, invoice duplication.',
+            'Invoicing application for freelancers: customer registry, invoice issuing with rows/VAT, automatic sequential numbering, PDF preview and generation, invoice duplication, estimates with a markdown proposal and conversion into an invoice.',
         readDocsPrefix: 'Read the',
         documentation: 'Documentation',
         dashboard: 'Dashboard',

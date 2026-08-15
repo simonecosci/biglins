@@ -217,7 +217,7 @@ const messages: MessageSchema = {
     },
     welcome: {
         description:
-            'Applicazione di fatturazione per liberi professionisti: anagrafica clienti, emissione fatture con righe/IVA, numerazione progressiva automatica, anteprima e generazione PDF, duplicazione fattura.',
+            'Applicazione di fatturazione per liberi professionisti: anagrafica clienti, emissione fatture con righe/IVA, numerazione progressiva automatica, anteprima e generazione PDF, duplicazione fattura, preventivi con proposta in markdown e conversione in fattura.',
         readDocsPrefix: 'Leggi la',
         documentation: 'Documentazione',
         dashboard: 'Dashboard',
