@@ -2,11 +2,11 @@
 
 namespace App\Support;
 
-use League\CommonMark\CommonMarkConverter;
+use League\CommonMark\GithubFlavoredMarkdownConverter;
 
 class MarkdownRenderer
 {
-    private static ?CommonMarkConverter $converter = null;
+    private static ?GithubFlavoredMarkdownConverter $converter = null;
 
     public static function toHtml(?string $markdown): string
     {
@@ -14,7 +14,7 @@ class MarkdownRenderer
             return '';
         }
 
-        self::$converter ??= new CommonMarkConverter([
+        self::$converter ??= new GithubFlavoredMarkdownConverter([
             'html_input' => 'strip',
             'allow_unsafe_links' => false,
         ]);

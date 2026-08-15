@@ -39,6 +39,20 @@ test('markdown preview strips raw html so scripts cannot survive rendering', fun
     expect($response->json('html'))->not->toContain('<script>');
 });
 
+test('markdown preview renders gfm tables as html tables', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->postJson(route('estimations.markdown-preview'), [
+        'body' => "| A | B |\n| --- | --- |\n| 1 | 2 |",
+    ]);
+
+    $response->assertOk();
+    $html = $response->json('html');
+    expect($html)->toContain('<table>');
+    expect($html)->toContain('<th>A</th>');
+    expect($html)->toContain('<td>1</td>');
+});
+
 test('markdown preview does not emit a javascript: link as an href', function () {
     $user = User::factory()->create();
 
