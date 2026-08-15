@@ -82,7 +82,8 @@ RUN rm -f /etc/nginx/sites-enabled/default \
 
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY docker/certbot-renew.sh /usr/local/bin/certbot-renew.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/certbot-renew.sh
 
 COPY --from=vendor /app /app
 
