@@ -70,9 +70,13 @@ ENV PHP_VERSION=${PHP_VERSION}
 RUN apt-get update && apt-get install -y --no-install-recommends \
         nginx \
         supervisor \
+        certbot \
+        openssl \
     && rm -rf /var/lib/apt/lists/*
 
 COPY docker/nginx/app.conf /etc/nginx/sites-available/app.conf
+COPY docker/nginx/app-ssl-http.conf /etc/nginx/sites-available/app-ssl-http.conf
+COPY docker/nginx/app-ssl-https.conf /etc/nginx/sites-available/app-ssl-https.conf
 RUN rm -f /etc/nginx/sites-enabled/default \
     && ln -sf /etc/nginx/sites-available/app.conf /etc/nginx/sites-enabled/app.conf
 
