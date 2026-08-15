@@ -86,12 +86,17 @@ COPY docker/certbot-renew.sh /usr/local/bin/certbot-renew.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/certbot-renew.sh
 
 COPY --from=vendor /app /app
+COPY docker/healthcheck.sh /usr/local/bin/healthcheck.sh
+RUN chmod +x /usr/local/bin/healthcheck.sh
 
 RUN mkdir -p storage/framework/{cache,sessions,testing,views} storage/logs bootstrap/cache \
     && chown -R www-data:www-data /app storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-EXPOSE 80
+EXPOSE 80 443
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD ["/usr/local/bin/healthcheck.sh"]
 
 ENTRYPOINT ["entrypoint.sh"]
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf", "-n"]
