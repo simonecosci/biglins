@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\InvoiceType;
 use App\Models\Invoice;
 use App\Models\InvoiceRow;
 use Illuminate\Support\Facades\App;
@@ -62,6 +63,15 @@ test('template omits the notes section when the invoice has no note', function (
     $html = renderInvoiceTemplate($invoice);
 
     expect($html)->not->toContain('id="notes"');
+});
+
+test('template shows the credit note title for credit note invoices', function () {
+    $invoice = Invoice::factory()->create(['language' => 'en', 'type' => InvoiceType::CreditNote]);
+    InvoiceRow::factory()->create(['invoice_id' => $invoice->id]);
+
+    $html = renderInvoiceTemplate($invoice);
+
+    expect($html)->toContain('Credit Note');
 });
 
 test('template renders the quantity column for each row', function () {

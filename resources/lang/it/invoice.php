@@ -2,6 +2,7 @@
 
 return [
     'title' => 'Fattura',
+    'credit_note_title' => 'Nota di Credito',
     'number' => 'Numero',
     'date' => 'Data',
     'customer' => 'Cliente',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\InvoiceType;
 use App\Http\Controllers\Concerns\ScopesToCurrentCompany;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
@@ -68,10 +69,11 @@ class InvoiceController extends Controller
                 ...($source->company_id === $currentCompany->id ? ['customer_id' => $source->customer_id] : []),
                 'note' => $source->note,
                 'language' => $source->language,
+                'type' => $source->type->value,
                 'rows' => $source->rows->map(fn (InvoiceRow $row): array => [
                     'description' => $row->description,
                     'quantity' => $row->quantity,
-                    'price' => $row->price,
+                    'price' => $source->isCreditNote() ? abs($row->price) : $row->price,
                     'vat_rate' => $row->vat_rate,
                     'expiration_date' => $row->expiration_date?->format('Y-m-d'),
                 ])->all(),
@@ -93,7 +95,10 @@ class InvoiceController extends Controller
                 'company_id' => $currentCompany->id,
             ]);
 
-            $invoice->rows()->createMany($request->safe()->input('rows'));
+            $rows = collect($request->safe()->input('rows'))
+                ->map(fn (array $row): array => $this->normalizeRowPrice($row, $invoice->type));
+
+            $invoice->rows()->createMany($rows);
         });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Invoice created.')]);
@@ -105,8 +110,14 @@ class InvoiceController extends Controller
     {
         $this->authorizeCurrentCompany($invoice);
 
+        $invoice->load('rows');
+
+        if ($invoice->isCreditNote()) {
+            $invoice->rows->each(fn (InvoiceRow $row) => $row->price = abs($row->price));
+        }
+
         return Inertia::render('invoices/Edit', [
-            'invoice' => $invoice->load('rows'),
+            'invoice' => $invoice,
             'customers' => Customer::query()->where('company_id', $invoice->company_id)->orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -118,7 +129,8 @@ class InvoiceController extends Controller
         DB::transaction(function () use ($request, $invoice) {
             $invoice->update($request->safe()->except('rows'));
 
-            $rows = collect($this->rowsInput($request));
+            $rows = collect($this->rowsInput($request))
+                ->map(fn (array $row): array => $this->normalizeRowPrice($row, $invoice->type));
             $keepIds = $rows->pluck('id')->filter()->all();
 
             $invoice->rows()->whereNotIn('id', $keepIds)->delete();
@@ -145,6 +157,19 @@ class InvoiceController extends Controller
     private function rowsInput(UpdateInvoiceRequest $request): array
     {
         return $request->safe()->input('rows');
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    private function normalizeRowPrice(array $row, InvoiceType $type): array
+    {
+        if ($type === InvoiceType::CreditNote) {
+            $row['price'] = -abs((float) $row['price']);
+        }
+
+        return $row;
     }
 
     public function destroy(Invoice $invoice): RedirectResponse

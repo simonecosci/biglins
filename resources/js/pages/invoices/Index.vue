@@ -17,6 +17,7 @@ type Invoice = {
     invoice_date: string;
     paid: boolean;
     total: string | number;
+    type: string;
     customer: { id: string; name: string } | null;
 };
 
@@ -56,6 +57,10 @@ function onSearch(): void {
 
 function formatTotal(total: string | number): string {
     return Number(total).toFixed(2);
+}
+
+function typeLabel(type: string): string {
+    return t(`invoices.type.${type}`);
 }
 
 function formatDate(date: string): string {
@@ -103,6 +108,9 @@ function formatDate(date: string): string {
                             {{ t('invoices.index.columns.customer') }}
                         </th>
                         <th class="px-4 py-2 font-medium">
+                            {{ t('invoices.index.columns.type') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
                             {{ t('invoices.index.columns.paid') }}
                         </th>
                         <th class="px-4 py-2 font-medium">
@@ -123,6 +131,17 @@ function formatDate(date: string): string {
                         </td>
                         <td class="px-4 py-2">
                             {{ invoice.customer?.name ?? '—' }}
+                        </td>
+                        <td class="px-4 py-2">
+                            <Badge
+                                :variant="
+                                    invoice.type === 'credit_note'
+                                        ? 'secondary'
+                                        : 'outline'
+                                "
+                            >
+                                {{ typeLabel(invoice.type) }}
+                            </Badge>
                         </td>
                         <td class="px-4 py-2">
                             <Badge
@@ -202,7 +221,7 @@ function formatDate(date: string): string {
                     </tr>
                     <tr v-if="invoices.data.length === 0">
                         <td
-                            colspan="6"
+                            colspan="7"
                             class="px-4 py-6 text-center text-muted-foreground"
                         >
                             {{ t('invoices.index.empty') }}
