@@ -221,7 +221,7 @@ const messages: MessageSchema = {
     },
     welcome: {
         description:
-            'Aplicación de facturación para autónomos: registro de clientes, emisión de facturas con líneas/IGIC, numeración secuencial automática, vista previa y generación de PDF, duplicación de facturas.',
+            'Aplicación de facturación para autónomos: registro de clientes, emisión de facturas con líneas/IGIC, numeración secuencial automática, vista previa y generación de PDF, duplicación de facturas, presupuestos con propuesta en markdown y conversión en factura.',
         readDocsPrefix: 'Lee la',
         documentation: 'Documentación',
         dashboard: 'Panel',

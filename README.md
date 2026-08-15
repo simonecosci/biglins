@@ -8,7 +8,7 @@
 [![docker-publish](https://github.com/simonecosci/biglins/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/simonecosci/biglins/actions/workflows/docker-publish.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Invoicing app for freelancers and sole proprietors: customer records, invoices with line items/VAT, credit notes to reverse a previous invoice, automatic sequential numbering, PDF preview and generation, invoice duplication, a renewal schedule for recurring services (domains, hosting, maintenance) with renew/cancel actions from the dashboard, and a year-to-date revenue summary.
+Invoicing app for freelancers and sole proprietors: customer records, invoices with line items/VAT, credit notes to reverse a previous invoice, automatic sequential numbering, PDF preview and generation, invoice duplication, a renewal schedule for recurring services (domains, hosting, maintenance) with renew/cancel actions from the dashboard, a year-to-date revenue summary, and estimates (quotes) with a markdown proposal, file attachments, PDF/ZIP export, and one-click conversion into an invoice once accepted.
 
 ## Stack
 
