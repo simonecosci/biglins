@@ -3,17 +3,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    logging:
+      options:
+        max-size: '10m'
+        max-file: '3'
     ports:
-      - '${APP_PORT:-80}:8080'
-      - '${APP_HTTPS_PORT:-443}:8443'
+      - '80:8080'
+      - '443:8443'
     env_file:
       - .env
     environment:
+      DB_CONNECTION: sqlite
       DB_DATABASE: /data/database.sqlite
-      APP_URL: ${APP_URL:-http://localhost:${APP_PORT:-8080}}
-      SSL_MODE: ${SSL_MODE:-none}
-      CERTBOT_EMAIL: ${CERTBOT_EMAIL:-}
-      RUN_MIGRATIONS: true
     volumes:
       - storage:/app/storage
       - database:/data
