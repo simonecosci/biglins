@@ -48,6 +48,53 @@ docker compose run --rm app php artisan migrate --force   # first run only
 
 The app runs at `http://localhost:8080` (port configurable via `APP_PORT` in `.env`). See [Dockerfile](Dockerfile) and [docker-compose.yml](docker-compose.yml) for image details: PHP-FPM + nginx + queue worker on Debian trixie, managed by supervisord.
 
+### HTTPS
+
+Set `SSL_MODE` in `.env` to terminate TLS at nginx (default `none` — HTTP only, unchanged):
+
+| `SSL_MODE` | Behavior |
+|---|---|
+| `none` (default) | HTTP only on `:80`. |
+| `selfsigned` | Self-signed certificate generated for `APP_URL`'s host, persisted in the `certs` volume. `:80` redirects to `:443`. |
+| `certbot` | Let's Encrypt certificate via HTTP-01, auto-renewed daily. Requires `APP_URL` to be a publicly reachable domain and `CERTBOT_EMAIL` to be set. |
+| `custom` | Bring your own certificate: place `fullchain.pem`/`privkey.pem` issued by your own CA into the `certs` volume under `custom/` before starting the container. |
+
+HTTPS is served on `${APP_HTTPS_PORT:-8443}` (host) → `:443` (container).
+
+`certbot` and `custom` require a real `APP_URL` set in `.env` (not the default `http://localhost:8080`), since the certificate domain is derived from its host.
+
+### Running rootless
+
+The image auto-detects whether it's running as root or as an arbitrary
+non-root UID and adjusts itself accordingly — no build flag needed. When
+started as a non-root UID:
+
+- Listen ports switch from `80`/`443` to `8080`/`8443` (unprivileged ports
+  don't require `CAP_NET_BIND_SERVICE`).
+- Ownership fixups (`chown`) are skipped in favor of group-writable
+  permissions baked into the image at build time, following the OpenShift
+  arbitrary-UID convention: the container's runtime GID must be **0** (as a
+  primary or supplementary group), either supplementary or primary.
+- A synthetic `/etc/passwd` entry is generated via `nss_wrapper` for UIDs
+  that don't already have one, so `getpwuid()`-dependent tooling (OpenSSL,
+  Certbot, some PHP extensions) keeps working.
+
+Example with plain `docker run`:
+
+```bash
+docker run --user 1000:0 -p 8080:8080 -p 8443:8443 --env-file .env simonecosci/biglins
+```
+
+On Kubernetes/OpenShift, set `securityContext.runAsUser` to any UID and
+`securityContext.runAsGroup: 0` (OpenShift's default restricted SCC does
+this automatically, so most deployments need no `securityContext` at all).
+
+**Caveat:** for `storage`/`database`/`certs` backed by a fresh Docker/Podman
+named volume, the image's baked permissions carry over automatically on
+first mount. Kubernetes PersistentVolumeClaims don't get this treatment —
+if your storage provisioner doesn't already grant group-0 write access,
+set a matching `fsGroup` in the pod's `securityContext`.
+
 ## Useful commands
 
 | Command | Description |
