@@ -109,8 +109,20 @@ SQLite database — no server required.
 ```bash
 composer require nativephp/desktop   # already in composer.json — only needed once
 php artisan native:install           # already run for this repo; re-run after upgrading nativephp/desktop
-php artisan native:run               # launch the desktop app in dev mode
+composer native:dev                  # launch the desktop app in dev mode (Vite + native:run together)
 ```
+
+`native:run` alone only starts the Electron/PHP side; it expects assets
+from a Vite dev server that isn't running unless you start it too, which
+shows up as `ERR_CONNECTION_REFUSED` in the app window's DevTools console
+for `app.ts`/`app.css`/every page component. `composer native:dev` runs
+`npm run dev` and `php artisan native:run` together (via `concurrently`) so
+this isn't an issue.
+
+If you hit `The route _native/api/events could not be found` in
+`storage/logs/laravel.log` and the window opens but the page never loads,
+your route/config cache predates installing `nativephp/desktop` — run
+`php artisan optimize:clear` to rebuild it.
 
 NativePHP automatically creates and migrates a local SQLite database inside
 the OS's per-user application-data directory on first run, and does the
