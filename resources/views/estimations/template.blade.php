@@ -1,7 +1,7 @@
 @php
-    $logoPath = $estimation->company->logo ? public_path($estimation->company->logo) : null;
-    $logoData = $logoPath && file_exists($logoPath)
-        ? 'data:' . mime_content_type($logoPath) . ';base64,' . base64_encode(file_get_contents($logoPath))
+    $logoDisk = \Illuminate\Support\Facades\Storage::disk('local');
+    $logoData = $estimation->company->logo && $logoDisk->exists($estimation->company->logo)
+        ? 'data:' . $logoDisk->mimeType($estimation->company->logo) . ';base64,' . base64_encode($logoDisk->get($estimation->company->logo))
         : null;
 
     $statusLabel = match ($estimation->status) {
