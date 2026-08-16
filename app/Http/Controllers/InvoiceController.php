@@ -4,19 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Enums\InvoiceType;
 use App\Http\Controllers\Concerns\ScopesToCurrentCompany;
+use App\Http\Requests\SendInvoiceRequest;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
+use App\Mail\InvoiceMail;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceRow;
 use App\Support\CurrentCompany;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Support\InvoicePdf;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -118,7 +121,7 @@ class InvoiceController extends Controller
 
         return Inertia::render('invoices/Edit', [
             'invoice' => $invoice,
-            'customers' => Customer::query()->where('company_id', $invoice->company_id)->orderBy('name')->get(['id', 'name']),
+            'customers' => Customer::query()->where('company_id', $invoice->company_id)->orderBy('name')->get(['id', 'name', 'email']),
         ]);
     }
 
@@ -194,10 +197,25 @@ class InvoiceController extends Controller
 
     public function pdf(Invoice $invoice): HttpResponse
     {
-        App::setLocale($invoice->language);
+        return InvoicePdf::render($invoice)->download(InvoicePdf::filename($invoice));
+    }
 
-        return Pdf::loadView('invoices.template', [
-            'invoice' => $invoice->load(['customer.country', 'company.country', 'rows']),
-        ])->download(str_replace(['/', '\\'], '-', $invoice->number).'.pdf');
+    public function send(SendInvoiceRequest $request, Invoice $invoice): RedirectResponse
+    {
+        $this->authorizeCurrentCompany($invoice);
+
+        Mail::to($request->string('to')->toString())->send(new InvoiceMail(
+            $invoice,
+            $request->string('subject')->toString(),
+            $request->string('message')->toString(),
+        ));
+
+        $invoice->sent_at = now();
+        $invoice->sent_to = $request->string('to')->toString();
+        $invoice->save();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Invoice sent.')]);
+
+        return to_route('invoices.edit', $invoice);
     }
 }

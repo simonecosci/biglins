@@ -468,6 +468,7 @@ const messages: MessageSchema = {
             confirmDelete:
                 "Eliminare questa fattura? L'azione non può essere annullata.",
             deleteButton: 'Elimina fattura',
+            send: 'Invia via email',
         },
     },
     estimations: {
@@ -527,6 +528,7 @@ const messages: MessageSchema = {
             convertButton: 'Converti in fattura',
             convertedNotice: 'Convertito in fattura',
             expiredBadge: 'Scaduto',
+            send: 'Invia via email',
             attachments: {
                 title: 'Allegati',
                 uploadButton: 'Carica file',
@@ -593,6 +595,20 @@ const messages: MessageSchema = {
         empty: 'Nessuna nota trovata.',
         fallbackLabel: 'Dalle note salvate',
         page: 'Pagina {current} di {last}',
+    },
+    sendEmailDialog: {
+        title: 'Invia via email',
+        to: 'A',
+        subject: 'Oggetto',
+        message: 'Messaggio',
+        send: 'Invia',
+        lastSent: 'Inviato il {date} a {email}',
+        invoiceDefaultSubject: 'Fattura {number}',
+        invoiceDefaultMessage:
+            'Buongiorno,\n\nin allegato trova la fattura {number}.\n\nCordiali saluti.',
+        estimationDefaultSubject: 'Preventivo {number}',
+        estimationDefaultMessage:
+            'Buongiorno,\n\nin allegato trova il preventivo {number}.\n\nCordiali saluti.',
     },
     notes: {
         index: {

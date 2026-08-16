@@ -4,13 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Enums\EstimationStatus;
 use App\Http\Controllers\Concerns\ScopesToCurrentCompany;
+use App\Http\Requests\SendEstimationRequest;
 use App\Http\Requests\StoreEstimationRequest;
 use App\Http\Requests\UpdateEstimationRequest;
+use App\Mail\EstimationMail;
 use App\Models\Customer;
 use App\Models\Estimation;
 use App\Models\EstimationRow;
 use App\Models\Invoice;
 use App\Support\CurrentCompany;
+use App\Support\EstimationZip;
 use App\Support\MarkdownRenderer;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
@@ -20,11 +23,10 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use ZipArchive;
 
 class EstimationController extends Controller
 {
@@ -112,7 +114,7 @@ class EstimationController extends Controller
 
         return Inertia::render('estimations/Edit', [
             'estimation' => $estimation->load(['rows', 'attachments'])->append('is_expired'),
-            'customers' => Customer::query()->where('company_id', $estimation->company_id)->orderBy('name')->get(['id', 'name']),
+            'customers' => Customer::query()->where('company_id', $estimation->company_id)->orderBy('name')->get(['id', 'name', 'email']),
         ]);
     }
 
@@ -244,28 +246,25 @@ class EstimationController extends Controller
     {
         $this->authorizeCurrentCompany($estimation);
 
-        App::setLocale($estimation->language);
+        return response()->download(EstimationZip::build($estimation), EstimationZip::filename($estimation))->deleteFileAfterSend();
+    }
 
-        $estimation->load(['customer.country', 'company.country', 'rows', 'attachments']);
+    public function send(SendEstimationRequest $request, Estimation $estimation): RedirectResponse
+    {
+        $this->authorizeCurrentCompany($estimation);
 
-        $pdfContent = Pdf::loadView('estimations.template', [
-            'estimation' => $estimation,
-            'bodyHtml' => MarkdownRenderer::toHtml($estimation->body),
-        ])->output();
+        Mail::to($request->string('to')->toString())->send(new EstimationMail(
+            $estimation,
+            $request->string('subject')->toString(),
+            $request->string('message')->toString(),
+        ));
 
-        $zipPath = tempnam(sys_get_temp_dir(), 'estimation-zip-');
-        $number = str_replace(['/', '\\'], '-', $estimation->number);
+        $estimation->sent_at = now();
+        $estimation->sent_to = $request->string('to')->toString();
+        $estimation->save();
 
-        $zip = new ZipArchive;
-        $zip->open($zipPath, ZipArchive::OVERWRITE);
-        $zip->addFromString("{$number}.pdf", $pdfContent);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Estimation sent.')]);
 
-        foreach ($estimation->attachments as $attachment) {
-            $zip->addFile(Storage::disk($attachment->disk)->path($attachment->path), $attachment->original_name);
-        }
-
-        $zip->close();
-
-        return response()->download($zipPath, "{$number}.zip")->deleteFileAfterSend();
+        return to_route('estimations.edit', $estimation);
     }
 }

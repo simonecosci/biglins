@@ -23,6 +23,8 @@ use Illuminate\Support\Carbon;
  * @property string $company_id
  * @property string|null $note
  * @property string $language
+ * @property Carbon|null $sent_at
+ * @property string|null $sent_to
  * @property-read float $subtotal
  * @property-read float $vat_total
  * @property-read float $total
@@ -51,6 +53,7 @@ class Invoice extends Model
             'type' => InvoiceType::class,
             'invoice_date' => 'date:Y-m-d',
             'paid' => 'boolean',
+            'sent_at' => 'datetime',
         ];
     }
 

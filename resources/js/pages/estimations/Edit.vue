@@ -10,6 +10,7 @@ import InputError from '@/components/InputError.vue';
 import MarkdownField from '@/components/MarkdownField.vue';
 import ProductPicker from '@/components/ProductPicker.vue';
 import type { PickedProduct } from '@/components/ProductPicker.vue';
+import SendEmailDialog from '@/components/SendEmailDialog.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,7 @@ import type { BreadcrumbItem } from '@/types';
 type Customer = {
     id: string;
     name: string;
+    email: string | null;
 };
 
 type EstimationStatus = 'pending' | 'accepted' | 'rejected';
@@ -61,6 +63,8 @@ type Estimation = {
     status: EstimationStatus;
     invoice_id: string | null;
     is_expired: boolean;
+    sent_at: string | null;
+    sent_to: string | null;
     rows: EstimationRow[];
     attachments: Attachment[];
 };
@@ -212,6 +216,24 @@ async function deleteAttachment(attachmentId: string): Promise<void> {
 function formatSize(bytes: number): string {
     return `${(bytes / 1024).toFixed(0)} KB`;
 }
+
+const customerEmail = computed(
+    () =>
+        props.customers.find(
+            (customer) => customer.id === props.estimation.customer_id,
+        )?.email ?? null,
+);
+
+const lastSent = computed(() => {
+    if (!props.estimation.sent_at) {
+        return null;
+    }
+
+    return t('sendEmailDialog.lastSent', {
+        date: new Date(props.estimation.sent_at).toLocaleString(),
+        email: props.estimation.sent_to,
+    });
+});
 </script>
 
 <template>
@@ -260,7 +282,25 @@ function formatSize(bytes: number): string {
                     <FileArchive />
                 </a>
             </Button>
+            <SendEmailDialog
+                :send-url="EstimationController.send(estimation.id).url"
+                :default-to="customerEmail"
+                :default-subject="
+                    t('sendEmailDialog.estimationDefaultSubject', {
+                        number: estimation.number,
+                    })
+                "
+                :default-message="
+                    t('sendEmailDialog.estimationDefaultMessage', {
+                        number: estimation.number,
+                    })
+                "
+            />
         </div>
+
+        <p v-if="lastSent" class="text-sm text-muted-foreground">
+            {{ lastSent }}
+        </p>
 
         <div class="flex items-center gap-2">
             <Badge :variant="estimationStatusBadgeVariant(estimation.status)">

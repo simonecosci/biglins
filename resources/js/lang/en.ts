@@ -455,6 +455,7 @@ const messages = {
             description: 'Update invoice {number}',
             confirmDelete: 'Delete this invoice? This cannot be undone.',
             deleteButton: 'Delete invoice',
+            send: 'Send by email',
         },
     },
     estimations: {
@@ -513,6 +514,7 @@ const messages = {
             convertButton: 'Convert to invoice',
             convertedNotice: 'Converted to invoice',
             expiredBadge: 'Expired',
+            send: 'Send by email',
             attachments: {
                 title: 'Attachments',
                 uploadButton: 'Upload file',
@@ -578,6 +580,20 @@ const messages = {
         empty: 'No notes found.',
         fallbackLabel: 'From saved notes',
         page: 'Page {current} of {last}',
+    },
+    sendEmailDialog: {
+        title: 'Send by email',
+        to: 'To',
+        subject: 'Subject',
+        message: 'Message',
+        send: 'Send',
+        lastSent: 'Sent on {date} to {email}',
+        invoiceDefaultSubject: 'Invoice {number}',
+        invoiceDefaultMessage:
+            'Hello,\n\nPlease find attached invoice {number}.\n\nBest regards.',
+        estimationDefaultSubject: 'Estimate {number}',
+        estimationDefaultMessage:
+            'Hello,\n\nPlease find attached estimate {number}.\n\nBest regards.',
     },
     notes: {
         index: {

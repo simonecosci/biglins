@@ -10,6 +10,7 @@ import NotePicker from '@/components/NotePicker.vue';
 import type { PickedNote } from '@/components/NotePicker.vue';
 import ProductPicker from '@/components/ProductPicker.vue';
 import type { PickedProduct } from '@/components/ProductPicker.vue';
+import SendEmailDialog from '@/components/SendEmailDialog.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -29,6 +30,7 @@ import type { BreadcrumbItem } from '@/types';
 type Customer = {
     id: string;
     name: string;
+    email: string | null;
 };
 
 type SubscriptionStatus = 'active' | 'cancelled';
@@ -53,6 +55,8 @@ type Invoice = {
     note: string | null;
     language: string;
     type: string;
+    sent_at: string | null;
+    sent_to: string | null;
     rows: InvoiceRow[];
 };
 
@@ -183,6 +187,24 @@ async function onDelete(): Promise<void> {
         router.delete(InvoiceController.destroy(props.invoice.id).url);
     }
 }
+
+const customerEmail = computed(
+    () =>
+        props.customers.find(
+            (customer) => customer.id === props.invoice.customer_id,
+        )?.email ?? null,
+);
+
+const lastSent = computed(() => {
+    if (!props.invoice.sent_at) {
+        return null;
+    }
+
+    return t('sendEmailDialog.lastSent', {
+        date: new Date(props.invoice.sent_at).toLocaleString(),
+        email: props.invoice.sent_to,
+    });
+});
 </script>
 
 <template>
@@ -221,7 +243,25 @@ async function onDelete(): Promise<void> {
                     <FileText />
                 </a>
             </Button>
+            <SendEmailDialog
+                :send-url="InvoiceController.send(invoice.id).url"
+                :default-to="customerEmail"
+                :default-subject="
+                    t('sendEmailDialog.invoiceDefaultSubject', {
+                        number: invoice.number,
+                    })
+                "
+                :default-message="
+                    t('sendEmailDialog.invoiceDefaultMessage', {
+                        number: invoice.number,
+                    })
+                "
+            />
         </div>
+
+        <p v-if="lastSent" class="text-sm text-muted-foreground">
+            {{ lastSent }}
+        </p>
 
         <form class="space-y-4" @submit.prevent="submit">
             <div class="grid grid-cols-2 gap-4">

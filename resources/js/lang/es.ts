@@ -473,6 +473,7 @@ const messages: MessageSchema = {
             confirmDelete:
                 '¿Eliminar esta factura? Esta acción no se puede deshacer.',
             deleteButton: 'Eliminar factura',
+            send: 'Enviar por email',
         },
     },
     estimations: {
@@ -531,6 +532,7 @@ const messages: MessageSchema = {
             convertButton: 'Convertir en factura',
             convertedNotice: 'Convertido en factura',
             expiredBadge: 'Caducado',
+            send: 'Enviar por email',
             attachments: {
                 title: 'Archivos adjuntos',
                 uploadButton: 'Subir archivo',
@@ -597,6 +599,20 @@ const messages: MessageSchema = {
         empty: 'No se encontraron notas.',
         fallbackLabel: 'De notas guardadas',
         page: 'Página {current} de {last}',
+    },
+    sendEmailDialog: {
+        title: 'Enviar por email',
+        to: 'Para',
+        subject: 'Asunto',
+        message: 'Mensaje',
+        send: 'Enviar',
+        lastSent: 'Enviado el {date} a {email}',
+        invoiceDefaultSubject: 'Factura {number}',
+        invoiceDefaultMessage:
+            'Hola,\n\nAdjunto encontrará la factura {number}.\n\nSaludos cordiales.',
+        estimationDefaultSubject: 'Presupuesto {number}',
+        estimationDefaultMessage:
+            'Hola,\n\nAdjunto encontrará el presupuesto {number}.\n\nSaludos cordiales.',
     },
     notes: {
         index: {
