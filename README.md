@@ -99,6 +99,66 @@ first mount. Kubernetes PersistentVolumeClaims don't get this treatment —
 if your storage provisioner doesn't already grant group-0 write access,
 set a matching `fsGroup` in the pod's `securityContext`.
 
+## Desktop app (NativePHP)
+
+Biglins can also run as a standalone desktop app (Windows/macOS/Linux) via
+[NativePHP](https://nativephp.com/), independent of the Docker/web
+deployment above. Each installation is single-user and keeps its own local
+SQLite database — no server required.
+
+```bash
+composer require nativephp/desktop   # already in composer.json — only needed once
+php artisan native:install           # already run for this repo; re-run after upgrading nativephp/desktop
+composer native:dev                  # launch the desktop app in dev mode (Vite + native:run together)
+```
+
+`native:run` alone only starts the Electron/PHP side; it expects assets
+from a Vite dev server that isn't running unless you start it too, which
+shows up as `ERR_CONNECTION_REFUSED` in the app window's DevTools console
+for `app.ts`/`app.css`/every page component. `composer native:dev` runs
+`npm run dev` and `php artisan native:run` together (via `concurrently`) so
+this isn't an issue.
+
+If you hit `The route _native/api/events could not be found` in
+`storage/logs/laravel.log` and the window opens but the page never loads,
+your route/config cache predates installing `nativephp/desktop` — run
+`php artisan optimize:clear` to rebuild it.
+
+NativePHP automatically creates and migrates a local SQLite database inside
+the OS's per-user application-data directory on first run, and does the
+same for anything stored on Laravel's `local` filesystem disk — no manual
+database configuration needed.
+
+### Building installers
+
+```bash
+php artisan native:build win     # produces nativephp/electron/dist/win-unpacked/
+php artisan native:build mac     # produces a macOS .dmg — requires an Apple ID + team ID
+                                  # and notarization, or other Macs will refuse to open it
+php artisan native:build linux   # produces a Linux AppImage and .deb package
+```
+
+Cross-compilation has limits: building Windows binaries from Linux needs
+Wine with 32-bit support, and macOS builds must be signed/notarized on
+Apple hardware to run on other Macs. `mac`/`linux` builds are not exercised
+by this project's CI.
+
+**Windows note:** on a non-elevated account without Developer Mode enabled,
+`native:build win` reliably produces the runnable `win-unpacked/biglins.exe`
+folder, but the NSIS installer step needs Windows'
+`SeCreateSymbolicLinkPrivilege` to unpack its code-signing tooling and
+silently doesn't produce an installer `.exe` without it. Enable Developer
+Mode (Settings → Privacy & security → For developers) or build as an
+Administrator to get a proper installer.
+
+Auto-update is not configured; distribute new versions as new installers.
+
+**Never build a desktop release from a `.env` carrying the web deployment's
+real `APP_KEY` or other production secrets that can't be stripped.**
+`APP_KEY` specifically ships inside the bundle since the app needs it at
+runtime, so a desktop release must be built from its own freshly generated
+key, not a copy of the production web `.env`.
+
 ## Useful commands
 
 | Command                           | Description                                    |

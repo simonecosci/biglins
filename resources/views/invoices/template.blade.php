@@ -1,7 +1,7 @@
 @php
-    $logoPath = $invoice->company->logo ? public_path($invoice->company->logo) : null;
-    $logoData = $logoPath && file_exists($logoPath)
-        ? 'data:' . mime_content_type($logoPath) . ';base64,' . base64_encode(file_get_contents($logoPath))
+    $logoDisk = \Illuminate\Support\Facades\Storage::disk('local');
+    $logoData = $invoice->company->logo && $logoDisk->exists($invoice->company->logo)
+        ? 'data:' . $logoDisk->mimeType($invoice->company->logo) . ';base64,' . base64_encode($logoDisk->get($invoice->company->logo))
         : null;
     $documentTitle = $invoice->isCreditNote() ? __('invoice.credit_note_title') : __('invoice.title');
 @endphp
