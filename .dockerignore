@@ -4,6 +4,8 @@
 .idea
 .serena
 .superpowers
+.worktrees
+nativephp
 node_modules
 vendor
 public/build
