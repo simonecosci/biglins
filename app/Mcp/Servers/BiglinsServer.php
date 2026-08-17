@@ -2,6 +2,7 @@
 
 namespace App\Mcp\Servers;
 
+use App\Mcp\Tools\CreateCustomerTool;
 use App\Mcp\Tools\ListCustomersTool;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
@@ -15,5 +16,6 @@ class BiglinsServer extends Server
 {
     protected array $tools = [
         ListCustomersTool::class,
+        CreateCustomerTool::class,
     ];
 }
