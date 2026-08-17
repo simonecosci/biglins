@@ -4,6 +4,7 @@ namespace App\Mcp\Servers;
 
 use App\Mcp\Tools\CreateCustomerTool;
 use App\Mcp\Tools\CreateEstimationTool;
+use App\Mcp\Tools\CreateInvoiceTool;
 use App\Mcp\Tools\ListCustomersTool;
 use App\Mcp\Tools\ListEstimationsTool;
 use App\Mcp\Tools\ListInvoicesTool;
@@ -23,5 +24,6 @@ class BiglinsServer extends Server
         ListEstimationsTool::class,
         CreateEstimationTool::class,
         ListInvoicesTool::class,
+        CreateInvoiceTool::class,
     ];
 }
