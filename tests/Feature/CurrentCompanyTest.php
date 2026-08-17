@@ -77,3 +77,37 @@ test('guests are redirected to the login page when switching the current company
 
     $response->assertRedirect(route('login'));
 });
+
+test('runningAs overrides resolve for the duration of the closure', function () {
+    $sessionCompany = Company::factory()->create();
+    $overrideCompany = Company::factory()->create();
+    session(['current_company_id' => $sessionCompany->id]);
+
+    $resolvedDuring = CurrentCompany::runningAs($overrideCompany, fn () => CurrentCompany::resolve()?->id);
+
+    expect($resolvedDuring)->toBe($overrideCompany->id);
+    expect(CurrentCompany::resolve()->id)->toBe($sessionCompany->id);
+});
+
+test('runningAs restores the previous override when the closure throws', function () {
+    $company = Company::factory()->create();
+
+    expect(fn () => CurrentCompany::runningAs($company, function () {
+        throw new RuntimeException('boom');
+    }))->toThrow(RuntimeException::class);
+
+    expect(CurrentCompany::resolve())->not->toBe($company);
+});
+
+test('runningAs nests correctly, restoring the outer override on exit', function () {
+    $outer = Company::factory()->create();
+    $inner = Company::factory()->create();
+
+    $result = CurrentCompany::runningAs($outer, function () use ($inner) {
+        $duringInner = CurrentCompany::runningAs($inner, fn () => CurrentCompany::resolve()->id);
+
+        return [$duringInner, CurrentCompany::resolve()->id];
+    });
+
+    expect($result)->toBe([$inner->id, $outer->id]);
+});
