@@ -26,6 +26,8 @@ use Illuminate\Support\Facades\Storage;
  * @property string|null $body
  * @property EstimationStatus $status
  * @property string|null $invoice_id
+ * @property Carbon|null $sent_at
+ * @property string|null $sent_to
  * @property-read bool $is_expired
  * @property-read float $subtotal
  * @property-read float $vat_total
@@ -53,6 +55,7 @@ class Estimation extends Model
             'estimation_date' => 'date:Y-m-d',
             'expiration_date' => 'date:Y-m-d',
             'status' => EstimationStatus::class,
+            'sent_at' => 'datetime',
         ];
     }
 
