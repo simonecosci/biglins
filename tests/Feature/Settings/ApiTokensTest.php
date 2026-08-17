@@ -28,6 +28,13 @@ test('a token can be created and the plaintext value is returned once', function
     $response->assertSessionHasNoErrors()->assertRedirect(route('api-tokens.index'));
     expect($user->fresh()->tokens)->toHaveCount(1);
     expect($user->fresh()->tokens->first()->name)->toBe('agent-1');
+
+    // Inertia::flash() stores its payload in the session under
+    // `inertia.flash_data` and only removes it once an actual Inertia
+    // response is rendered (see resolveFlashData() in
+    // vendor/inertiajs/inertia-laravel/src/Response.php), so it is still
+    // readable straight off the session after the redirect response above.
+    expect(session('inertia.flash_data.newApiToken'))->toMatch('/^\d+\|.+$/');
 });
 
 test('a token name is required', function () {

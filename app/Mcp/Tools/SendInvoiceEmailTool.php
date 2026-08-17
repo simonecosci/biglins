@@ -17,9 +17,13 @@ use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
+use Laravel\Mcp\Server\Tools\Annotations\IsOpenWorld;
 
 #[Name('send_invoice_email')]
 #[Description('Email an existing invoice as a PDF attachment to a recipient.')]
+#[IsDestructive]
+#[IsOpenWorld]
 class SendInvoiceEmailTool extends Tool
 {
     public function handle(Request $request): Response|ResponseFactory

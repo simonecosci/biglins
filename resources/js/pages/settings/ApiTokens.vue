@@ -8,6 +8,7 @@ import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { confirmDialog } from '@/lib/confirmDialog';
 import { index } from '@/routes/api-tokens';
 import type { BreadcrumbItem } from '@/types';
 
@@ -73,8 +74,8 @@ function createToken(): void {
     );
 }
 
-function revokeToken(tokenId: number): void {
-    if (!confirm(t('settings.apiTokens.confirmRevoke'))) {
+async function revokeToken(tokenId: number): Promise<void> {
+    if (!(await confirmDialog(t('settings.apiTokens.confirmRevoke')))) {
         return;
     }
 

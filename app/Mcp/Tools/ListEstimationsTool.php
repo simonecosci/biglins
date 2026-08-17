@@ -13,9 +13,11 @@ use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
 #[Name('list_estimations')]
 #[Description('List estimations for a given company.')]
+#[IsReadOnly]
 class ListEstimationsTool extends Tool
 {
     public function handle(Request $request): Response|ResponseFactory

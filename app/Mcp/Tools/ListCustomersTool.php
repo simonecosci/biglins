@@ -13,9 +13,11 @@ use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
 #[Name('list_customers')]
 #[Description('List customers for a given company, optionally filtered by a search term matched against name or email.')]
+#[IsReadOnly]
 class ListCustomersTool extends Tool
 {
     public function handle(Request $request): Response|ResponseFactory
