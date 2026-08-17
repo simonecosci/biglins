@@ -21,6 +21,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -259,7 +260,7 @@ class EstimationController extends Controller
             $request->string('message')->toString(),
         ));
 
-        $estimation->sent_at = now();
+        $estimation->sent_at = Carbon::now();
         $estimation->sent_to = $request->string('to')->toString();
         $estimation->save();
 

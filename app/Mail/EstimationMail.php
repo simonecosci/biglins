@@ -10,6 +10,7 @@ use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use RuntimeException;
 
 class EstimationMail extends Mailable
 {
@@ -59,6 +60,10 @@ class EstimationMail extends Mailable
         $path = EstimationZip::build($this->estimation);
         $content = file_get_contents($path);
         unlink($path);
+
+        if ($content === false) {
+            throw new RuntimeException("Failed to read the generated estimation zip file at [{$path}].");
+        }
 
         return $content;
     }

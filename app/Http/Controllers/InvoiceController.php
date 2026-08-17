@@ -17,6 +17,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -210,7 +211,7 @@ class InvoiceController extends Controller
             $request->string('message')->toString(),
         ));
 
-        $invoice->sent_at = now();
+        $invoice->sent_at = Carbon::now();
         $invoice->sent_to = $request->string('to')->toString();
         $invoice->save();
 
