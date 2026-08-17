@@ -8,6 +8,7 @@ use App\Mcp\Tools\CreateInvoiceTool;
 use App\Mcp\Tools\ListCustomersTool;
 use App\Mcp\Tools\ListEstimationsTool;
 use App\Mcp\Tools\ListInvoicesTool;
+use App\Mcp\Tools\SendEstimationEmailTool;
 use App\Mcp\Tools\SendInvoiceEmailTool;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
@@ -26,6 +27,7 @@ class BiglinsServer extends Server
         CreateEstimationTool::class,
         ListInvoicesTool::class,
         CreateInvoiceTool::class,
+        SendEstimationEmailTool::class,
         SendInvoiceEmailTool::class,
     ];
 }
