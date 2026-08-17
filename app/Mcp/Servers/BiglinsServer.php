@@ -3,6 +3,7 @@
 namespace App\Mcp\Servers;
 
 use App\Mcp\Tools\CreateCustomerTool;
+use App\Mcp\Tools\CreateEstimationTool;
 use App\Mcp\Tools\ListCustomersTool;
 use App\Mcp\Tools\ListEstimationsTool;
 use Laravel\Mcp\Server;
@@ -19,5 +20,6 @@ class BiglinsServer extends Server
         ListCustomersTool::class,
         CreateCustomerTool::class,
         ListEstimationsTool::class,
+        CreateEstimationTool::class,
     ];
 }
