@@ -12,7 +12,7 @@ Invoicing app for freelancers and sole proprietors: customer records, invoices w
 
 ## Stack
 
-- **Backend**: Laravel 13 (PHP 8.3+), Inertia.js v3, Laravel Fortify (auth, 2FA, passkeys)
+- **Backend**: Laravel 13 (PHP 8.3+), Inertia.js v3, Laravel Fortify (auth, 2FA, passkeys), Laravel Sanctum + Passport (API tokens / MCP OAuth)
 - **Frontend**: Vue 3 + TypeScript, Inertia Vue, Tailwind CSS v4, reka-ui
 - **Typed routing**: Laravel Wayfinder (`resources/js/actions`, `resources/js/routes`, generated — not versioned)
 - **PDF**: barryvdh/laravel-dompdf
@@ -28,6 +28,7 @@ cp .env.example .env
 php artisan key:generate
 touch database/database.sqlite
 php artisan migrate
+php artisan passport:keys
 npm run build   # or npm run dev in another terminal
 ```
 
@@ -158,6 +159,66 @@ real `APP_KEY` or other production secrets that can't be stripped.**
 `APP_KEY` specifically ships inside the bundle since the app needs it at
 runtime, so a desktop release must be built from its own freshly generated
 key, not a copy of the production web `.env`.
+
+## MCP server (AI agent integration)
+
+Biglins ships an [MCP](https://modelcontextprotocol.io/) server so AI agents (Claude, etc.) can list/create customers, list/create estimations, list/create invoices, and send an invoice or estimation by email — see `app/Mcp/Servers/BiglinsServer.php` and `app/Mcp/Tools/` for the 8 tools. Every tool takes an explicit `company_id` (there's no per-user tenancy in this app: any authenticated user/token can act on any company in the database). Registered in [routes/ai.php](routes/ai.php), with two transports depending on how you run Biglins:
+
+### Desktop app (local, no auth)
+
+The desktop build runs single-user on your own machine, so the local transport needs no token — whoever can run the command already has full access to your local database. Point your MCP client at:
+
+```json
+{
+  "mcpServers": {
+    "biglins": {
+      "command": "php",
+      "args": ["artisan", "mcp:start", "biglins"],
+      "cwd": "/path/to/biglins"
+    }
+  }
+}
+```
+
+### Docker / web deployment (HTTP + API token)
+
+An HTTP endpoint is exposed at `/mcp/biglins`, protected by a [Sanctum](https://laravel.com/docs/sanctum) personal access token — required since a Docker deployment can be reachable over the internet.
+
+1. Log in, go to **Settings → API Tokens**, and create a token (the value is shown once — copy it immediately, only its hash is stored).
+2. Point your MCP client at the endpoint with that token as a bearer token:
+
+```json
+{
+  "mcpServers": {
+    "biglins": {
+      "url": "https://your-domain.example/mcp/biglins",
+      "headers": {
+        "Authorization": "Bearer <your-api-token>"
+      }
+    }
+  }
+}
+```
+
+Revoke a token any time from the same Settings page — revocation is immediate.
+
+### Claude Desktop (OAuth)
+
+The bearer-token setup above works for clients that let you set custom
+headers (e.g. Claude Code), but Claude Desktop's built-in "Add custom
+connector" dialog only supports OAuth — it doesn't have a field for a raw
+token. For that client, point it at the HTTP endpoint instead:
+
+1. In Claude Desktop, add a custom connector with URL `https://your-domain.example/mcp/biglins`.
+2. Leave the OAuth Client ID/Secret fields blank — Claude registers its own client automatically via [dynamic client registration](https://datatracker.ietf.org/doc/html/rfc7591).
+3. Claude opens a browser to log in and approve access; tokens are then managed by Claude, no manual copying needed.
+
+This is backed by [Laravel Passport](https://laravel.com/docs/passport) as the
+OAuth2 authorization server (`laravel/passport`), configured alongside
+Sanctum — the `/mcp/biglins` endpoint accepts either a Sanctum API token or a
+Passport OAuth token. Manage authorized OAuth clients like any other Passport
+installation (`php artisan passport:client --list`, `passport:purge` for
+expired/revoked tokens).
 
 ## Useful commands
 

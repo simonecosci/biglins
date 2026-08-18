@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { toUrl } from '@/lib/utils';
+import { index as editApiTokens } from '@/routes/api-tokens';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editLanguage } from '@/routes/language';
 import { edit as editProfile } from '@/routes/profile';
@@ -31,6 +32,10 @@ const sidebarNavItems = computed<NavItem[]>(() => [
     {
         title: t('settings.nav.language'),
         href: editLanguage(),
+    },
+    {
+        title: t('settings.nav.apiTokens'),
+        href: editApiTokens(),
     },
 ]);
 

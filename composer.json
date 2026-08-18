@@ -17,6 +17,9 @@
         "laravel/chisel": "^0.1.0",
         "laravel/fortify": "^1.37.2",
         "laravel/framework": "^13.17",
+        "laravel/mcp": "^0.9.4",
+        "laravel/passport": "^13.7",
+        "laravel/sanctum": "^4.3",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
         "nativephp/desktop": "^2.2",
@@ -54,6 +57,7 @@
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
             "@php artisan migrate --force",
+            "@php artisan passport:keys --force",
             "npm install",
             "npm run build"
         ],
