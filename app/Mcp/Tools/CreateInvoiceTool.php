@@ -26,7 +26,7 @@ class CreateInvoiceTool extends Tool
     public function handle(Request $request): Response|ResponseFactory
     {
         try {
-            $companyId = $request->validate([
+            $companyId = (string) $request->validate([
                 'company_id' => ['required', 'uuid', Rule::exists('companies', 'id')],
             ])['company_id'];
         } catch (ValidationException $e) {
@@ -49,13 +49,13 @@ class CreateInvoiceTool extends Tool
                 ]);
 
                 $type = $invoice->type;
-                $rows = collect($data['rows'])->map(function (array $row) use ($type): array {
+                $rows = array_map(function (array $row) use ($type): array {
                     if ($type === InvoiceType::CreditNote) {
                         $row['price'] = -abs((float) $row['price']);
                     }
 
                     return $row;
-                });
+                }, $data['rows']);
 
                 $invoice->rows()->createMany($rows);
 

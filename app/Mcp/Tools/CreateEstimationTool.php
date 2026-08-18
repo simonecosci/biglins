@@ -25,7 +25,7 @@ class CreateEstimationTool extends Tool
     public function handle(Request $request): Response|ResponseFactory
     {
         try {
-            $companyId = $request->validate([
+            $companyId = (string) $request->validate([
                 'company_id' => ['required', 'uuid', Rule::exists('companies', 'id')],
             ])['company_id'];
         } catch (ValidationException $e) {

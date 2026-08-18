@@ -37,7 +37,7 @@ class SendEstimationEmailTool extends Tool
             return Response::error($e->validator->errors()->first());
         }
 
-        $estimation = Estimation::query()->where('company_id', $data['company_id'])->find($data['estimation_id']);
+        $estimation = Estimation::query()->where('company_id', (string) $data['company_id'])->find((string) $data['estimation_id']);
 
         if ($estimation === null) {
             return Response::error('No estimation with that id was found for the given company.');

@@ -37,7 +37,7 @@ class SendInvoiceEmailTool extends Tool
             return Response::error($e->validator->errors()->first());
         }
 
-        $invoice = Invoice::query()->where('company_id', $data['company_id'])->find($data['invoice_id']);
+        $invoice = Invoice::query()->where('company_id', (string) $data['company_id'])->find((string) $data['invoice_id']);
 
         if ($invoice === null) {
             return Response::error('No invoice with that id was found for the given company.');
