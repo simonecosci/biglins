@@ -39,6 +39,7 @@ const messages: MessageSchema = {
             security: 'Seguridad',
             appearance: 'Apariencia',
             language: 'Idioma',
+            apiTokens: 'Tokens API',
         },
         appearance: {
             title: 'Configuración de apariencia',
@@ -167,6 +168,26 @@ const messages: MessageSchema = {
                 registerButton: 'Registrar passkey',
                 registeringButton: 'Registrando...',
             },
+        },
+        apiTokens: {
+            title: 'Tokens API',
+            pageTitle: 'Ajustes de tokens API',
+            description:
+                'Crea tokens para permitir que los agentes de IA se conecten a esta instancia de Biglins a través del servidor MCP.',
+            namePlaceholder: 'Nombre del token (ej. "agente-1")',
+            create: 'Crear token',
+            empty: 'No hay tokens API todavía.',
+            createdAt: 'Creado {time}',
+            lastUsedAt: 'Último uso {time}',
+            neverUsed: 'Nunca usado',
+            revoke: 'Revocar',
+            confirmRevoke:
+                '¿Revocar este token? Cualquier agente que lo use perderá el acceso de inmediato.',
+            newTokenTitle: 'Copia tu nuevo token ahora',
+            newTokenDescription:
+                'Se mostrará solo esta vez. Guárdalo en un lugar seguro: no podrá recuperarse después.',
+            copy: 'Copiar',
+            copied: '¡Copiado!',
         },
     },
     passwordInput: {

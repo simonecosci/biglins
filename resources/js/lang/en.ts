@@ -37,6 +37,7 @@ const messages = {
             security: 'Security',
             appearance: 'Appearance',
             language: 'Language',
+            apiTokens: 'API Tokens',
         },
         appearance: {
             title: 'Appearance settings',
@@ -154,6 +155,26 @@ const messages = {
                 registerButton: 'Register passkey',
                 registeringButton: 'Registering...',
             },
+        },
+        apiTokens: {
+            title: 'API tokens',
+            pageTitle: 'API token settings',
+            description:
+                'Create tokens to let AI agents connect to this Biglins instance over the MCP server.',
+            namePlaceholder: 'Token name (e.g. "agent-1")',
+            create: 'Create token',
+            empty: 'No API tokens yet.',
+            createdAt: 'Created {time}',
+            lastUsedAt: 'Last used {time}',
+            neverUsed: 'Never used',
+            revoke: 'Revoke',
+            confirmRevoke:
+                'Revoke this token? Any agent using it will lose access immediately.',
+            newTokenTitle: 'Copy your new token now',
+            newTokenDescription:
+                "This is the only time it will be shown. Store it somewhere safe — it won't be recoverable afterwards.",
+            copy: 'Copy',
+            copied: 'Copied!',
         },
     },
     passwordInput: {
