@@ -159,6 +159,48 @@ real `APP_KEY` or other production secrets that can't be stripped.**
 runtime, so a desktop release must be built from its own freshly generated
 key, not a copy of the production web `.env`.
 
+## MCP server (AI agent integration)
+
+Biglins ships an [MCP](https://modelcontextprotocol.io/) server so AI agents (Claude, etc.) can list/create customers, list/create estimations, list/create invoices, and send an invoice or estimation by email — see `app/Mcp/Servers/BiglinsServer.php` and `app/Mcp/Tools/` for the 8 tools. Every tool takes an explicit `company_id` (there's no per-user tenancy in this app: any authenticated user/token can act on any company in the database). Registered in [routes/ai.php](routes/ai.php), with two transports depending on how you run Biglins:
+
+### Desktop app (local, no auth)
+
+The desktop build runs single-user on your own machine, so the local transport needs no token — whoever can run the command already has full access to your local database. Point your MCP client at:
+
+```json
+{
+  "mcpServers": {
+    "biglins": {
+      "command": "php",
+      "args": ["artisan", "mcp:start", "biglins"],
+      "cwd": "/path/to/biglins"
+    }
+  }
+}
+```
+
+### Docker / web deployment (HTTP + API token)
+
+An HTTP endpoint is exposed at `/mcp/biglins`, protected by a [Sanctum](https://laravel.com/docs/sanctum) personal access token — required since a Docker deployment can be reachable over the internet.
+
+1. Log in, go to **Settings → API Tokens**, and create a token (the value is shown once — copy it immediately, only its hash is stored).
+2. Point your MCP client at the endpoint with that token as a bearer token:
+
+```json
+{
+  "mcpServers": {
+    "biglins": {
+      "url": "https://your-domain.example/mcp/biglins",
+      "headers": {
+        "Authorization": "Bearer <your-api-token>"
+      }
+    }
+  }
+}
+```
+
+Revoke a token any time from the same Settings page — revocation is immediate.
+
 ## Useful commands
 
 | Command                           | Description                                    |
