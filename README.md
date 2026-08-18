@@ -12,7 +12,7 @@ Invoicing app for freelancers and sole proprietors: customer records, invoices w
 
 ## Stack
 
-- **Backend**: Laravel 13 (PHP 8.3+), Inertia.js v3, Laravel Fortify (auth, 2FA, passkeys)
+- **Backend**: Laravel 13 (PHP 8.3+), Inertia.js v3, Laravel Fortify (auth, 2FA, passkeys), Laravel Sanctum + Passport (API tokens / MCP OAuth)
 - **Frontend**: Vue 3 + TypeScript, Inertia Vue, Tailwind CSS v4, reka-ui
 - **Typed routing**: Laravel Wayfinder (`resources/js/actions`, `resources/js/routes`, generated — not versioned)
 - **PDF**: barryvdh/laravel-dompdf
@@ -200,6 +200,24 @@ An HTTP endpoint is exposed at `/mcp/biglins`, protected by a [Sanctum](https://
 ```
 
 Revoke a token any time from the same Settings page — revocation is immediate.
+
+### Claude Desktop (OAuth)
+
+The bearer-token setup above works for clients that let you set custom
+headers (e.g. Claude Code), but Claude Desktop's built-in "Add custom
+connector" dialog only supports OAuth — it doesn't have a field for a raw
+token. For that client, point it at the HTTP endpoint instead:
+
+1. In Claude Desktop, add a custom connector with URL `https://your-domain.example/mcp/biglins`.
+2. Leave the OAuth Client ID/Secret fields blank — Claude registers its own client automatically via [dynamic client registration](https://datatracker.ietf.org/doc/html/rfc7591).
+3. Claude opens a browser to log in and approve access; tokens are then managed by Claude, no manual copying needed.
+
+This is backed by [Laravel Passport](https://laravel.com/docs/passport) as the
+OAuth2 authorization server (`laravel/passport`), configured alongside
+Sanctum — the `/mcp/biglins` endpoint accepts either a Sanctum API token or a
+Passport OAuth token. Manage authorized OAuth clients like any other Passport
+installation (`php artisan passport:client --list`, `passport:purge` for
+expired/revoked tokens).
 
 ## Useful commands
 
