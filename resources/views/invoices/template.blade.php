@@ -49,6 +49,9 @@
                     {{ $invoice->company->address }}<br>
                     {{ $invoice->company->zip }} {{ $invoice->company->city }}, {{ $invoice->company->country?->name }}<br>
                     {{ __('invoice.tax_id') }}: {{ $invoice->company->tax_id }}<br>
+                    @if($invoice->company->iban)
+                        {{ __('invoice.iban') }}: {{ $invoice->company->iban }}<br>
+                    @endif
                     {{ $invoice->company->email }} &mdash; {{ $invoice->company->phone }}
                 </div>
             </td>

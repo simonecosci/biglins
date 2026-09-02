@@ -38,6 +38,17 @@ HTTP_PORT="${HTTP_PORT:-8080}"
 HTTPS_PORT="${HTTPS_PORT:-8443}"
 export HTTP_PORT HTTPS_PORT
 
+# Port the HTTP->HTTPS redirect points at. This is the *published* port as
+# the browser sees it, which is not $HTTPS_PORT: the container listens on
+# 8443, but the redirect has to name whatever host port 8443 was mapped to.
+# Empty (the default) emits a portless https:// URL — i.e. 443 — which is
+# correct for the documented 80/443 -> 8080/8443 mapping. Anyone publishing
+# HTTPS on a different host port must set HTTPS_REDIRECT_PORT to it, or the
+# redirect silently lands on whatever else owns 443 on that host.
+HTTPS_REDIRECT_PORT_SUFFIX=""
+[ -n "${HTTPS_REDIRECT_PORT:-}" ] && HTTPS_REDIRECT_PORT_SUFFIX=":${HTTPS_REDIRECT_PORT}"
+export HTTPS_REDIRECT_PORT_SUFFIX
+
 # --- rootless support: synthesize a passwd/group entry via nss_wrapper ------
 # Arbitrary UIDs assigned by Kubernetes/OpenShift have no /etc/passwd entry,
 # which breaks getpwuid()-dependent tooling (openssl, some PHP extensions).
@@ -115,9 +126,13 @@ if [ "$1" = "/usr/bin/supervisord" ]; then
             "/etc/php/${PHP_VERSION}/fpm/pool.d/www.conf"
     fi
 
+    # Rendered from the pristine templates, never in place: substituting over
+    # sites-available would consume the placeholders on the first boot, so a
+    # later `docker restart` with different ports would keep serving the old
+    # ones with nothing to indicate why.
     for conf in app.conf app-ssl-http.conf app-ssl-https.conf; do
-        envsubst '${HTTP_PORT} ${HTTPS_PORT}' \
-            < "/etc/nginx/sites-available/$conf" > "/tmp/$conf"
+        envsubst '${HTTP_PORT} ${HTTPS_PORT} ${HTTPS_REDIRECT_PORT_SUFFIX}' \
+            < "/etc/nginx/templates/$conf" > "/tmp/$conf"
         mv "/tmp/$conf" "/etc/nginx/sites-available/$conf"
     done
 

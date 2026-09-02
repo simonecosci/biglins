@@ -82,10 +82,10 @@ RUN curl -fsSL https://nginx.org/keys/nginx_signing.key | gpg --dearmor -o /usr/
     && rm -rf /var/lib/apt/lists/*
 
 COPY docker/nginx/nginx.conf /etc/nginx/nginx.conf
-RUN mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
-COPY docker/nginx/app.conf /etc/nginx/sites-available/app.conf
-COPY docker/nginx/app-ssl-http.conf /etc/nginx/sites-available/app-ssl-http.conf
-COPY docker/nginx/app-ssl-https.conf /etc/nginx/sites-available/app-ssl-https.conf
+RUN mkdir -p /etc/nginx/templates /etc/nginx/sites-available /etc/nginx/sites-enabled
+COPY docker/nginx/app.conf /etc/nginx/templates/app.conf
+COPY docker/nginx/app-ssl-http.conf /etc/nginx/templates/app-ssl-http.conf
+COPY docker/nginx/app-ssl-https.conf /etc/nginx/templates/app-ssl-https.conf
 RUN ln -sf /etc/nginx/sites-available/app.conf /etc/nginx/sites-enabled/app.conf
 
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf

@@ -13,6 +13,7 @@ return [
     'subtotal' => 'Subtotale',
     'total' => 'Totale',
     'tax_id' => 'P.IVA',
+    'iban' => 'IBAN',
     'proposal' => 'Proposta',
     'status_pending' => 'In attesa',
     'status_accepted' => 'Accettato',

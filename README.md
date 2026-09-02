@@ -62,6 +62,17 @@ Set `SSL_MODE` in `.env` to terminate TLS at nginx (default `none` — HTTP only
 
 HTTPS is served on `443` (host) → `:8443` (container).
 
+If you publish HTTPS on a host port other than `443`, set `HTTPS_REDIRECT_PORT`
+to that port as well. The HTTP→HTTPS redirect has no way to infer the published
+port, so it defaults to `443`; leaving it unset behind a different mapping sends
+browsers to whatever else is listening on `443` of that host:
+
+```
+# host mapping 8080:8080 / 8443:8443
+APP_URL=https://example.com:8443
+HTTPS_REDIRECT_PORT=8443
+```
+
 `certbot` and `custom` require a real `APP_URL` set in `.env` (not the default `http://localhost`), since the certificate domain is derived from its host.
 
 ### Running rootless
