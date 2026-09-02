@@ -703,6 +703,30 @@ test('invoice preview renders the invoice as html', function () {
     $response->assertSee('Please pay within 30 days');
 });
 
+test('invoice preview shows the issuing company iban in the header', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create(['iban' => 'IT60X0542811101000000123456']);
+    $invoice = Invoice::factory()->create(['company_id' => $company->id, 'language' => 'en']);
+    InvoiceRow::factory()->create(['invoice_id' => $invoice->id]);
+
+    $response = $this->actingAs($user)->get(route('invoices.preview', $invoice));
+
+    $response->assertOk();
+    $response->assertSee('IBAN: IT60X0542811101000000123456');
+});
+
+test('invoice preview omits the iban label when the company has none', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create(['iban' => null]);
+    $invoice = Invoice::factory()->create(['company_id' => $company->id, 'language' => 'en']);
+    InvoiceRow::factory()->create(['invoice_id' => $invoice->id]);
+
+    $response = $this->actingAs($user)->get(route('invoices.preview', $invoice));
+
+    $response->assertOk();
+    $response->assertDontSee('IBAN');
+});
+
 test('invoice pdf downloads as a pdf file', function () {
     $user = User::factory()->create();
     $invoice = Invoice::factory()->create();

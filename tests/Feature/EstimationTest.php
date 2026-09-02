@@ -359,3 +359,27 @@ test('a converted estimation cannot be deleted even if rejected', function () {
 
     expect(Estimation::query()->find($estimation->id))->not->toBeNull();
 });
+
+test('estimation preview shows the issuing company iban in the header', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create(['iban' => 'IT60X0542811101000000123456']);
+    $estimation = Estimation::factory()->create(['company_id' => $company->id, 'language' => 'en']);
+    EstimationRow::factory()->create(['estimation_id' => $estimation->id]);
+
+    $response = $this->actingAs($user)->get(route('estimations.preview', $estimation));
+
+    $response->assertOk();
+    $response->assertSee('IBAN: IT60X0542811101000000123456');
+});
+
+test('estimation preview omits the iban label when the company has none', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create(['iban' => null]);
+    $estimation = Estimation::factory()->create(['company_id' => $company->id, 'language' => 'en']);
+    EstimationRow::factory()->create(['estimation_id' => $estimation->id]);
+
+    $response = $this->actingAs($user)->get(route('estimations.preview', $estimation));
+
+    $response->assertOk();
+    $response->assertDontSee('IBAN');
+});

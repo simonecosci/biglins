@@ -55,6 +55,9 @@
                     {{ $estimation->company->address }}<br>
                     {{ $estimation->company->zip }} {{ $estimation->company->city }}, {{ $estimation->company->country?->name }}<br>
                     {{ __('estimation.tax_id') }}: {{ $estimation->company->tax_id }}<br>
+                    @if($estimation->company->iban)
+                        {{ __('estimation.iban') }}: {{ $estimation->company->iban }}<br>
+                    @endif
                     {{ $estimation->company->email }} &mdash; {{ $estimation->company->phone }}
                 </div>
             </td>
