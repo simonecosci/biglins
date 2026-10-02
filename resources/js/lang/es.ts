@@ -379,6 +379,33 @@ const messages: MessageSchema = {
                 '¿Eliminar esta empresa? Esta acción no se puede deshacer.',
             deleteButton: 'Eliminar empresa',
         },
+        eInvoicing: {
+            title: 'Facturación electrónica',
+            description:
+                'Conecta {name} con un proveedor de facturación electrónica acreditado.',
+            driver: 'Proveedor',
+            environment: 'Entorno',
+            environments: {
+                sandbox: 'Sandbox',
+                staging: 'Staging',
+                production: 'Producción',
+            },
+            active: 'Activada',
+            credentials: {
+                api_key: 'Clave API',
+                account_id: 'ID de cuenta',
+                webhook_signing_secret: 'Secreto de firma del webhook',
+            },
+            credentialSet: 'Guardada — déjalo en blanco para conservarla',
+            testConnection: 'Probar conexión',
+            webhookUrl: 'URL del webhook',
+            webhookHint:
+                'Registra esta URL como webhook en el panel del proveedor para recibir las actualizaciones de estado.',
+            copy: 'Copiar',
+            copied: 'Copiado',
+            unsupportedCountry:
+                'La facturación electrónica está disponible para empresas con sede en Italia o España. Establece primero el país de la empresa.',
+        },
     },
     companySwitcher: {
         label: 'Empresa',

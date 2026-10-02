@@ -66,5 +66,8 @@
     "Invoice issued and queued for submission.": "Fattura emessa e in coda per l'invio.",
     "Invoice issued and submitted.": "Fattura emessa e inviata.",
     "Submission status updated.": "Stato dell'invio aggiornato.",
-    "The provider is not reachable, try again later.": "Il provider non è raggiungibile, riprova più tardi."
+    "The provider is not reachable, try again later.": "Il provider non è raggiungibile, riprova più tardi.",
+    "Electronic invoicing settings saved.": "Impostazioni di fatturazione elettronica salvate.",
+    "Connection successful.": "Connessione riuscita.",
+    "Connection failed: check the credentials and the environment.": "Connessione non riuscita: controlla le credenziali e l'ambiente."
 }

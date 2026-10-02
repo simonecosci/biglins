@@ -365,6 +365,33 @@ const messages = {
             confirmDelete: 'Delete this company? This cannot be undone.',
             deleteButton: 'Delete company',
         },
+        eInvoicing: {
+            title: 'Electronic invoicing',
+            description:
+                'Connect {name} to an accredited e-invoicing provider.',
+            driver: 'Provider',
+            environment: 'Environment',
+            environments: {
+                sandbox: 'Sandbox',
+                staging: 'Staging',
+                production: 'Production',
+            },
+            active: 'Enabled',
+            credentials: {
+                api_key: 'API key',
+                account_id: 'Account ID',
+                webhook_signing_secret: 'Webhook signing secret',
+            },
+            credentialSet: 'Saved — leave blank to keep it',
+            testConnection: 'Test connection',
+            webhookUrl: 'Webhook URL',
+            webhookHint:
+                'Register this URL as a webhook in the provider dashboard to receive status updates.',
+            copy: 'Copy',
+            copied: 'Copied',
+            unsupportedCountry:
+                'Electronic invoicing is available for companies based in Italy or Spain. Set the company country first.',
+        },
     },
     companySwitcher: {
         label: 'Company',

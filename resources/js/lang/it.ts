@@ -374,6 +374,33 @@ const messages: MessageSchema = {
                 "Eliminare questa azienda? L'azione non può essere annullata.",
             deleteButton: 'Elimina azienda',
         },
+        eInvoicing: {
+            title: 'Fatturazione elettronica',
+            description:
+                'Collega {name} a un provider di fatturazione elettronica accreditato.',
+            driver: 'Provider',
+            environment: 'Ambiente',
+            environments: {
+                sandbox: 'Sandbox',
+                staging: 'Staging',
+                production: 'Produzione',
+            },
+            active: 'Attiva',
+            credentials: {
+                api_key: 'Chiave API',
+                account_id: 'ID account',
+                webhook_signing_secret: 'Segreto di firma del webhook',
+            },
+            credentialSet: 'Salvata — lascia vuoto per mantenerla',
+            testConnection: 'Verifica connessione',
+            webhookUrl: 'URL del webhook',
+            webhookHint:
+                'Registra questo URL come webhook nella dashboard del provider per ricevere gli aggiornamenti di stato.',
+            copy: 'Copia',
+            copied: 'Copiato',
+            unsupportedCountry:
+                "La fatturazione elettronica è disponibile per le aziende con sede in Italia o Spagna. Imposta prima il paese dell'azienda.",
+        },
     },
     companySwitcher: {
         label: 'Azienda',

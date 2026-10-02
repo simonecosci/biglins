@@ -3,6 +3,7 @@ import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/vue3';
 import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CompanyController from '@/actions/App/Http/Controllers/CompanyController';
+import EInvoicingIntegrationController from '@/actions/App/Http/Controllers/EInvoicingIntegrationController';
 import FiscalDetailsFields from '@/components/FiscalDetailsFields.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -132,6 +133,12 @@ async function onDelete(): Promise<void> {
                 t('companies.edit.description', { name: company.name })
             "
         />
+
+        <Button as-child variant="outline" class="self-start">
+            <Link :href="EInvoicingIntegrationController.edit(company.id).url">
+                {{ t('companies.eInvoicing.title') }}
+            </Link>
+        </Button>
 
         <form class="space-y-4" @submit.prevent="submit">
             <div class="grid gap-2">
