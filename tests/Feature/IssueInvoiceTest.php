@@ -121,3 +121,12 @@ test('issue route refuses invoices of another company', function () {
         ->post(route('invoices.issue', $invoice))
         ->assertForbidden();
 });
+
+test('issue route rejects an already issued invoice', function () {
+    $invoice = draftWithRow();
+    app(IssueInvoice::class)->handle($invoice);
+
+    $this->actingAs(User::factory()->create())
+        ->post(route('invoices.issue', $invoice))
+        ->assertSessionHasErrors('invoice');
+});

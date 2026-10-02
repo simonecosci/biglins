@@ -30,22 +30,32 @@ class IssueInvoice
 
         $this->ensureSubmissionIsPossible($invoice->company, $rules);
 
-        DB::transaction(function () use ($invoice): void {
+        return DB::transaction(function () use ($invoice, $rules): Invoice {
             Company::query()->whereKey($invoice->company_id)->lockForUpdate()->first();
 
-            $locked = Invoice::query()->whereKey($invoice->id)->lockForUpdate()->firstOrFail();
+            $locked = Invoice::query()
+                ->with(['company.country', 'customer.country', 'rows'])
+                ->whereKey($invoice->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
             if ($locked->status !== InvoiceStatus::Draft) {
                 throw ValidationException::withMessages(['invoice' => __('Only draft invoices can be issued.')]);
             }
 
-            $invoice->number ??= Invoice::nextNumber($invoice->company_id);
-            $invoice->status = InvoiceStatus::Issued;
-            $invoice->issued_at = now();
-            $invoice->save();
-        });
+            $errors = $rules->validateForIssue($locked);
 
-        return $invoice;
+            if ($errors !== []) {
+                throw ValidationException::withMessages($errors);
+            }
+
+            $locked->number ??= Invoice::nextNumber($locked->company_id);
+            $locked->status = InvoiceStatus::Issued;
+            $locked->issued_at = now();
+            $locked->save();
+
+            return $locked;
+        });
     }
 
     protected function ensureSubmissionIsPossible(Company $company, CountryComplianceRules $rules): void

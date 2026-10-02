@@ -48,3 +48,10 @@ test('edit page exposes the lock', function () {
     $this->get(route('invoices.edit', $this->invoice))
         ->assertInertia(fn ($page) => $page->where('invoice.status', 'issued')->where('isLocked', true));
 });
+
+test('issued invoices accept a payload with only paid and note', function () {
+    $this->put(route('invoices.update', $this->invoice), ['paid' => true, 'note' => 'x'])->assertRedirect();
+
+    expect($this->invoice->fresh()->paid)->toBeTrue();
+    expect($this->invoice->fresh()->note)->toBe('x');
+});

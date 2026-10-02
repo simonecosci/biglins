@@ -21,6 +21,13 @@ class UpdateInvoiceRequest extends FormRequest
      */
     public function rules(): array
     {
+        if ($this->route('invoice')?->isLocked()) {
+            return [
+                'paid' => ['boolean'],
+                'note' => ['nullable', 'string'],
+            ];
+        }
+
         return [
             'type' => ['sometimes', 'string', Rule::in(['invoice', 'credit_note'])],
             'invoice_date' => ['required', 'date'],
