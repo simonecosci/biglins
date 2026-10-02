@@ -31,16 +31,20 @@ class ListInvoicesTool extends Tool
         }
 
         $invoices = Invoice::query()
-            ->with('customer')
+            ->with(['customer', 'latestSubmission'])
             ->where('company_id', $companyId)
+            ->orderByRaw('number is null desc')
             ->orderByDesc('number')
+            ->orderByDesc('created_at')
             ->limit(50)
-            ->get(['id', 'number', 'type', 'status', 'customer_id', 'invoice_date', 'paid'])
+            ->get(['id', 'number', 'type', 'status', 'issued_at', 'customer_id', 'invoice_date', 'paid'])
             ->map(fn (Invoice $invoice): array => [
                 'id' => $invoice->id,
                 'number' => $invoice->number,
                 'type' => $invoice->type->value,
                 'status' => $invoice->status->value,
+                'issued_at' => $invoice->issued_at?->toIso8601String(),
+                'submission_status' => $invoice->latestSubmission?->status->value,
                 'customer_id' => $invoice->customer_id,
                 'customer_name' => $invoice->customer->name,
                 'invoice_date' => $invoice->invoice_date->format('Y-m-d'),

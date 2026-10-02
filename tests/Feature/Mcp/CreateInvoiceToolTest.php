@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\InvoiceStatus;
 use App\Mcp\Servers\BiglinsServer;
 use App\Mcp\Tools\CreateInvoiceTool;
 use App\Models\Company;
@@ -23,6 +24,8 @@ test('create_invoice creates an invoice with rows scoped to the given company', 
     $response->assertOk();
     $invoice = Invoice::query()->where('company_id', $company->id)->firstOrFail();
     expect($invoice->customer_id)->toBe($customer->id);
+    expect($invoice->status)->toBe(InvoiceStatus::Draft);
+    expect($invoice->number)->toBeNull();
     expect((float) $invoice->rows->first()->price)->toBe(200.0);
 });
 
