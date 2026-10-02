@@ -44,5 +44,16 @@
     "Hello!": "Ciao!",
     "Whoops!": "Ops!",
     "Regards,": "Cordiali saluti,",
-    "If you're having trouble clicking the \":actionText\" button, copy and paste the URL below\ninto your web browser:": "Se hai problemi a fare clic sul pulsante \":actionText\", copia e incolla l'URL riportato di seguito\nnel tuo browser web:"
+    "If you're having trouble clicking the \":actionText\" button, copy and paste the URL below\ninto your web browser:": "Se hai problemi a fare clic sul pulsante \":actionText\", copia e incolla l'URL riportato di seguito\nnel tuo browser web:",
+    "The invoice must have at least one row.": "La fattura deve avere almeno una riga.",
+    "The company VAT number is required.": "La partita IVA dell'azienda è obbligatoria.",
+    "The company tax regime is required.": "Il regime fiscale dell'azienda è obbligatorio.",
+    "The company address is incomplete.": "L'indirizzo dell'azienda è incompleto.",
+    "A foreign customer needs a VAT number.": "Un cliente estero necessita di una partita IVA.",
+    "A business customer needs a recipient code or a PEC address.": "Un cliente azienda necessita di un codice destinatario o di un indirizzo PEC.",
+    "A private customer needs a tax code.": "Un cliente privato necessita di un codice fiscale.",
+    "Rows with a 0% VAT rate need a valid exemption code.": "Le righe con aliquota IVA allo 0% richiedono un codice di esenzione valido.",
+    "The company NIF is required.": "Il NIF dell'azienda è obbligatorio.",
+    "The customer tax identifier is required.": "L'identificativo fiscale del cliente è obbligatorio.",
+    "A foreign customer needs an identifier type.": "Un cliente estero necessita di un tipo di identificativo."
 }
