@@ -8,12 +8,15 @@ import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { invoiceStatusVariant } from '@/lib/invoiceStatus';
+import type { InvoiceStatus } from '@/lib/invoiceStatus';
 import { create, edit, index } from '@/routes/invoices';
 import type { BreadcrumbItem } from '@/types';
 
 type Invoice = {
     id: string;
-    number: string;
+    number: string | null;
+    status: InvoiceStatus;
     invoice_date: string;
     paid: boolean;
     total: string | number;
@@ -122,7 +125,7 @@ function formatDate(date: string): string {
                         :key="invoice.id"
                         class="border-t"
                     >
-                        <td class="px-4 py-2">{{ invoice.number }}</td>
+                        <td class="px-4 py-2">{{ invoice.number ?? '—' }}</td>
                         <td class="px-4 py-2">
                             {{ formatDate(invoice.invoice_date) }}
                         </td>
@@ -131,6 +134,13 @@ function formatDate(date: string): string {
                         </td>
                         <td class="px-4 py-2">
                             <div class="flex items-center gap-1">
+                                <Badge
+                                    :variant="
+                                        invoiceStatusVariant(invoice.status)
+                                    "
+                                >
+                                    {{ t(`invoices.status.${invoice.status}`) }}
+                                </Badge>
                                 <Badge
                                     :variant="
                                         invoice.type === 'credit_note'

@@ -434,6 +434,7 @@ const messages = {
         },
     },
     invoices: {
+        status: { draft: 'Draft', issued: 'Issued' },
         type: { invoice: 'Invoice', credit_note: 'Credit Note' },
         index: {
             title: 'Invoices',

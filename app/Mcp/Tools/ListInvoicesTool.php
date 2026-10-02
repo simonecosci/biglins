@@ -35,11 +35,12 @@ class ListInvoicesTool extends Tool
             ->where('company_id', $companyId)
             ->orderByDesc('number')
             ->limit(50)
-            ->get(['id', 'number', 'type', 'customer_id', 'invoice_date', 'paid'])
+            ->get(['id', 'number', 'type', 'status', 'customer_id', 'invoice_date', 'paid'])
             ->map(fn (Invoice $invoice): array => [
                 'id' => $invoice->id,
                 'number' => $invoice->number,
                 'type' => $invoice->type->value,
+                'status' => $invoice->status->value,
                 'customer_id' => $invoice->customer_id,
                 'customer_name' => $invoice->customer->name,
                 'invoice_date' => $invoice->invoice_date->format('Y-m-d'),

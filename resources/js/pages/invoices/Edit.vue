@@ -11,6 +11,7 @@ import type { PickedNote } from '@/components/NotePicker.vue';
 import ProductPicker from '@/components/ProductPicker.vue';
 import type { PickedProduct } from '@/components/ProductPicker.vue';
 import SendEmailDialog from '@/components/SendEmailDialog.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,8 @@ import {
 } from '@/components/ui/select';
 import VatExemptionSelect from '@/components/VatExemptionSelect.vue';
 import { confirmDialog } from '@/lib/confirmDialog';
+import { invoiceStatusVariant } from '@/lib/invoiceStatus';
+import type { InvoiceStatus } from '@/lib/invoiceStatus';
 import { addDurationToDate } from '@/lib/productDuration';
 import { index } from '@/routes/invoices';
 import type { BreadcrumbItem } from '@/types';
@@ -49,7 +52,9 @@ type InvoiceRow = {
 
 type Invoice = {
     id: string;
-    number: string;
+    number: string | null;
+    status: InvoiceStatus;
+    issued_at: string | null;
     invoice_date: string;
     paid: boolean;
     customer_id: string;
@@ -87,8 +92,11 @@ setLayoutProps({
     ] satisfies BreadcrumbItem[],
 });
 
+const displayNumber = computed(
+    () => props.invoice.number ?? t('invoices.status.draft'),
+);
+
 const form = useForm({
-    number: props.invoice.number,
     invoice_date: props.invoice.invoice_date,
     paid: props.invoice.paid,
     customer_id: props.invoice.customer_id,
@@ -222,11 +230,14 @@ const lastSent = computed(() => {
         <Heading
             :title="t('invoices.edit.title')"
             :description="
-                t('invoices.edit.description', { number: invoice.number })
+                t('invoices.edit.description', { number: displayNumber })
             "
         />
 
-        <div class="flex gap-1">
+        <div class="flex items-center gap-1">
+            <Badge :variant="invoiceStatusVariant(invoice.status)">
+                {{ t(`invoices.status.${invoice.status}`) }}
+            </Badge>
             <Button
                 as-child
                 variant="ghost"
@@ -256,12 +267,12 @@ const lastSent = computed(() => {
                 :default-to="customerEmail"
                 :default-subject="
                     t('sendEmailDialog.invoiceDefaultSubject', {
-                        number: invoice.number,
+                        number: displayNumber,
                     })
                 "
                 :default-message="
                     t('sendEmailDialog.invoiceDefaultMessage', {
-                        number: invoice.number,
+                        number: displayNumber,
                     })
                 "
             />
@@ -272,18 +283,7 @@ const lastSent = computed(() => {
         </p>
 
         <form class="space-y-4" @submit.prevent="submit">
-            <div class="grid grid-cols-2 gap-4">
-                <div class="grid gap-2">
-                    <Label for="number">{{
-                        t('invoices.create.number')
-                    }}</Label>
-                    <Input
-                        id="number"
-                        v-model="form.number"
-                        placeholder="2026-0001"
-                    />
-                    <InputError :message="form.errors.number" />
-                </div>
+            <div class="grid gap-4">
                 <div class="grid gap-2">
                     <Label for="invoice_date">{{
                         t('invoices.create.date')

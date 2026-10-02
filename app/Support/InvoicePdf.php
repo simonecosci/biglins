@@ -20,6 +20,8 @@ class InvoicePdf
 
     public static function filename(Invoice $invoice): string
     {
-        return str_replace(['/', '\\'], '-', $invoice->number).'.pdf';
+        return $invoice->number === null
+            ? 'draft-'.$invoice->id.'.pdf'
+            : str_replace(['/', '\\'], '-', $invoice->number).'.pdf';
     }
 }

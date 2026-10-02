@@ -18,4 +18,5 @@ return [
     'tax_id' => 'P.IVA',
     'tax_code' => 'Codice fiscale',
     'iban' => 'IBAN',
+    'draft' => 'Bozza',
 ];

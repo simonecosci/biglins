@@ -3,6 +3,7 @@
 use App\Enums\InvoiceType;
 use App\Models\Invoice;
 use App\Models\InvoiceRow;
+use App\Models\User;
 use Illuminate\Support\Facades\App;
 
 function renderInvoiceTemplate(Invoice $invoice): string
@@ -15,7 +16,7 @@ function renderInvoiceTemplate(Invoice $invoice): string
 }
 
 test('template renders company data, customer data and rows', function () {
-    $invoice = Invoice::factory()->create(['language' => 'en', 'note' => null]);
+    $invoice = Invoice::factory()->issued()->create(['language' => 'en', 'note' => null]);
     InvoiceRow::factory()->create([
         'invoice_id' => $invoice->id,
         'description' => 'Consulting work',
@@ -89,4 +90,14 @@ test('template renders the quantity column for each row', function () {
     expect($html)->toContain('Quantity');
     expect($html)->toContain('<td class="num">2.00</td>');
     expect($html)->toContain('244.00');
+});
+
+test('previewing a draft renders the draft label instead of a number', function () {
+    $invoice = Invoice::factory()->create(['language' => 'en']);
+    InvoiceRow::factory()->create(['invoice_id' => $invoice->id]);
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('invoices.preview', $invoice))
+        ->assertOk()
+        ->assertSee(__('invoice.draft'));
 });

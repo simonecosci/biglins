@@ -22,12 +22,6 @@ class UpdateInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'number' => [
-                'nullable', 'string', 'max:20',
-                Rule::unique('invoices', 'number')
-                    ->where('company_id', CurrentCompany::resolve()?->id)
-                    ->ignore($this->route('invoice')),
-            ],
             'type' => ['sometimes', 'string', Rule::in(['invoice', 'credit_note'])],
             'invoice_date' => ['required', 'date'],
             'paid' => ['boolean'],

@@ -44,7 +44,6 @@ type InvoiceRowForm = {
 const props = defineProps<{
     customers: Customer[];
     vatExemptionCodes: string[];
-    nextNumber: string;
     duplicate: {
         customer_id: string;
         note: string | null;
@@ -63,7 +62,6 @@ setLayoutProps({
 });
 
 const form = useForm({
-    number: props.nextNumber,
     invoice_date: new Date().toISOString().slice(0, 10),
     paid: false,
     customer_id: props.duplicate?.customer_id ?? '',
@@ -169,18 +167,7 @@ function submit(): void {
         />
 
         <form class="space-y-4" @submit.prevent="submit">
-            <div class="grid grid-cols-2 gap-4">
-                <div class="grid gap-2">
-                    <Label for="number">{{
-                        t('invoices.create.number')
-                    }}</Label>
-                    <Input
-                        id="number"
-                        v-model="form.number"
-                        placeholder="2026-0001"
-                    />
-                    <InputError :message="form.errors.number" />
-                </div>
+            <div class="grid gap-4">
                 <div class="grid gap-2">
                     <Label for="invoice_date">{{
                         t('invoices.create.date')

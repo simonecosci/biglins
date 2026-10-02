@@ -41,7 +41,7 @@ class DashboardController extends Controller
 
                 return [
                     'invoice_id' => $invoice->id,
-                    'invoice_number' => $invoice->number,
+                    'invoice_number' => $invoice->displayNumber(),
                     'customer_name' => $invoice->customer?->name,
                     'status' => match (true) {
                         $urgencies->contains(ExpirationUrgency::Expired) => ExpirationUrgency::Expired->value,

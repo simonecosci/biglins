@@ -41,7 +41,9 @@ class InvoiceController extends Controller
                 $query->where('number', 'like', "%{$search}%")
                     ->orWhereHas('customer', fn ($query) => $query->where('name', 'like', "%{$search}%"));
             }))
+            ->orderByRaw('number is null desc')
             ->orderByDesc('number')
+            ->orderByDesc('created_at')
             ->paginate(15)
             ->withQueryString();
 
@@ -67,7 +69,6 @@ class InvoiceController extends Controller
 
         return Inertia::render('invoices/Create', [
             'customers' => Customer::query()->where('company_id', $currentCompany->id)->orderBy('name')->get(['id', 'name']),
-            'nextNumber' => Invoice::nextNumber($currentCompany->id),
             'vatExemptionCodes' => CountryComplianceResolver::forCompany($currentCompany)->vatExemptionCodes(),
             'duplicate' => $source ? [
                 // A customer from another company would not be selectable here, so it is only

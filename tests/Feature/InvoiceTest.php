@@ -1,11 +1,14 @@
 <?php
 
+use App\Enums\InvoiceStatus;
 use App\Enums\InvoiceType;
 use App\Models\Company;
 use App\Models\Country;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceRow;
+use App\Models\User;
+use App\Support\InvoicePdf;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 
@@ -18,58 +21,61 @@ test('invoice factory creates an invoice with a uuid primary key', function () {
     expect($invoice->company)->toBeInstanceOf(Company::class);
 });
 
-test('first invoice of the year is numbered 0001', function () {
-    Carbon::setTestNow('2026-01-15');
-    $company = Company::factory()->create();
+test('a new invoice is a draft without number', function () {
+    $invoice = Invoice::factory()->create();
 
-    $invoice = Invoice::factory()->create(['company_id' => $company->id, 'number' => null]);
-
-    expect($invoice->number)->toBe('2026-0001');
-
-    Carbon::setTestNow();
+    expect($invoice->status)->toBe(InvoiceStatus::Draft);
+    expect($invoice->number)->toBeNull();
+    expect($invoice->issued_at)->toBeNull();
+    expect($invoice->isLocked())->toBeFalse();
 });
 
-test('subsequent invoices in the same year increment the sequence', function () {
-    Carbon::setTestNow('2026-01-15');
-    $company = Company::factory()->create();
-
-    Invoice::factory()->create(['company_id' => $company->id, 'number' => null]);
-    $second = Invoice::factory()->create(['company_id' => $company->id, 'number' => null]);
-    $third = Invoice::factory()->create(['company_id' => $company->id, 'number' => null]);
-
-    expect($second->number)->toBe('2026-0002');
-    expect($third->number)->toBe('2026-0003');
-
-    Carbon::setTestNow();
-});
-
-test('a new calendar year resets the sequence to 0001', function () {
-    $company = Company::factory()->create();
-
-    Carbon::setTestNow('2026-12-31');
-    Invoice::factory()->create(['company_id' => $company->id, 'number' => null]);
-
-    Carbon::setTestNow('2027-01-01');
-    $invoice = Invoice::factory()->create(['company_id' => $company->id, 'number' => null]);
-
-    expect($invoice->number)->toBe('2027-0001');
-
-    Carbon::setTestNow();
-});
-
-test('each company has its own independent numbering sequence', function () {
+test('next number starts at 0001 and increments per company and year', function () {
     Carbon::setTestNow('2026-01-15');
     $companyA = Company::factory()->create();
     $companyB = Company::factory()->create();
 
-    Invoice::factory()->create(['company_id' => $companyA->id, 'number' => null]);
-    $firstForB = Invoice::factory()->create(['company_id' => $companyB->id, 'number' => null]);
-    $secondForA = Invoice::factory()->create(['company_id' => $companyA->id, 'number' => null]);
+    expect(Invoice::nextNumber($companyA->id))->toBe('2026-0001');
+    Invoice::factory()->issued()->create(['company_id' => $companyA->id]);
+    expect(Invoice::nextNumber($companyA->id))->toBe('2026-0002');
+    expect(Invoice::nextNumber($companyB->id))->toBe('2026-0001');
 
-    expect($firstForB->number)->toBe('2026-0001');
-    expect($secondForA->number)->toBe('2026-0002');
+    Carbon::setTestNow('2027-01-01');
+    expect(Invoice::nextNumber($companyA->id))->toBe('2027-0001');
 
     Carbon::setTestNow();
+});
+
+test('drafts do not consume numbers', function () {
+    Carbon::setTestNow('2026-01-15');
+    $company = Company::factory()->create();
+
+    Invoice::factory()->count(3)->create(['company_id' => $company->id]);
+
+    expect(Invoice::nextNumber($company->id))->toBe('2026-0001');
+
+    Carbon::setTestNow();
+});
+
+test('the number cannot be set from the create form', function () {
+    $company = Company::factory()->create(['is_default' => true]);
+    $customer = Customer::factory()->create(['company_id' => $company->id]);
+
+    $this->actingAs(User::factory()->create())->withSession(['current_company_id' => $company->id])->post(route('invoices.store'), [
+        'number' => '2026-9999',
+        'invoice_date' => '2026-10-02',
+        'customer_id' => $customer->id,
+        'language' => 'en',
+        'rows' => [['description' => 'X', 'quantity' => 1, 'price' => 10, 'vat_rate' => 22]],
+    ]);
+
+    expect(Invoice::query()->firstOrFail()->number)->toBeNull();
+});
+
+test('draft pdf filename does not depend on a number', function () {
+    $invoice = Invoice::factory()->create();
+
+    expect(InvoicePdf::filename($invoice))->toBe('draft-'.$invoice->id.'.pdf');
 });
 
 test('an explicitly provided number is respected instead of being generated', function () {
@@ -159,7 +165,6 @@ test('invoice factory can create a credit note', function () {
 });
 
 use App\Enums\SubscriptionStatus;
-use App\Models\User;
 use Illuminate\Support\Str;
 
 test('guests are redirected to the login page when visiting invoices', function () {
@@ -207,7 +212,7 @@ test('invoice create page can be rendered', function () {
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
         ->component('invoices/Create')
-        ->has('nextNumber')
+        ->missing('nextNumber')
     );
 });
 
@@ -266,7 +271,8 @@ test('invoice can be created with rows', function () {
 
     $invoice = Invoice::query()->where('customer_id', $customer->id)->firstOrFail();
     expect($invoice->rows)->toHaveCount(2);
-    expect($invoice->number)->not->toBeNull();
+    expect($invoice->number)->toBeNull();
+    expect($invoice->status)->toBe(InvoiceStatus::Draft);
     expect($invoice->language)->toBe('en');
     expect($invoice->company_id)->toBe($company->id);
     expect($invoice->rows->firstWhere('description', 'Consulting')->quantity)->toEqual(2.0);
@@ -541,22 +547,24 @@ test('invoice create page only lists customers for the current company', functio
     );
 });
 
-test('invoice number can be set explicitly and must be unique', function () {
+test('a number posted to the create form is ignored even when already used', function () {
     $user = User::factory()->create();
-    $customer = Customer::factory()->create();
     $company = Company::factory()->create();
+    $customer = Customer::factory()->create(['company_id' => $company->id]);
     Invoice::factory()->create(['company_id' => $company->id, 'number' => '2026-0050']);
 
     $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('invoices.store'), [
         'number' => '2026-0050',
         'invoice_date' => '2026-01-15',
         'customer_id' => $customer->id,
+        'language' => 'en',
         'rows' => [
-            ['description' => 'Consulting', 'price' => 100, 'vat_rate' => 22],
+            ['description' => 'Consulting', 'price' => 100, 'quantity' => 1, 'vat_rate' => 22],
         ],
     ]);
 
-    $response->assertSessionHasErrors('number');
+    $response->assertSessionHasNoErrors();
+    expect(Invoice::query()->where('customer_id', $customer->id)->firstOrFail()->number)->toBeNull();
 });
 
 test('updating an invoice syncs its rows: adds, updates and removes', function () {
@@ -691,7 +699,7 @@ test('guests are redirected to the login page when previewing an invoice', funct
 
 test('invoice preview renders the invoice as html', function () {
     $user = User::factory()->create();
-    $invoice = Invoice::factory()->create(['language' => 'en', 'note' => 'Please pay within 30 days']);
+    $invoice = Invoice::factory()->issued()->create(['language' => 'en', 'note' => 'Please pay within 30 days']);
     InvoiceRow::factory()->create(['invoice_id' => $invoice->id, 'description' => 'Design work']);
 
     $response = $this->actingAs($user)->get(route('invoices.preview', $invoice));
@@ -759,7 +767,7 @@ test('invoice preview renders the italian locale label', function () {
 
 test('invoice pdf download sanitizes slashes in the invoice number', function () {
     $user = User::factory()->create();
-    $invoice = Invoice::factory()->create(['number' => '2026/0001']);
+    $invoice = Invoice::factory()->issued()->create(['number' => '2026/0001']);
     InvoiceRow::factory()->create(['invoice_id' => $invoice->id]);
 
     $response = $this->actingAs($user)->get(route('invoices.pdf', $invoice));

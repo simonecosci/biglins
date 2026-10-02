@@ -446,6 +446,7 @@ const messages: MessageSchema = {
         },
     },
     invoices: {
+        status: { draft: 'Bozza', issued: 'Emessa' },
         type: { invoice: 'Fattura', credit_note: 'Nota di credito' },
         index: {
             title: 'Fatture',

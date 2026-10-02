@@ -18,4 +18,5 @@ return [
     'tax_id' => 'NIF',
     'tax_code' => 'NIF',
     'iban' => 'IBAN',
+    'draft' => 'Borrador',
 ];

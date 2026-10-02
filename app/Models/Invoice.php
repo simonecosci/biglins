@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\InvoiceStatus;
 use App\Enums\InvoiceType;
 use Database\Factories\InvoiceFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -15,8 +16,10 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
- * @property string $number
+ * @property string|null $number
  * @property InvoiceType $type
+ * @property InvoiceStatus $status
+ * @property Carbon|null $issued_at
  * @property Carbon $invoice_date
  * @property bool $paid
  * @property string $customer_id
@@ -51,6 +54,8 @@ class Invoice extends Model
     {
         return [
             'type' => InvoiceType::class,
+            'status' => InvoiceStatus::class,
+            'issued_at' => 'datetime',
             'invoice_date' => 'date:Y-m-d',
             'paid' => 'boolean',
             'sent_at' => 'datetime',
@@ -60,12 +65,12 @@ class Invoice extends Model
     protected static function booted(): void
     {
         static::creating(function (Invoice $invoice): void {
-            if (! $invoice->number) {
-                $invoice->number = static::nextNumber($invoice->company_id);
-            }
-
             if (! ($invoice->getAttributes()['type'] ?? null)) {
                 $invoice->type = InvoiceType::Invoice;
+            }
+
+            if (! ($invoice->getAttributes()['status'] ?? null)) {
+                $invoice->status = InvoiceStatus::Draft;
             }
         });
     }
@@ -73,6 +78,16 @@ class Invoice extends Model
     public function isCreditNote(): bool
     {
         return $this->type === InvoiceType::CreditNote;
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->status === InvoiceStatus::Issued;
+    }
+
+    public function displayNumber(): string
+    {
+        return $this->number ?? __('Draft');
     }
 
     public static function nextNumber(string $companyId, ?string $year = null): string

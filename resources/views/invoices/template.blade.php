@@ -9,7 +9,7 @@
 <html lang="{{ $invoice->language }}">
 <head>
     <meta charset="utf-8">
-    <title>{{ $documentTitle }} {{ $invoice->number }}</title>
+    <title>{{ $documentTitle }} {{ $invoice->number ?? __('invoice.draft') }}</title>
     <style>
         body { font-family: Helvetica, Arial, sans-serif; font-size: 12px; color: #1f2937; margin: 40px; }
         table { border-collapse: collapse; }
@@ -78,7 +78,7 @@
             </td>
             <td class="meta">
                 <h1>{{ $documentTitle }}</h1>
-                <div>{{ __('invoice.number') }}: {{ $invoice->number }}</div>
+                <div>{{ __('invoice.number') }}: {{ $invoice->number ?? __('invoice.draft') }}</div>
                 <div>{{ __('invoice.date') }}: {{ $invoice->invoice_date->format('d/m/Y') }}</div>
             </td>
         </tr>
