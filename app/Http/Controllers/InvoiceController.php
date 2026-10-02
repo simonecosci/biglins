@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\EInvoicing\CountryComplianceResolver;
 use App\EInvoicing\Enums\SubmissionStatus;
 use App\EInvoicing\SubmissionStatusRefresher;
+use App\Enums\InvoiceStatus;
 use App\Enums\InvoiceType;
 use App\Http\Controllers\Concerns\ScopesToCurrentCompany;
 use App\Http\Requests\SendInvoiceRequest;
@@ -35,11 +36,13 @@ class InvoiceController extends Controller
     public function index(Request $request): Response
     {
         $search = $request->string('search')->trim()->toString();
+        $status = InvoiceStatus::tryFrom($request->string('status')->toString());
         $currentCompanyId = CurrentCompany::resolve()?->id;
 
         $invoices = Invoice::query()
-            ->with(['customer', 'rows'])
+            ->with(['customer', 'rows', 'latestSubmission'])
             ->where('company_id', $currentCompanyId)
+            ->when($status !== null, fn ($query) => $query->where('status', $status))
             ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
                 $query->where('number', 'like', "%{$search}%")
                     ->orWhereHas('customer', fn ($query) => $query->where('name', 'like', "%{$search}%"));
@@ -48,11 +51,17 @@ class InvoiceController extends Controller
             ->orderByDesc('number')
             ->orderByDesc('created_at')
             ->paginate(15)
-            ->withQueryString();
+            ->withQueryString()
+            ->through(fn (Invoice $invoice): array => [
+                ...$invoice->toArray(),
+                'latest_submission' => $invoice->latestSubmission
+                    ? ['status' => $invoice->latestSubmission->status->value]
+                    : null,
+            ]);
 
         return Inertia::render('invoices/Index', [
             'invoices' => $invoices,
-            'filters' => ['search' => $search],
+            'filters' => ['search' => $search, 'status' => $status?->value ?? ''],
         ]);
     }
 
@@ -140,6 +149,12 @@ class InvoiceController extends Controller
             'isLocked' => $invoice->isLocked(),
             'customers' => Customer::query()->where('company_id', $invoice->company_id)->orderBy('name')->get(['id', 'name', 'email']),
             'vatExemptionCodes' => CountryComplianceResolver::forCompany($invoice->company)->vatExemptionCodes(),
+            'submissions' => $invoice->submissions()
+                ->with('events:id,submission_id,type,received_at')
+                ->latest()
+                ->limit(20)
+                ->get(['id', 'invoice_id', 'status', 'provider_status', 'authority_id', 'error_message', 'submitted_at', 'completed_at', 'created_at']),
+            'requiresSubmission' => CountryComplianceResolver::forCompany($invoice->company)->requiresSubmission(),
         ]);
     }
 

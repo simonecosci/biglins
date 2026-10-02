@@ -490,7 +490,13 @@ const messages: MessageSchema = {
                 date: 'Fecha',
                 customer: 'Cliente',
                 type: 'Tipo',
+                statusFilter: {
+                    all: 'Todos los estados',
+                    draft: 'Borrador',
+                    issued: 'Emitida',
+                },
                 paid: 'Pagada',
+                submission: 'Envío',
                 total: 'Total',
             },
             paid: 'Pagada',
@@ -532,6 +538,7 @@ const messages: MessageSchema = {
             confirmDelete:
                 '¿Eliminar esta factura? Esta acción no se puede deshacer.',
             deleteButton: 'Eliminar factura',
+            issueAndSubmitButton: 'Emitir y enviar',
             issueButton: 'Emitir',
             confirmIssue:
                 'Una vez emitida, la factura recibe su número y ya no se puede modificar. ¿Continuar?',
@@ -539,6 +546,27 @@ const messages: MessageSchema = {
                 'Esta factura ha sido emitida: solo se pueden modificar el estado de pago y la nota.',
             send: 'Enviar por email',
         },
+    },
+    invoiceSubmissions: {
+        title: 'Envío electrónico',
+        status: {
+            pending: 'En cola',
+            failed: 'Error',
+            submitted: 'Enviada',
+            rejected: 'Rechazada',
+            accepted: 'Aceptada',
+            delivered: 'Entregada',
+            not_delivered: 'No entregada',
+        },
+        alerts: {
+            failed: 'El proveedor rechazó la factura antes de que llegara a la autoridad fiscal. Corrige los datos y emítela de nuevo.',
+            rejected: 'La autoridad fiscal rechazó la factura.',
+            not_delivered:
+                'La factura se emitió pero no pudo entregarse: está disponible en el área fiscal del cliente. Envíale una copia de cortesía por correo.',
+        },
+        refresh: 'Actualizar estado',
+        retry: 'Reintentar',
+        authorityId: 'ID de la autoridad',
     },
     estimations: {
         status: {

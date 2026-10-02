@@ -8,6 +8,8 @@ import InvoiceSubmissionController from '@/actions/App/Http/Controllers/InvoiceS
 import AlertError from '@/components/AlertError.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import InvoiceSubmissionPanel from '@/components/InvoiceSubmissionPanel.vue';
+import type { Submission } from '@/components/InvoiceSubmissionPanel.vue';
 import NotePicker from '@/components/NotePicker.vue';
 import type { PickedNote } from '@/components/NotePicker.vue';
 import ProductPicker from '@/components/ProductPicker.vue';
@@ -85,6 +87,8 @@ const props = defineProps<{
     isLocked: boolean;
     customers: Customer[];
     vatExemptionCodes: string[];
+    submissions: Submission[];
+    requiresSubmission: boolean;
 }>();
 
 const { t } = useI18n();
@@ -287,7 +291,13 @@ const lastSent = computed(() => {
                 @click="onIssue"
             >
                 <Send />
-                {{ t('invoices.edit.issueButton') }}
+                {{
+                    t(
+                        requiresSubmission
+                            ? 'invoices.edit.issueAndSubmitButton'
+                            : 'invoices.edit.issueButton',
+                    )
+                }}
             </Button>
             <SendEmailDialog
                 :send-url="InvoiceController.send(invoice.id).url"
@@ -304,6 +314,12 @@ const lastSent = computed(() => {
                 "
             />
         </div>
+
+        <InvoiceSubmissionPanel
+            :invoice-id="invoice.id"
+            :invoice-status="invoice.status"
+            :submissions="submissions"
+        />
 
         <p v-if="lastSent" class="text-sm text-muted-foreground">
             {{ lastSent }}

@@ -485,7 +485,13 @@ const messages: MessageSchema = {
                 date: 'Data',
                 customer: 'Cliente',
                 type: 'Tipo',
+                statusFilter: {
+                    all: 'Tutti gli stati',
+                    draft: 'Bozza',
+                    issued: 'Emessa',
+                },
                 paid: 'Pagata',
+                submission: 'Invio',
                 total: 'Totale',
             },
             paid: 'Pagata',
@@ -527,6 +533,7 @@ const messages: MessageSchema = {
             confirmDelete:
                 "Eliminare questa fattura? L'azione non può essere annullata.",
             deleteButton: 'Elimina fattura',
+            issueAndSubmitButton: 'Emetti e invia',
             issueButton: 'Emetti',
             confirmIssue:
                 'Una volta emessa, la fattura riceve il suo numero e non può più essere modificata. Continuare?',
@@ -534,6 +541,27 @@ const messages: MessageSchema = {
                 'Questa fattura è stata emessa: possono essere modificati solo lo stato di pagamento e la nota.',
             send: 'Invia via email',
         },
+    },
+    invoiceSubmissions: {
+        title: 'Invio elettronico',
+        status: {
+            pending: 'In coda',
+            failed: 'Errore',
+            submitted: 'Inviata',
+            rejected: 'Scartata',
+            accepted: 'Accettata',
+            delivered: 'Consegnata',
+            not_delivered: 'Non consegnata',
+        },
+        alerts: {
+            failed: "Il provider ha rifiutato la fattura prima che raggiungesse l'autorità fiscale. Correggi i dati ed emettila di nuovo.",
+            rejected: "L'autorità fiscale ha scartato la fattura.",
+            not_delivered:
+                "La fattura è stata emessa ma non è stato possibile consegnarla: è disponibile nell'area fiscale del cliente. Invia una copia di cortesia via email.",
+        },
+        refresh: 'Aggiorna stato',
+        retry: 'Riprova',
+        authorityId: 'ID autorità',
     },
     estimations: {
         status: {

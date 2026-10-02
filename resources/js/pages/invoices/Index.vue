@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { invoiceStatusVariant } from '@/lib/invoiceStatus';
-import type { InvoiceStatus } from '@/lib/invoiceStatus';
+import { submissionStatusVariant } from '@/lib/invoiceStatus';
+import type { InvoiceStatus, SubmissionStatus } from '@/lib/invoiceStatus';
 import { create, edit, index } from '@/routes/invoices';
 import type { BreadcrumbItem } from '@/types';
 
@@ -22,6 +23,7 @@ type Invoice = {
     total: string | number;
     type: string;
     customer: { id: string; name: string } | null;
+    latest_submission: { status: SubmissionStatus } | null;
 };
 
 type PaginationLink = {
@@ -45,15 +47,17 @@ const props = defineProps<{
     };
     filters: {
         search: string;
+        status: string;
     };
 }>();
 
 const search = ref(props.filters.search);
+const status = ref(props.filters.status);
 
 function onSearch(): void {
     router.get(
         index().url,
-        { search: search.value },
+        { search: search.value, status: status.value || undefined },
         { preserveState: true, replace: true },
     );
 }
@@ -90,11 +94,27 @@ function formatDate(date: string): string {
             </Button>
         </div>
 
-        <form class="max-w-sm" @submit.prevent="onSearch">
+        <form class="flex max-w-lg gap-2" @submit.prevent="onSearch">
             <Input
                 v-model="search"
                 :placeholder="t('invoices.index.searchPlaceholder')"
             />
+            <select
+                v-model="status"
+                class="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+                :aria-label="t('invoices.index.statusFilter.all')"
+                @change="onSearch"
+            >
+                <option value="">
+                    {{ t('invoices.index.statusFilter.all') }}
+                </option>
+                <option value="draft">
+                    {{ t('invoices.index.statusFilter.draft') }}
+                </option>
+                <option value="issued">
+                    {{ t('invoices.index.statusFilter.issued') }}
+                </option>
+            </select>
         </form>
 
         <div class="overflow-hidden rounded-lg border">
@@ -112,6 +132,9 @@ function formatDate(date: string): string {
                         </th>
                         <th class="px-4 py-2 font-medium">
                             {{ t('invoices.index.columns.type') }}
+                        </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('invoices.index.columns.submission') }}
                         </th>
                         <th class="px-4 py-2 font-medium">
                             {{ t('invoices.index.columns.total') }}
@@ -162,6 +185,23 @@ function formatDate(date: string): string {
                                     }}
                                 </Badge>
                             </div>
+                        </td>
+                        <td class="px-4 py-2">
+                            <Badge
+                                v-if="invoice.latest_submission"
+                                :variant="
+                                    submissionStatusVariant(
+                                        invoice.latest_submission.status,
+                                    )
+                                "
+                            >
+                                {{
+                                    t(
+                                        `invoiceSubmissions.status.${invoice.latest_submission.status}`,
+                                    )
+                                }}
+                            </Badge>
+                            <span v-else>—</span>
                         </td>
                         <td class="px-4 py-2">
                             {{ formatTotal(invoice.total) }}
@@ -228,7 +268,7 @@ function formatDate(date: string): string {
                     </tr>
                     <tr v-if="invoices.data.length === 0">
                         <td
-                            colspan="6"
+                            colspan="7"
                             class="px-4 py-6 text-center text-muted-foreground"
                         >
                             {{ t('invoices.index.empty') }}

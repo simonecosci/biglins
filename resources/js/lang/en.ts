@@ -473,7 +473,13 @@ const messages = {
                 date: 'Date',
                 customer: 'Customer',
                 type: 'Type',
+                statusFilter: {
+                    all: 'All statuses',
+                    draft: 'Draft',
+                    issued: 'Issued',
+                },
                 paid: 'Paid',
+                submission: 'Submission',
                 total: 'Total',
             },
             paid: 'Paid',
@@ -514,6 +520,7 @@ const messages = {
             description: 'Update invoice {number}',
             confirmDelete: 'Delete this invoice? This cannot be undone.',
             deleteButton: 'Delete invoice',
+            issueAndSubmitButton: 'Issue and submit',
             issueButton: 'Issue',
             confirmIssue:
                 'Once issued, the invoice gets its number and can no longer be changed. Continue?',
@@ -521,6 +528,27 @@ const messages = {
                 'This invoice has been issued: only the paid flag and the note can be changed.',
             send: 'Send by email',
         },
+    },
+    invoiceSubmissions: {
+        title: 'Electronic submission',
+        status: {
+            pending: 'Queued',
+            failed: 'Failed',
+            submitted: 'Submitted',
+            rejected: 'Rejected',
+            accepted: 'Accepted',
+            delivered: 'Delivered',
+            not_delivered: 'Not delivered',
+        },
+        alerts: {
+            failed: 'The provider refused the invoice before it reached the tax authority. Fix the data and issue it again.',
+            rejected: 'The tax authority rejected the invoice.',
+            not_delivered:
+                "The invoice was issued but could not be delivered: it is available in the customer's tax area. Send them a courtesy copy by email.",
+        },
+        refresh: 'Refresh status',
+        retry: 'Retry',
+        authorityId: 'Authority ID',
     },
     estimations: {
         status: {
