@@ -79,6 +79,7 @@ class InvoiceController extends Controller
                     'quantity' => $row->quantity,
                     'price' => $source->isCreditNote() ? abs($row->price) : $row->price,
                     'vat_rate' => $row->vat_rate,
+                    'vat_exemption_code' => $row->vat_exemption_code,
                     'expiration_date' => $row->expiration_date?->format('Y-m-d'),
                 ])->all(),
             ] : null,

@@ -18,12 +18,13 @@ use Illuminate\Support\Carbon;
  * @property float $quantity
  * @property float $price
  * @property float $vat_rate
+ * @property string|null $vat_exemption_code
  * @property string|null $note
  * @property-read float $total
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['estimation_id', 'description', 'quantity', 'price', 'vat_rate', 'note'])]
+#[Fillable(['estimation_id', 'description', 'quantity', 'price', 'vat_rate', 'vat_exemption_code', 'note'])]
 class EstimationRow extends Model
 {
     /** @use HasFactory<EstimationRowFactory> */

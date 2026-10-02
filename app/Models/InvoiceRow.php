@@ -21,6 +21,7 @@ use Illuminate\Support\Carbon;
  * @property float $quantity
  * @property float $price
  * @property float $vat_rate
+ * @property string|null $vat_exemption_code
  * @property Carbon|null $expiration_date
  * @property SubscriptionStatus $subscription_status
  * @property-read float $total
@@ -28,7 +29,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['invoice_id', 'description', 'quantity', 'price', 'vat_rate', 'expiration_date', 'subscription_status'])]
+#[Fillable(['invoice_id', 'description', 'quantity', 'price', 'vat_rate', 'vat_exemption_code', 'expiration_date', 'subscription_status'])]
 class InvoiceRow extends Model
 {
     /** @use HasFactory<InvoiceRowFactory> */

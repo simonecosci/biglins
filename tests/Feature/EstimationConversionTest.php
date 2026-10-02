@@ -68,3 +68,15 @@ test('converting an estimation from another company is forbidden', function () {
     $response->assertForbidden();
     expect($estimation->fresh()->invoice_id)->toBeNull();
 });
+
+test('conversion copies the vat exemption code', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $estimation = Estimation::factory()->create(['company_id' => $company->id, 'status' => EstimationStatus::Accepted, 'language' => 'it']);
+    EstimationRow::factory()->create(['estimation_id' => $estimation->id, 'vat_rate' => 0, 'vat_exemption_code' => 'N2.1']);
+
+    $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('estimations.convert-to-invoice', $estimation));
+
+    $invoice = Invoice::query()->findOrFail($estimation->fresh()->invoice_id);
+    expect($invoice->rows->first()->vat_exemption_code)->toBe('N2.1');
+});

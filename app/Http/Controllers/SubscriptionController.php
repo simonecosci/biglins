@@ -37,6 +37,7 @@ class SubscriptionController extends Controller
                     'quantity' => $row->quantity,
                     'price' => $row->price,
                     'vat_rate' => $row->vat_rate,
+                    'vat_exemption_code' => $row->vat_exemption_code,
                     'expiration_date' => $row->expiration_date->copy()->addYear(),
                     'subscription_status' => SubscriptionStatus::Active,
                 ]);

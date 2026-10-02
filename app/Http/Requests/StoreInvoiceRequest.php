@@ -37,6 +37,7 @@ class StoreInvoiceRequest extends FormRequest
             'rows.*.quantity' => ['required', 'numeric', 'min:0.01'],
             'rows.*.price' => ['required', 'numeric', 'min:0'],
             'rows.*.vat_rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'rows.*.vat_exemption_code' => ['nullable', 'string', 'max:10'],
             'rows.*.expiration_date' => ['nullable', 'date'],
         ];
     }
