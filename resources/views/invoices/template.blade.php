@@ -33,6 +33,7 @@
         table.totals td { padding: 4px; }
         table.totals td.num { text-align: right; }
         table.totals tr.total td { font-weight: bold; font-size: 14px; border-top: 2px solid #1f2937; }
+        .verifactu { margin-top: 16px; font-size: 9px; font-weight: bold; }
         .notes { margin-top: 40px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
         .notes h2 { font-size: 11px; text-transform: uppercase; color: #6b7280; margin: 0 0 4px; }
     </style>
@@ -121,6 +122,13 @@
             <td class="num">{{ number_format($invoice->total, 2) }}</td>
         </tr>
     </table>
+
+    @if($invoice->latestSubmission?->qr_code)
+        <div class="verifactu">
+            <img src="data:image/png;base64,{{ $invoice->latestSubmission->qr_code }}" alt="QR" width="120" height="120">
+            <div>VERI*FACTU</div>
+        </div>
+    @endif
 
     @if($invoice->note)
         <div id="notes" class="notes">

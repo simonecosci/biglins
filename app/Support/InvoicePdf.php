@@ -14,7 +14,7 @@ class InvoicePdf
         App::setLocale($invoice->language);
 
         return Pdf::loadView('invoices.template', [
-            'invoice' => $invoice->load(['customer.country', 'company.country', 'rows']),
+            'invoice' => $invoice->load(['customer.country', 'company.country', 'rows', 'latestSubmission']),
         ]);
     }
 

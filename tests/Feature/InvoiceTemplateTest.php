@@ -1,8 +1,11 @@
 <?php
 
+use App\EInvoicing\Enums\SubmissionStatus;
 use App\Enums\InvoiceType;
+use App\Models\Company;
 use App\Models\Invoice;
 use App\Models\InvoiceRow;
+use App\Models\InvoiceSubmission;
 use App\Models\User;
 use Illuminate\Support\Facades\App;
 
@@ -100,4 +103,24 @@ test('previewing a draft renders the draft label instead of a number', function 
         ->get(route('invoices.preview', $invoice))
         ->assertOk()
         ->assertSee(__('invoice.draft'));
+});
+
+test('the verifactu qr is printed when present', function () {
+    $company = Company::factory()->create(['is_default' => true]);
+    $invoice = Invoice::factory()->issued()->create(['company_id' => $company->id]);
+    InvoiceSubmission::factory()->for($invoice)->create(['status' => SubmissionStatus::Accepted, 'qr_code' => 'iVBORw0KGgo=']);
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('invoices.preview', $invoice))
+        ->assertSee('data:image/png;base64,iVBORw0KGgo=', false)
+        ->assertSee('VERI*FACTU');
+});
+
+test('no qr block without a qr code', function () {
+    $company = Company::factory()->create(['is_default' => true]);
+    $invoice = Invoice::factory()->issued()->create(['company_id' => $company->id]);
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('invoices.preview', $invoice))
+        ->assertDontSee('VERI*FACTU');
 });

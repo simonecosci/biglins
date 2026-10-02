@@ -241,7 +241,7 @@ class InvoiceController extends Controller
         App::setLocale($invoice->language);
 
         return view('invoices.template', [
-            'invoice' => $invoice->load(['customer.country', 'company.country', 'rows']),
+            'invoice' => $invoice->load(['customer.country', 'company.country', 'rows', 'latestSubmission']),
         ]);
     }
 
