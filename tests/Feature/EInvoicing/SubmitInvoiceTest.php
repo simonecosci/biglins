@@ -118,5 +118,5 @@ test('a second job for the same submission cannot take the unique lock', functio
 
     expect($lock->acquire(new SubmitInvoice($submission)))->toBeTrue();
     expect($lock->acquire(new SubmitInvoice($submission)))->toBeFalse();
-    expect($lock->acquire(new SubmitInvoice(pendingSubmission())))->toBeTrue();
+    expect($lock->acquire(new SubmitInvoice(InvoiceSubmission::factory()->for($submission->invoice)->create())))->toBeTrue();
 });
