@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -155,6 +156,22 @@ class Invoice extends Model
                 return $lineTotal * (float) $row->vat_rate / 100;
             }),
         );
+    }
+
+    /**
+     * @return HasMany<InvoiceSubmission, $this>
+     */
+    public function submissions(): HasMany
+    {
+        return $this->hasMany(InvoiceSubmission::class);
+    }
+
+    /**
+     * @return HasOne<InvoiceSubmission, $this>
+     */
+    public function latestSubmission(): HasOne
+    {
+        return $this->hasOne(InvoiceSubmission::class)->latestOfMany(['created_at', 'id']);
     }
 
     /**
