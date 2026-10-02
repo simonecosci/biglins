@@ -9,7 +9,7 @@
 <html lang="{{ $invoice->language }}">
 <head>
     <meta charset="utf-8">
-    <title>{{ $documentTitle }} {{ $invoice->number }}</title>
+    <title>{{ $documentTitle }} {{ $invoice->number ?? __('invoice.draft') }}</title>
     <style>
         body { font-family: Helvetica, Arial, sans-serif; font-size: 12px; color: #1f2937; margin: 40px; }
         table { border-collapse: collapse; }
@@ -33,6 +33,7 @@
         table.totals td { padding: 4px; }
         table.totals td.num { text-align: right; }
         table.totals tr.total td { font-weight: bold; font-size: 14px; border-top: 2px solid #1f2937; }
+        .verifactu { margin-top: 16px; font-size: 9px; font-weight: bold; }
         .notes { margin-top: 40px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
         .notes h2 { font-size: 11px; text-transform: uppercase; color: #6b7280; margin: 0 0 4px; }
     </style>
@@ -48,7 +49,7 @@
                     <strong>{{ $invoice->company->name }}</strong><br>
                     {{ $invoice->company->address }}<br>
                     {{ $invoice->company->zip }} {{ $invoice->company->city }}, {{ $invoice->company->country?->name }}<br>
-                    {{ __('invoice.tax_id') }}: {{ $invoice->company->tax_id }}<br>
+                    {{ __('invoice.tax_id') }}: {{ $invoice->company->vat_number }}<br>
                     @if($invoice->company->iban)
                         {{ __('invoice.iban') }}: {{ $invoice->company->iban }}<br>
                     @endif
@@ -68,14 +69,17 @@
                     @if($invoice->customer->country)
                         {{ $invoice->customer->country->name }}<br>
                     @endif
-                    @if($invoice->customer->nif)
-                        {{ __('invoice.tax_id') }}: {{ $invoice->customer->nif }}<br>
+                    @if($invoice->customer->vat_number)
+                        {{ __('invoice.tax_id') }}: {{ $invoice->customer->vat_number }}<br>
+                    @endif
+                    @if($invoice->customer->tax_code)
+                        {{ __('invoice.tax_code') }}: {{ $invoice->customer->tax_code }}<br>
                     @endif
                 </div>
             </td>
             <td class="meta">
                 <h1>{{ $documentTitle }}</h1>
-                <div>{{ __('invoice.number') }}: {{ $invoice->number }}</div>
+                <div>{{ __('invoice.number') }}: {{ $invoice->number ?? __('invoice.draft') }}</div>
                 <div>{{ __('invoice.date') }}: {{ $invoice->invoice_date->format('d/m/Y') }}</div>
             </td>
         </tr>
@@ -118,6 +122,13 @@
             <td class="num">{{ number_format($invoice->total, 2) }}</td>
         </tr>
     </table>
+
+    @if($invoice->latestSubmission?->qr_code)
+        <div class="verifactu">
+            <img src="data:image/png;base64,{{ $invoice->latestSubmission->qr_code }}" alt="QR" width="120" height="120">
+            <div>VERI*FACTU</div>
+        </div>
+    @endif
 
     @if($invoice->note)
         <div id="notes" class="notes">

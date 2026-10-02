@@ -359,7 +359,7 @@ test('the spoofed PUT from the edit page also works when no file is attached', f
     $response = $this->actingAs($user)->postJson(route('companies.update', $company), [
         '_method' => 'put',
         'name' => 'New Name',
-        'tax_id' => 'X123',
+        'vat_number' => 'X123',
         'address' => 'Main Street 1',
         'zip' => '08001',
         'city' => 'Barcelona',
@@ -384,7 +384,7 @@ test('company can be created with the real frontend payload shape (blank optiona
 
     $response = $this->actingAs($user)->post(route('companies.store'), [
         'name' => 'Acme Corp',
-        'tax_id' => '',
+        'vat_number' => '',
         'address' => '',
         'zip' => '',
         'city' => '',
@@ -399,7 +399,7 @@ test('company can be created with the real frontend payload shape (blank optiona
 
     $company = Company::query()->where('name', 'Acme Corp')->firstOrFail();
     expect($company->country_id)->toBeNull();
-    expect($company->tax_id)->toBeNull();
+    expect($company->vat_number)->toBeNull();
     expect($company->address)->toBeNull();
     expect($company->zip)->toBeNull();
     expect($company->city)->toBeNull();
@@ -415,7 +415,7 @@ test('company can be updated with the real frontend payload shape (blank optiona
     $response = $this->actingAs($user)->post(route('companies.update', $company), [
         '_method' => 'put',
         'name' => 'Acme Corp',
-        'tax_id' => '',
+        'vat_number' => '',
         'address' => '',
         'zip' => '',
         'city' => '',
@@ -431,7 +431,7 @@ test('company can be updated with the real frontend payload shape (blank optiona
 
     $company->refresh();
     expect($company->country_id)->toBeNull();
-    expect($company->tax_id)->toBeNull();
+    expect($company->vat_number)->toBeNull();
     expect($company->city)->toBeNull();
 });
 
@@ -448,4 +448,94 @@ test('updating a company to be the default unsets the previous default', functio
     $response->assertSessionHasNoErrors()->assertRedirect(route('companies.index'));
     expect($company->fresh()->is_default)->toBeTrue();
     expect($previousDefault->fresh()->is_default)->toBeFalse();
+});
+
+test('company fiscal fields are stored', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->post(route('companies.store'), [
+        'name' => 'ACME',
+        'vat_number' => 'IT01234567890',
+        'tax_code' => 'RSSMRA80A01H501U',
+        'province' => 'RM',
+        'country_id' => Country::factory()->italy()->create()->id,
+        'fiscal_details' => ['tax_regime' => 'RF01'],
+    ])->assertRedirect(route('companies.index'));
+
+    $company = Company::query()->where('name', 'ACME')->firstOrFail();
+    expect($company->vat_number)->toBe('IT01234567890');
+    expect($company->tax_code)->toBe('RSSMRA80A01H501U');
+    expect($company->province)->toBe('RM');
+    expect($company->fiscal_details)->toBe(['tax_regime' => 'RF01']);
+});
+
+test('italian company fiscal details are validated', function () {
+    $italy = Country::factory()->italy()->create();
+
+    $this->actingAs(User::factory()->create())->post(route('companies.store'), [
+        'name' => 'ACME',
+        'country_id' => $italy->id,
+        'fiscal_details' => ['tax_regime' => 'RF99'],
+    ])->assertSessionHasErrors('fiscal_details.tax_regime');
+});
+
+test('unknown fiscal detail keys are rejected', function () {
+    $italy = Country::factory()->italy()->create();
+
+    $this->actingAs(User::factory()->create())->post(route('companies.store'), [
+        'name' => 'ACME',
+        'country_id' => $italy->id,
+        'fiscal_details' => ['tax_regime' => 'RF01', 'hack' => 'x'],
+    ])->assertSessionHasErrors('fiscal_details');
+});
+
+test('company in a country without fiscal rules rejects fiscal details but saves without them', function () {
+    $country = Country::factory()->create(['iso_code' => 'FR']);
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->post(route('companies.store'), [
+        'name' => 'ACME',
+        'country_id' => $country->id,
+        'fiscal_details' => ['tax_regime' => 'RF01'],
+    ])->assertSessionHasErrors('fiscal_details');
+
+    $this->actingAs($user)->post(route('companies.store'), [
+        'name' => 'ACME',
+        'country_id' => $country->id,
+        'fiscal_details' => [],
+    ])->assertSessionHasNoErrors();
+
+    expect(Company::query()->where('name', 'ACME')->firstOrFail()->fiscal_details)->toBeNull();
+});
+
+test('blank fiscal detail values are stripped', function () {
+    $italy = Country::factory()->italy()->create();
+
+    $this->actingAs(User::factory()->create())->post(route('companies.store'), [
+        'name' => 'ACME',
+        'country_id' => $italy->id,
+        'fiscal_details' => ['tax_regime' => '', 'rea_office' => ''],
+    ])->assertSessionHasNoErrors();
+
+    expect(Company::query()->where('name', 'ACME')->firstOrFail()->fiscal_details)->toBeNull();
+});
+
+test('italian fiscal details are validated and stored when updating a company', function () {
+    $italy = Country::factory()->italy()->create();
+    $company = Company::factory()->create(['country_id' => $italy->id]);
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->put(route('companies.update', $company), [
+        'name' => 'ACME',
+        'country_id' => $italy->id,
+        'fiscal_details' => ['tax_regime' => 'RF99'],
+    ])->assertSessionHasErrors('fiscal_details.tax_regime');
+
+    $this->actingAs($user)->put(route('companies.update', $company), [
+        'name' => 'ACME',
+        'country_id' => $italy->id,
+        'fiscal_details' => ['tax_regime' => 'RF19'],
+    ])->assertSessionHasNoErrors();
+
+    expect($company->fresh()->fiscal_details)->toBe(['tax_regime' => 'RF19']);
 });

@@ -2,10 +2,15 @@
 
 namespace App\Http\Requests;
 
+use App\EInvoicing\CountryComplianceResolver;
+use App\Http\Requests\Concerns\ValidatesFiscalDetails;
+use App\Support\CurrentCompany;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateCustomerRequest extends FormRequest
 {
+    use ValidatesFiscalDetails;
+
     public function authorize(): bool
     {
         return true;
@@ -26,7 +31,24 @@ class UpdateCustomerRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:255'],
             'web' => ['nullable', 'url', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
-            'nif' => ['nullable', 'string', 'max:50'],
+            'vat_number' => ['nullable', 'string', 'max:50'],
+            'tax_code' => ['nullable', 'string', 'max:50'],
+            ...$this->fiscalDetailsRules($this->customerFiscalRules()),
         ];
+    }
+
+    /**
+     * @return array<string, array<mixed>>
+     */
+    private function customerFiscalRules(): array
+    {
+        $company = CurrentCompany::resolve();
+
+        return ($company ? CountryComplianceResolver::forCompany($company) : CountryComplianceResolver::forIsoCode(null))->customerFiscalRules();
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge($this->withoutBlankFiscalDetails());
     }
 }

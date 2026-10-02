@@ -7,7 +7,6 @@ use App\Mail\InvoiceMail;
 use App\Models\Invoice;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\Type;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -51,7 +50,7 @@ class SendInvoiceEmailTool extends Tool
 
         Mail::to($mailData['to'])->send(new InvoiceMail($invoice, $mailData['subject'], $mailData['message']));
 
-        $invoice->sent_at = Carbon::now();
+        $invoice->sent_at = now();
         $invoice->sent_to = $mailData['to'];
         $invoice->save();
 

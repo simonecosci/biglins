@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\InvoiceStatus;
 use App\Enums\InvoiceType;
+use Carbon\CarbonImmutable;
 use Database\Factories\InvoiceFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -11,19 +13,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
  * @property string $id
- * @property string $number
+ * @property string|null $number
  * @property InvoiceType $type
- * @property Carbon $invoice_date
+ * @property InvoiceStatus $status
+ * @property CarbonImmutable|null $issued_at
+ * @property CarbonImmutable $invoice_date
  * @property bool $paid
  * @property string $customer_id
  * @property string $company_id
  * @property string|null $note
  * @property string $language
- * @property Carbon|null $sent_at
+ * @property CarbonImmutable|null $sent_at
  * @property string|null $sent_to
  * @property-read float $subtotal
  * @property-read float $vat_total
@@ -51,6 +56,8 @@ class Invoice extends Model
     {
         return [
             'type' => InvoiceType::class,
+            'status' => InvoiceStatus::class,
+            'issued_at' => 'datetime',
             'invoice_date' => 'date:Y-m-d',
             'paid' => 'boolean',
             'sent_at' => 'datetime',
@@ -60,12 +67,12 @@ class Invoice extends Model
     protected static function booted(): void
     {
         static::creating(function (Invoice $invoice): void {
-            if (! $invoice->number) {
-                $invoice->number = static::nextNumber($invoice->company_id);
-            }
-
             if (! ($invoice->getAttributes()['type'] ?? null)) {
                 $invoice->type = InvoiceType::Invoice;
+            }
+
+            if (! ($invoice->getAttributes()['status'] ?? null)) {
+                $invoice->status = InvoiceStatus::Draft;
             }
         });
     }
@@ -73,6 +80,16 @@ class Invoice extends Model
     public function isCreditNote(): bool
     {
         return $this->type === InvoiceType::CreditNote;
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->status === InvoiceStatus::Issued;
+    }
+
+    public function displayNumber(): string
+    {
+        return $this->number ?? __('Draft');
     }
 
     public static function nextNumber(string $companyId, ?string $year = null): string
@@ -140,6 +157,22 @@ class Invoice extends Model
                 return $lineTotal * (float) $row->vat_rate / 100;
             }),
         );
+    }
+
+    /**
+     * @return HasMany<InvoiceSubmission, $this>
+     */
+    public function submissions(): HasMany
+    {
+        return $this->hasMany(InvoiceSubmission::class);
+    }
+
+    /**
+     * @return HasOne<InvoiceSubmission, $this>
+     */
+    public function latestSubmission(): HasOne
+    {
+        return $this->hasOne(InvoiceSubmission::class)->latestOfMany(['created_at', 'id']);
     }
 
     /**

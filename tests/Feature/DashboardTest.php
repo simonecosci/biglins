@@ -94,16 +94,19 @@ test('dashboard shares year-to-date revenue for the current company only', funct
     $company = Company::factory()->create(['is_default' => true]);
     $otherCompany = Company::factory()->create();
 
-    $inYear = Invoice::factory()->create(['company_id' => $company->id, 'invoice_date' => '2026-02-01']);
+    $inYear = Invoice::factory()->issued()->create(['company_id' => $company->id, 'invoice_date' => '2026-02-01']);
     InvoiceRow::factory()->create(['invoice_id' => $inYear->id, 'quantity' => 1, 'price' => 100, 'vat_rate' => 22]);
 
-    $alsoInYear = Invoice::factory()->create(['company_id' => $company->id, 'invoice_date' => '2026-08-13', 'paid' => false]);
+    $alsoInYear = Invoice::factory()->issued()->create(['company_id' => $company->id, 'invoice_date' => '2026-08-13', 'paid' => false]);
     InvoiceRow::factory()->create(['invoice_id' => $alsoInYear->id, 'quantity' => 1, 'price' => 50, 'vat_rate' => 0]);
 
-    $lastYear = Invoice::factory()->create(['company_id' => $company->id, 'invoice_date' => '2025-12-31']);
+    $draft = Invoice::factory()->draft()->create(['company_id' => $company->id, 'invoice_date' => '2026-03-01']);
+    InvoiceRow::factory()->create(['invoice_id' => $draft->id, 'quantity' => 1, 'price' => 777, 'vat_rate' => 0]);
+
+    $lastYear = Invoice::factory()->issued()->create(['company_id' => $company->id, 'invoice_date' => '2025-12-31']);
     InvoiceRow::factory()->create(['invoice_id' => $lastYear->id, 'quantity' => 1, 'price' => 9999, 'vat_rate' => 22]);
 
-    $otherCompanyInvoice = Invoice::factory()->create(['company_id' => $otherCompany->id, 'invoice_date' => '2026-05-01']);
+    $otherCompanyInvoice = Invoice::factory()->issued()->create(['company_id' => $otherCompany->id, 'invoice_date' => '2026-05-01']);
     InvoiceRow::factory()->create(['invoice_id' => $otherCompanyInvoice->id, 'quantity' => 1, 'price' => 5000, 'vat_rate' => 22]);
 
     $response = $this->actingAs($user)->get(route('dashboard'));

@@ -2,12 +2,16 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidatesVatExemptionCodes;
+use App\Models\Invoice;
 use App\Support\CurrentCompany;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class UpdateInvoiceRequest extends FormRequest
 {
+    use ValidatesVatExemptionCodes;
+
     public function authorize(): bool
     {
         return true;
@@ -18,13 +22,16 @@ class UpdateInvoiceRequest extends FormRequest
      */
     public function rules(): array
     {
+        $invoice = $this->route('invoice');
+
+        if ($invoice instanceof Invoice && $invoice->isLocked()) {
+            return [
+                'paid' => ['boolean'],
+                'note' => ['nullable', 'string'],
+            ];
+        }
+
         return [
-            'number' => [
-                'nullable', 'string', 'max:20',
-                Rule::unique('invoices', 'number')
-                    ->where('company_id', CurrentCompany::resolve()?->id)
-                    ->ignore($this->route('invoice')),
-            ],
             'type' => ['sometimes', 'string', Rule::in(['invoice', 'credit_note'])],
             'invoice_date' => ['required', 'date'],
             'paid' => ['boolean'],
@@ -40,6 +47,7 @@ class UpdateInvoiceRequest extends FormRequest
             'rows.*.quantity' => ['required', 'numeric', 'min:0.01'],
             'rows.*.price' => ['required', 'numeric', 'min:0'],
             'rows.*.vat_rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'rows.*.vat_exemption_code' => ['nullable', 'string', 'max:10', ...$this->vatExemptionCodeRule()],
             'rows.*.expiration_date' => ['nullable', 'date'],
             'rows.*.subscription_status' => ['nullable', Rule::in(['active', 'cancelled'])],
         ];

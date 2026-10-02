@@ -349,8 +349,12 @@ const messages: MessageSchema = {
             title: 'Nuova azienda',
             description: "Aggiungi un'azienda emittente all'anagrafica",
             namePlaceholder: 'Nome azienda',
-            taxId: 'Partita IVA',
-            taxIdPlaceholder: 'Numero identificativo fiscale',
+            vatNumber: 'Partita IVA',
+            vatNumberPlaceholder: 'Numero identificativo fiscale',
+            taxCode: 'Codice fiscale',
+            taxCodePlaceholder: 'Codice fiscale',
+            province: 'Provincia',
+            provincePlaceholder: 'Provincia',
             addressPlaceholder: 'Indirizzo',
             zipPlaceholder: 'CAP',
             cityPlaceholder: 'Città',
@@ -370,6 +374,33 @@ const messages: MessageSchema = {
                 "Eliminare questa azienda? L'azione non può essere annullata.",
             deleteButton: 'Elimina azienda',
         },
+        eInvoicing: {
+            title: 'Fatturazione elettronica',
+            description:
+                'Collega {name} a un provider di fatturazione elettronica accreditato.',
+            driver: 'Provider',
+            environment: 'Ambiente',
+            environments: {
+                sandbox: 'Sandbox',
+                staging: 'Staging',
+                production: 'Produzione',
+            },
+            active: 'Attiva',
+            credentials: {
+                api_key: 'Chiave API',
+                account_id: 'ID account',
+                webhook_signing_secret: 'Segreto di firma del webhook',
+            },
+            credentialSet: 'Salvata — lascia vuoto per mantenerla',
+            testConnection: 'Verifica connessione',
+            webhookUrl: 'URL del webhook',
+            webhookHint:
+                'Registra questo URL come webhook nella dashboard del provider per ricevere gli aggiornamenti di stato.',
+            copy: 'Copia',
+            copied: 'Copiato',
+            unsupportedCountry:
+                "La fatturazione elettronica è disponibile per le aziende con sede in Italia o Spagna. Imposta prima il paese dell'azienda.",
+        },
     },
     companySwitcher: {
         label: 'Azienda',
@@ -382,6 +413,9 @@ const messages: MessageSchema = {
             newButton: 'Nuovo paese',
             searchPlaceholder: 'Cerca paesi...',
             column: 'Nome',
+            columns: {
+                isoCode: 'ISO',
+            },
             empty: 'Nessun paese trovato.',
         },
         create: {
@@ -389,6 +423,7 @@ const messages: MessageSchema = {
             description:
                 'Aggiungi un paese alla lista disponibile per i clienti',
             namePlaceholder: 'Nome del paese',
+            isoCode: 'Codice ISO',
         },
         edit: {
             title: 'Modifica paese',
@@ -424,8 +459,10 @@ const messages: MessageSchema = {
             emailPlaceholder: 'Indirizzo email',
             website: 'Sito web',
             phonePlaceholder: 'Numero di telefono',
-            taxId: 'Codice fiscale',
-            taxIdPlaceholder: 'Numero identificativo fiscale',
+            vatNumber: 'Partita IVA',
+            vatNumberPlaceholder: 'Numero identificativo fiscale',
+            taxCode: 'Codice fiscale',
+            taxCodePlaceholder: 'Codice fiscale',
         },
         edit: {
             title: 'Modifica cliente',
@@ -436,18 +473,26 @@ const messages: MessageSchema = {
         },
     },
     invoices: {
+        status: { draft: 'Bozza', issued: 'Emessa' },
         type: { invoice: 'Fattura', credit_note: 'Nota di credito' },
         index: {
             title: 'Fatture',
             description: 'Gestisci le tue fatture',
             newButton: 'Nuova fattura',
             searchPlaceholder: 'Cerca per numero o cliente...',
+            statusFilter: {
+                label: 'Filtra per stato',
+                all: 'Tutti gli stati',
+                draft: 'Bozza',
+                issued: 'Emessa',
+            },
             columns: {
                 number: 'Numero',
                 date: 'Data',
                 customer: 'Cliente',
                 type: 'Tipo',
                 paid: 'Pagata',
+                submission: 'Invio',
                 total: 'Totale',
             },
             paid: 'Pagata',
@@ -489,8 +534,36 @@ const messages: MessageSchema = {
             confirmDelete:
                 "Eliminare questa fattura? L'azione non può essere annullata.",
             deleteButton: 'Elimina fattura',
+            issueAndSubmitButton: 'Emetti e invia',
+            saveBeforeIssue: 'Salva le modifiche prima di emettere.',
+            issueButton: 'Emetti',
+            confirmIssue:
+                'Una volta emessa, la fattura riceve il suo numero e non può più essere modificata. Continuare?',
+            lockedNotice:
+                'Questa fattura è stata emessa: possono essere modificati solo lo stato di pagamento e la nota.',
             send: 'Invia via email',
         },
+    },
+    invoiceSubmissions: {
+        title: 'Invio elettronico',
+        status: {
+            pending: 'In coda',
+            failed: 'Errore',
+            submitted: 'Inviata',
+            rejected: 'Scartata',
+            accepted: 'Accettata',
+            delivered: 'Consegnata',
+            not_delivered: 'Non consegnata',
+        },
+        alerts: {
+            failed: "Il provider ha rifiutato la fattura prima che raggiungesse l'autorità fiscale. Correggi i dati ed emettila di nuovo.",
+            rejected: "L'autorità fiscale ha scartato la fattura.",
+            not_delivered:
+                "La fattura è stata emessa ma non è stato possibile consegnarla: è disponibile nell'area fiscale del cliente. Invia una copia di cortesia via email.",
+        },
+        refresh: 'Aggiorna stato',
+        retry: 'Riprova',
+        authorityId: 'ID autorità',
     },
     estimations: {
         status: {
@@ -558,6 +631,58 @@ const messages: MessageSchema = {
                 confirmDelete: 'Eliminare questo allegato?',
             },
         },
+    },
+    fiscalDetails: {
+        title: 'Dati fiscali',
+        fields: {
+            tax_regime: 'Regime fiscale',
+            rea_office: 'Ufficio REA',
+            rea_number: 'Numero REA',
+            share_capital: 'Capitale sociale',
+            liquidation_status: 'Stato di liquidazione',
+            recipient_code: 'Codice destinatario (SDI)',
+            pec: 'PEC',
+            special_regime: 'Regime speciale',
+            id_type: 'Tipo di identificativo',
+        },
+        options: {
+            tax_regime: {
+                RF01: 'Ordinario',
+                RF02: 'Contribuenti minimi',
+                RF04: 'Agricoltura e attività connesse e pesca',
+                RF05: 'Vendita sali e tabacchi',
+                RF06: 'Commercio fiammiferi',
+                RF07: 'Editoria',
+                RF08: 'Gestione servizi telefonia pubblica',
+                RF09: 'Rivendita documenti di trasporto pubblico e di sosta',
+                RF10: 'Intrattenimenti, giochi e altre attività',
+                RF11: 'Agenzie viaggi e turismo',
+                RF12: 'Agriturismo',
+                RF13: 'Vendite a domicilio',
+                RF14: "Rivendita beni usati, oggetti d'arte, antiquariato",
+                RF15: "Agenzie di vendite all'asta",
+                RF16: 'IVA per cassa P.A.',
+                RF17: 'IVA per cassa',
+                RF18: 'Altro',
+                RF19: 'Forfettario',
+            },
+            liquidation_status: {
+                LS: 'In liquidazione',
+                LN: 'Non in liquidazione',
+            },
+            id_type: {
+                '02': 'NIF-IVA',
+                '03': 'Passaporto',
+                '04': 'Documento ufficiale di identità del paese di residenza',
+                '05': 'Certificato di residenza',
+                '06': 'Altro documento',
+                '07': 'Non censito',
+            },
+        },
+    },
+    vatExemption: {
+        label: 'Natura esenzione',
+        placeholder: 'Seleziona…',
     },
     productPicker: {
         title: 'Scegli un prodotto',

@@ -36,7 +36,7 @@ class CompanyController extends Controller
     public function create(): Response
     {
         return Inertia::render('companies/Create', [
-            'countries' => Country::query()->orderBy('name')->get(['id', 'name']),
+            'countries' => Country::query()->orderBy('name')->get(['id', 'name', 'iso_code']),
         ]);
     }
 
@@ -68,7 +68,7 @@ class CompanyController extends Controller
     {
         return Inertia::render('companies/Edit', [
             'company' => $company,
-            'countries' => Country::query()->orderBy('name')->get(['id', 'name']),
+            'countries' => Country::query()->orderBy('name')->get(['id', 'name', 'iso_code']),
         ]);
     }
 

@@ -354,8 +354,12 @@ const messages: MessageSchema = {
             title: 'Nueva empresa',
             description: 'Añade una empresa emisora al registro',
             namePlaceholder: 'Nombre de la empresa',
-            taxId: 'NIF',
-            taxIdPlaceholder: 'Número de identificación fiscal',
+            vatNumber: 'NIF-IVA',
+            vatNumberPlaceholder: 'Número de identificación fiscal',
+            taxCode: 'NIF',
+            taxCodePlaceholder: 'NIF',
+            province: 'Provincia',
+            provincePlaceholder: 'Provincia',
             addressPlaceholder: 'Dirección',
             zipPlaceholder: 'Código postal',
             cityPlaceholder: 'Ciudad',
@@ -375,6 +379,33 @@ const messages: MessageSchema = {
                 '¿Eliminar esta empresa? Esta acción no se puede deshacer.',
             deleteButton: 'Eliminar empresa',
         },
+        eInvoicing: {
+            title: 'Facturación electrónica',
+            description:
+                'Conecta {name} con un proveedor de facturación electrónica acreditado.',
+            driver: 'Proveedor',
+            environment: 'Entorno',
+            environments: {
+                sandbox: 'Sandbox',
+                staging: 'Staging',
+                production: 'Producción',
+            },
+            active: 'Activada',
+            credentials: {
+                api_key: 'Clave API',
+                account_id: 'ID de cuenta',
+                webhook_signing_secret: 'Secreto de firma del webhook',
+            },
+            credentialSet: 'Guardada — déjalo en blanco para conservarla',
+            testConnection: 'Probar conexión',
+            webhookUrl: 'URL del webhook',
+            webhookHint:
+                'Registra esta URL como webhook en el panel del proveedor para recibir las actualizaciones de estado.',
+            copy: 'Copiar',
+            copied: 'Copiado',
+            unsupportedCountry:
+                'La facturación electrónica está disponible para empresas con sede en Italia o España. Establece primero el país de la empresa.',
+        },
     },
     companySwitcher: {
         label: 'Empresa',
@@ -387,6 +418,9 @@ const messages: MessageSchema = {
             newButton: 'Nuevo país',
             searchPlaceholder: 'Buscar países...',
             column: 'Nombre',
+            columns: {
+                isoCode: 'ISO',
+            },
             empty: 'No se encontraron países.',
         },
         create: {
@@ -394,6 +428,7 @@ const messages: MessageSchema = {
             description:
                 'Añade un país a la lista disponible para los clientes',
             namePlaceholder: 'Nombre del país',
+            isoCode: 'Código ISO',
         },
         edit: {
             title: 'Editar país',
@@ -429,8 +464,10 @@ const messages: MessageSchema = {
             emailPlaceholder: 'Correo electrónico',
             website: 'Sitio web',
             phonePlaceholder: 'Número de teléfono',
-            taxId: 'NIF',
-            taxIdPlaceholder: 'Número de identificación fiscal',
+            vatNumber: 'NIF-IVA',
+            vatNumberPlaceholder: 'Número de identificación fiscal',
+            taxCode: 'NIF',
+            taxCodePlaceholder: 'NIF',
         },
         edit: {
             title: 'Editar cliente',
@@ -441,18 +478,26 @@ const messages: MessageSchema = {
         },
     },
     invoices: {
+        status: { draft: 'Borrador', issued: 'Emitida' },
         type: { invoice: 'Factura', credit_note: 'Nota de crédito' },
         index: {
             title: 'Facturas',
             description: 'Gestiona tus facturas',
             newButton: 'Nueva factura',
             searchPlaceholder: 'Buscar por número o cliente...',
+            statusFilter: {
+                label: 'Filtrar por estado',
+                all: 'Todos los estados',
+                draft: 'Borrador',
+                issued: 'Emitida',
+            },
             columns: {
                 number: 'Número',
                 date: 'Fecha',
                 customer: 'Cliente',
                 type: 'Tipo',
                 paid: 'Pagada',
+                submission: 'Envío',
                 total: 'Total',
             },
             paid: 'Pagada',
@@ -494,8 +539,36 @@ const messages: MessageSchema = {
             confirmDelete:
                 '¿Eliminar esta factura? Esta acción no se puede deshacer.',
             deleteButton: 'Eliminar factura',
+            issueAndSubmitButton: 'Emitir y enviar',
+            saveBeforeIssue: 'Guarda los cambios antes de emitir.',
+            issueButton: 'Emitir',
+            confirmIssue:
+                'Una vez emitida, la factura recibe su número y ya no se puede modificar. ¿Continuar?',
+            lockedNotice:
+                'Esta factura ha sido emitida: solo se pueden modificar el estado de pago y la nota.',
             send: 'Enviar por email',
         },
+    },
+    invoiceSubmissions: {
+        title: 'Envío electrónico',
+        status: {
+            pending: 'En cola',
+            failed: 'Error',
+            submitted: 'Enviada',
+            rejected: 'Rechazada',
+            accepted: 'Aceptada',
+            delivered: 'Entregada',
+            not_delivered: 'No entregada',
+        },
+        alerts: {
+            failed: 'El proveedor rechazó la factura antes de que llegara a la autoridad fiscal. Corrige los datos y emítela de nuevo.',
+            rejected: 'La autoridad fiscal rechazó la factura.',
+            not_delivered:
+                'La factura se emitió pero no pudo entregarse: está disponible en el área fiscal del cliente. Envíale una copia de cortesía por correo.',
+        },
+        refresh: 'Actualizar estado',
+        retry: 'Reintentar',
+        authorityId: 'ID de la autoridad',
     },
     estimations: {
         status: {
@@ -562,6 +635,58 @@ const messages: MessageSchema = {
                 confirmDelete: '¿Eliminar este archivo adjunto?',
             },
         },
+    },
+    fiscalDetails: {
+        title: 'Datos fiscales',
+        fields: {
+            tax_regime: 'Régimen fiscal',
+            rea_office: 'Oficina REA',
+            rea_number: 'Número REA',
+            share_capital: 'Capital social',
+            liquidation_status: 'Estado de liquidación',
+            recipient_code: 'Código destinatario (SDI)',
+            pec: 'PEC',
+            special_regime: 'Régimen especial',
+            id_type: 'Tipo de identificación',
+        },
+        options: {
+            tax_regime: {
+                RF01: 'Ordinario',
+                RF02: 'Contribuenti minimi',
+                RF04: 'Agricoltura e attività connesse e pesca',
+                RF05: 'Vendita sali e tabacchi',
+                RF06: 'Commercio fiammiferi',
+                RF07: 'Editoria',
+                RF08: 'Gestione servizi telefonia pubblica',
+                RF09: 'Rivendita documenti di trasporto pubblico e di sosta',
+                RF10: 'Intrattenimenti, giochi e altre attività',
+                RF11: 'Agenzie viaggi e turismo',
+                RF12: 'Agriturismo',
+                RF13: 'Vendite a domicilio',
+                RF14: "Rivendita beni usati, oggetti d'arte, antiquariato",
+                RF15: "Agenzie di vendite all'asta",
+                RF16: 'IVA per cassa P.A.',
+                RF17: 'IVA per cassa',
+                RF18: 'Altro',
+                RF19: 'Forfettario',
+            },
+            liquidation_status: {
+                LS: 'En liquidación',
+                LN: 'No en liquidación',
+            },
+            id_type: {
+                '02': 'NIF-IVA',
+                '03': 'Pasaporte',
+                '04': 'Documento oficial de identificación del país de residencia',
+                '05': 'Certificado de residencia',
+                '06': 'Otro documento',
+                '07': 'No censado',
+            },
+        },
+    },
+    vatExemption: {
+        label: 'Causa de exención',
+        placeholder: 'Seleccionar…',
     },
     productPicker: {
         title: 'Elige un producto',

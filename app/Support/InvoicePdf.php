@@ -14,12 +14,14 @@ class InvoicePdf
         App::setLocale($invoice->language);
 
         return Pdf::loadView('invoices.template', [
-            'invoice' => $invoice->load(['customer.country', 'company.country', 'rows']),
+            'invoice' => $invoice->load(['customer.country', 'company.country', 'rows', 'latestSubmission']),
         ]);
     }
 
     public static function filename(Invoice $invoice): string
     {
-        return str_replace(['/', '\\'], '-', $invoice->number).'.pdf';
+        return $invoice->number === null
+            ? 'draft-'.$invoice->id.'.pdf'
+            : str_replace(['/', '\\'], '-', $invoice->number).'.pdf';
     }
 }

@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\EInvoicing\CountryComplianceResolver;
+use App\EInvoicing\Enums\SubmissionStatus;
+use App\EInvoicing\SubmissionStatusRefresher;
+use App\Enums\InvoiceStatus;
 use App\Enums\InvoiceType;
 use App\Http\Controllers\Concerns\ScopesToCurrentCompany;
 use App\Http\Requests\SendInvoiceRequest;
@@ -17,8 +21,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
@@ -31,22 +35,34 @@ class InvoiceController extends Controller
     public function index(Request $request): Response
     {
         $search = $request->string('search')->trim()->toString();
+        $status = InvoiceStatus::tryFrom($request->string('status')->toString());
         $currentCompanyId = CurrentCompany::resolve()?->id;
 
         $invoices = Invoice::query()
-            ->with(['customer', 'rows'])
+            ->with(['customer', 'rows', 'latestSubmission'])
             ->where('company_id', $currentCompanyId)
+            ->when($status !== null, fn ($query) => $query->where('status', $status))
             ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
                 $query->where('number', 'like', "%{$search}%")
                     ->orWhereHas('customer', fn ($query) => $query->where('name', 'like', "%{$search}%"));
             }))
+            ->orderByRaw('number is null desc')
             ->orderByDesc('number')
+            ->orderByDesc('created_at')
             ->paginate(15)
-            ->withQueryString();
+            ->withQueryString()
+            ->through(fn (Invoice $invoice): array => [
+                ...$invoice->withoutRelations()->toArray(),
+                'customer' => $invoice->customer,
+                'rows' => $invoice->rows,
+                'latest_submission' => $invoice->latestSubmission
+                    ? ['status' => $invoice->latestSubmission->status->value]
+                    : null,
+            ]);
 
         return Inertia::render('invoices/Index', [
             'invoices' => $invoices,
-            'filters' => ['search' => $search],
+            'filters' => ['search' => $search, 'status' => $status->value ?? ''],
         ]);
     }
 
@@ -66,7 +82,7 @@ class InvoiceController extends Controller
 
         return Inertia::render('invoices/Create', [
             'customers' => Customer::query()->where('company_id', $currentCompany->id)->orderBy('name')->get(['id', 'name']),
-            'nextNumber' => Invoice::nextNumber($currentCompany->id),
+            'vatExemptionCodes' => CountryComplianceResolver::forCompany($currentCompany)->vatExemptionCodes(),
             'duplicate' => $source ? [
                 // A customer from another company would not be selectable here, so it is only
                 // carried over when duplicating within the same company.
@@ -79,6 +95,7 @@ class InvoiceController extends Controller
                     'quantity' => $row->quantity,
                     'price' => $source->isCreditNote() ? abs($row->price) : $row->price,
                     'vat_rate' => $row->vat_rate,
+                    'vat_exemption_code' => $row->vat_exemption_code,
                     'expiration_date' => $row->expiration_date?->format('Y-m-d'),
                 ])->all(),
             ] : null,
@@ -114,6 +131,15 @@ class InvoiceController extends Controller
     {
         $this->authorizeCurrentCompany($invoice);
 
+        $latestSubmission = $invoice->latestSubmission()->first();
+
+        if (config('nativephp-internal.running')
+            && $latestSubmission?->status === SubmissionStatus::Submitted
+            && Cache::add("einvoicing:refresh:{$latestSubmission->id}", true, 300)) {
+            rescue(fn () => app(SubmissionStatusRefresher::class)->refresh($latestSubmission), report: true);
+            $invoice->refresh();
+        }
+
         $invoice->load('rows');
 
         if ($invoice->isCreditNote()) {
@@ -122,13 +148,30 @@ class InvoiceController extends Controller
 
         return Inertia::render('invoices/Edit', [
             'invoice' => $invoice,
+            'isLocked' => $invoice->isLocked(),
             'customers' => Customer::query()->where('company_id', $invoice->company_id)->orderBy('name')->get(['id', 'name', 'email']),
+            'vatExemptionCodes' => CountryComplianceResolver::forCompany($invoice->company)->vatExemptionCodes(),
+            'submissions' => $invoice->submissions()
+                ->with('events:id,submission_id,type,received_at')
+                ->latest()
+                ->latest('id')
+                ->limit(20)
+                ->get(['id', 'invoice_id', 'status', 'provider_status', 'authority_id', 'error_message', 'submitted_at', 'completed_at', 'created_at']),
+            'requiresSubmission' => CountryComplianceResolver::forCompany($invoice->company)->requiresSubmission(),
         ]);
     }
 
     public function update(UpdateInvoiceRequest $request, Invoice $invoice): RedirectResponse
     {
         $this->authorizeCurrentCompany($invoice);
+
+        if ($invoice->isLocked()) {
+            $invoice->update($request->safe()->only(['paid', 'note']));
+
+            Inertia::flash('toast', ['type' => 'success', 'message' => __('Invoice updated.')]);
+
+            return to_route('invoices.edit', $invoice);
+        }
 
         DB::transaction(function () use ($request, $invoice) {
             $invoice->update($request->safe()->except('rows'));
@@ -180,6 +223,18 @@ class InvoiceController extends Controller
     {
         $this->authorizeCurrentCompany($invoice);
 
+        if ($invoice->isLocked()) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('An issued invoice cannot be deleted.')]);
+
+            return to_route('invoices.edit', $invoice);
+        }
+
+        if ($invoice->number !== null) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('A numbered invoice cannot be deleted.')]);
+
+            return to_route('invoices.edit', $invoice);
+        }
+
         $invoice->delete();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Invoice deleted.')]);
@@ -192,7 +247,7 @@ class InvoiceController extends Controller
         App::setLocale($invoice->language);
 
         return view('invoices.template', [
-            'invoice' => $invoice->load(['customer.country', 'company.country', 'rows']),
+            'invoice' => $invoice->load(['customer.country', 'company.country', 'rows', 'latestSubmission']),
         ]);
     }
 
@@ -211,7 +266,7 @@ class InvoiceController extends Controller
             $request->string('message')->toString(),
         ));
 
-        $invoice->sent_at = Carbon::now();
+        $invoice->sent_at = now();
         $invoice->sent_to = $request->string('to')->toString();
         $invoice->save();
 

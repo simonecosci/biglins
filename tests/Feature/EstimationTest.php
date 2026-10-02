@@ -3,6 +3,7 @@
 use App\Enums\EstimationStatus;
 use App\Models\Attachment;
 use App\Models\Company;
+use App\Models\Country;
 use App\Models\Customer;
 use App\Models\Estimation;
 use App\Models\EstimationRow;
@@ -382,4 +383,11 @@ test('estimation preview omits the iban label when the company has none', functi
 
     $response->assertOk();
     $response->assertDontSee('IBAN');
+});
+
+test('estimation create page exposes the company vat exemption codes', function () {
+    Company::factory()->create(['is_default' => true, 'country_id' => Country::factory()->spain()]);
+
+    $this->actingAs(User::factory()->create())->get(route('estimations.create'))
+        ->assertInertia(fn ($page) => $page->where('vatExemptionCodes', ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'N1', 'N2']));
 });

@@ -54,7 +54,7 @@
                     <strong>{{ $estimation->company->name }}</strong><br>
                     {{ $estimation->company->address }}<br>
                     {{ $estimation->company->zip }} {{ $estimation->company->city }}, {{ $estimation->company->country?->name }}<br>
-                    {{ __('estimation.tax_id') }}: {{ $estimation->company->tax_id }}<br>
+                    {{ __('estimation.tax_id') }}: {{ $estimation->company->vat_number }}<br>
                     @if($estimation->company->iban)
                         {{ __('estimation.iban') }}: {{ $estimation->company->iban }}<br>
                     @endif
@@ -74,8 +74,11 @@
                     @if($estimation->customer->country)
                         {{ $estimation->customer->country->name }}<br>
                     @endif
-                    @if($estimation->customer->nif)
-                        {{ __('estimation.tax_id') }}: {{ $estimation->customer->nif }}<br>
+                    @if($estimation->customer->vat_number)
+                        {{ __('estimation.tax_id') }}: {{ $estimation->customer->vat_number }}<br>
+                    @endif
+                    @if($estimation->customer->tax_code)
+                        {{ __('estimation.tax_code') }}: {{ $estimation->customer->tax_code }}<br>
                     @endif
                 </div>
             </td>

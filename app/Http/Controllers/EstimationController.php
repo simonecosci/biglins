@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\EInvoicing\CountryComplianceResolver;
 use App\Enums\EstimationStatus;
 use App\Http\Controllers\Concerns\ScopesToCurrentCompany;
 use App\Http\Requests\SendEstimationRequest;
@@ -72,6 +73,7 @@ class EstimationController extends Controller
         return Inertia::render('estimations/Create', [
             'customers' => Customer::query()->where('company_id', $currentCompany->id)->orderBy('name')->get(['id', 'name']),
             'nextNumber' => Estimation::nextNumber($currentCompany->id),
+            'vatExemptionCodes' => CountryComplianceResolver::forCompany($currentCompany)->vatExemptionCodes(),
             'duplicate' => $source ? [
                 ...($source->company_id === $currentCompany->id ? ['customer_id' => $source->customer_id] : []),
                 'body' => $source->body,
@@ -81,6 +83,7 @@ class EstimationController extends Controller
                     'quantity' => $row->quantity,
                     'price' => $row->price,
                     'vat_rate' => $row->vat_rate,
+                    'vat_exemption_code' => $row->vat_exemption_code,
                     'note' => $row->note,
                 ])->all(),
             ] : null,
@@ -116,6 +119,7 @@ class EstimationController extends Controller
         return Inertia::render('estimations/Edit', [
             'estimation' => $estimation->load(['rows', 'attachments'])->append('is_expired'),
             'customers' => Customer::query()->where('company_id', $estimation->company_id)->orderBy('name')->get(['id', 'name', 'email']),
+            'vatExemptionCodes' => CountryComplianceResolver::forCompany($estimation->company)->vatExemptionCodes(),
         ]);
     }
 
@@ -203,6 +207,7 @@ class EstimationController extends Controller
                     'quantity' => $row->quantity,
                     'price' => $row->price,
                     'vat_rate' => $row->vat_rate,
+                    'vat_exemption_code' => $row->vat_exemption_code,
                 ]);
             }
 
