@@ -193,3 +193,20 @@ test('issue route reports a failed synchronous submission', function () {
     expect(session('inertia.flash_data.toast.type'))->toBe('error');
     expect(session('inertia.flash_data.toast.message'))->toContain('Bad payload');
 });
+
+test('a draft that already has an open submission cannot be issued again', function (SubmissionStatus $status) {
+    $invoice = spanishDraft();
+    $integration = EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id]);
+    $invoice->submissions()->create(['e_invoicing_integration_id' => $integration->id, 'driver' => $integration->driver, 'status' => $status]);
+
+    try {
+        app(IssueInvoice::class)->handle($invoice);
+        $this->fail('Expected a validation exception.');
+    } catch (ValidationException $exception) {
+        expect($exception->errors())->toHaveKey('invoice');
+    }
+
+    expect($invoice->submissions()->count())->toBe(1);
+    expect(FakeProvider::$sentInvoiceIds)->toBe([]);
+    expect($invoice->fresh()->status)->toBe(InvoiceStatus::Draft);
+})->with([SubmissionStatus::Pending, SubmissionStatus::Submitted]);

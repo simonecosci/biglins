@@ -13,7 +13,7 @@ class SubmissionResultRecorder
 {
     public function record(InvoiceSubmission $submission, SubmissionResult $result): InvoiceSubmission
     {
-        if ($submission->status->isFinal() && ! $result->status->isFinal()) {
+        if ($submission->status->isFinal()) {
             return $submission;
         }
 

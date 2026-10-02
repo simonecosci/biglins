@@ -77,3 +77,12 @@ test('known values are not erased and documents are stored', function () {
     expect($submission->external_id)->toBe('ext-1');
     Storage::disk('local')->assertExists($submission->payload_path);
 });
+
+test('a stale rejection after delivery does not reopen an italian invoice', function () {
+    $submission = submissionFor('IT', SubmissionStatus::Delivered);
+
+    app(SubmissionResultRecorder::class)->record($submission, new SubmissionResult(SubmissionStatus::Rejected, 'NS'));
+
+    expect($submission->fresh()->status)->toBe(SubmissionStatus::Delivered);
+    expect($submission->invoice->fresh()->status)->toBe(InvoiceStatus::Issued);
+});

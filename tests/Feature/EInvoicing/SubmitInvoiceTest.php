@@ -12,7 +12,9 @@ use App\Models\Company;
 use App\Models\Country;
 use App\Models\Invoice;
 use App\Models\InvoiceSubmission;
+use Illuminate\Bus\UniqueLock;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
+use Illuminate\Support\Facades\Cache;
 
 function pendingSubmission(): InvoiceSubmission
 {
@@ -74,4 +76,47 @@ test('the job is unique per submission and skips non pending submissions', funct
     $submission->update(['status' => SubmissionStatus::Submitted]);
     SubmitInvoice::dispatchSync($submission);
     expect(FakeProvider::$sentInvoiceIds)->toBe([]);
+});
+
+test('the second attempt is released with the second backoff', function () {
+    FakeProvider::queueSendResult(new TransientProviderException('503'));
+    $job = (new SubmitInvoice(pendingSubmission()))->withFakeQueueInteractions();
+    $job->job->attempts = 2;
+
+    $job->handle(app(EInvoicingProviderFactory::class), app(SubmissionResultRecorder::class));
+
+    $job->assertReleased(delay: 300);
+});
+
+test('the last attempt fails the submission and returns the invoice to draft keeping the number', function () {
+    FakeProvider::queueSendResult(new TransientProviderException('503'));
+    $submission = pendingSubmission();
+    $job = (new SubmitInvoice($submission))->withFakeQueueInteractions();
+    $job->job->attempts = 3;
+
+    $job->handle(app(EInvoicingProviderFactory::class), app(SubmissionResultRecorder::class));
+
+    $job->assertNotReleased();
+    expect($submission->fresh()->status)->toBe(SubmissionStatus::Failed);
+    expect($submission->invoice->fresh()->status)->toBe(InvoiceStatus::Draft);
+    expect($submission->invoice->fresh()->number)->toBe('2026-0003');
+});
+
+test('the failed hook fails a pending submission', function () {
+    $submission = pendingSubmission();
+
+    (new SubmitInvoice($submission))->failed(new Exception('boom'));
+
+    expect($submission->fresh()->status)->toBe(SubmissionStatus::Failed);
+    expect($submission->fresh()->error_message)->toBe('boom');
+    expect($submission->invoice->fresh()->status)->toBe(InvoiceStatus::Draft);
+});
+
+test('a second job for the same submission cannot take the unique lock', function () {
+    $submission = pendingSubmission();
+    $lock = new UniqueLock(Cache::driver());
+
+    expect($lock->acquire(new SubmitInvoice($submission)))->toBeTrue();
+    expect($lock->acquire(new SubmitInvoice($submission)))->toBeFalse();
+    expect($lock->acquire(new SubmitInvoice(pendingSubmission())))->toBeTrue();
 });
