@@ -75,10 +75,18 @@ class FakeProvider implements EInvoicingProvider
             throw new InvalidWebhookSignature('Invalid fake webhook secret.');
         }
 
-        $status = SubmissionStatus::tryFrom((string) $request->input('status'));
-
-        if (! $request->filled(['event_id', 'external_id']) || $status === null) {
+        if (! $request->filled(['event_id', 'external_id'])) {
             return null;
+        }
+
+        $status = null;
+
+        if ($request->filled('status')) {
+            $status = SubmissionStatus::tryFrom((string) $request->input('status'));
+
+            if ($status === null) {
+                return null;
+            }
         }
 
         return new ProviderNotification(
@@ -86,7 +94,7 @@ class FakeProvider implements EInvoicingProvider
             externalId: $request->string('external_id')->toString(),
             type: 'status_change',
             payload: $request->all(),
-            result: new SubmissionResult($status, $request->input('provider_status'), $request->string('external_id')->toString()),
+            result: $status === null ? null : new SubmissionResult($status, $request->input('provider_status'), $request->string('external_id')->toString()),
         );
     }
 

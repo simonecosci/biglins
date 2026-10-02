@@ -43,10 +43,11 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('submission_id')->constrained('invoice_submissions')->cascadeOnDelete();
             $table->string('type');
-            $table->string('provider_event_id')->unique();
+            $table->string('provider_event_id');
             $table->json('payload');
             $table->dateTime('received_at');
             $table->timestamps();
+            $table->unique(['submission_id', 'provider_event_id']);
         });
     }
 

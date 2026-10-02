@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\EInvoicing\EInvoicingProviderFactory;
 use App\EInvoicing\Exceptions\InvalidWebhookSignature;
+use App\EInvoicing\Exceptions\TransientProviderException;
 use App\EInvoicing\SubmissionResultRecorder;
 use App\Models\EInvoicingIntegration;
 use App\Models\InvoiceSubmission;
-use App\Models\InvoiceSubmissionEvent;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class EInvoicingWebhookController extends Controller
@@ -49,18 +51,34 @@ class EInvoicingWebhookController extends Controller
             return response('', 200);
         }
 
-        if (InvoiceSubmissionEvent::query()->where('provider_event_id', $notification->eventId)->exists()) {
+        $alreadyReceived = $submission->events()
+            ->where('provider_event_id', $notification->eventId)
+            ->exists();
+
+        if ($alreadyReceived) {
             return response('', 200);
         }
 
-        $submission->events()->create([
-            'type' => $notification->type,
-            'provider_event_id' => $notification->eventId,
-            'payload' => $notification->payload,
-            'received_at' => now(),
-        ]);
+        try {
+            $result = $notification->result ?? $provider->fetchStatus($submission);
+        } catch (TransientProviderException) {
+            abort(503);
+        }
 
-        $recorder->record($submission, $notification->result ?? $provider->fetchStatus($submission));
+        try {
+            DB::transaction(function () use ($submission, $notification, $result, $recorder): void {
+                $submission->events()->create([
+                    'type' => $notification->type,
+                    'provider_event_id' => $notification->eventId,
+                    'payload' => $notification->payload,
+                    'received_at' => now(),
+                ]);
+
+                $recorder->record($submission, $result);
+            });
+        } catch (UniqueConstraintViolationException) {
+            return response('', 200);
+        }
 
         return response('', 200);
     }

@@ -1,6 +1,9 @@
 <?php
 
+use App\EInvoicing\Data\SubmissionResult;
 use App\EInvoicing\Enums\SubmissionStatus;
+use App\EInvoicing\Exceptions\TransientProviderException;
+use App\EInvoicing\Providers\FakeProvider;
 use App\Models\Company;
 use App\Models\Country;
 use App\Models\EInvoicingIntegration;
@@ -63,4 +66,32 @@ test('a submission of another integration cannot be updated', function () {
     postWebhook($otherIntegration, ['event_id' => 'evt-9', 'external_id' => 'ext-1', 'status' => 'rejected'])->assertOk();
 
     expect($this->submission->fresh()->status)->toBe(SubmissionStatus::Submitted);
+});
+
+test('a transient status fetch failure stores no event and a retry succeeds', function () {
+    FakeProvider::reset();
+    FakeProvider::queueStatusResult(new TransientProviderException('503'));
+
+    postWebhook($this->integration, ['event_id' => 'evt-1', 'external_id' => 'ext-1'])->assertStatus(503);
+
+    expect($this->submission->events()->count())->toBe(0);
+
+    FakeProvider::queueStatusResult(new SubmissionResult(SubmissionStatus::Accepted, 'accepted', 'ext-1'));
+
+    postWebhook($this->integration, ['event_id' => 'evt-1', 'external_id' => 'ext-1'])->assertOk();
+
+    expect($this->submission->fresh()->status)->toBe(SubmissionStatus::Accepted);
+    expect($this->submission->events()->count())->toBe(1);
+});
+
+test('the same event id on different integrations is recorded for each', function () {
+    $otherSubmission = InvoiceSubmission::factory()->create(['external_id' => 'ext-1']);
+    $otherIntegration = EInvoicingIntegration::find($otherSubmission->e_invoicing_integration_id);
+
+    postWebhook($this->integration, ['event_id' => 'evt-1', 'external_id' => 'ext-1', 'status' => 'accepted'])->assertOk();
+    postWebhook($otherIntegration, ['event_id' => 'evt-1', 'external_id' => 'ext-1', 'status' => 'accepted'])->assertOk();
+
+    expect($this->submission->events()->count())->toBe(1);
+    expect($otherSubmission->events()->count())->toBe(1);
+    expect($otherSubmission->fresh()->status)->toBe(SubmissionStatus::Accepted);
 });
