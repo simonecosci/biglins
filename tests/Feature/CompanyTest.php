@@ -458,6 +458,7 @@ test('company fiscal fields are stored', function () {
         'vat_number' => 'IT01234567890',
         'tax_code' => 'RSSMRA80A01H501U',
         'province' => 'RM',
+        'country_id' => Country::factory()->italy()->create()->id,
         'fiscal_details' => ['tax_regime' => 'RF01'],
     ])->assertRedirect(route('companies.index'));
 
@@ -466,4 +467,24 @@ test('company fiscal fields are stored', function () {
     expect($company->tax_code)->toBe('RSSMRA80A01H501U');
     expect($company->province)->toBe('RM');
     expect($company->fiscal_details)->toBe(['tax_regime' => 'RF01']);
+});
+
+test('italian company fiscal details are validated', function () {
+    $italy = Country::factory()->italy()->create();
+
+    $this->actingAs(User::factory()->create())->post(route('companies.store'), [
+        'name' => 'ACME',
+        'country_id' => $italy->id,
+        'fiscal_details' => ['tax_regime' => 'RF99'],
+    ])->assertSessionHasErrors('fiscal_details.tax_regime');
+});
+
+test('unknown fiscal detail keys are rejected', function () {
+    $italy = Country::factory()->italy()->create();
+
+    $this->actingAs(User::factory()->create())->post(route('companies.store'), [
+        'name' => 'ACME',
+        'country_id' => $italy->id,
+        'fiscal_details' => ['tax_regime' => 'RF01', 'hack' => 'x'],
+    ])->assertSessionHasErrors('fiscal_details');
 });

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { Form, Head, Link, router, setLayoutProps } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CustomerController from '@/actions/App/Http/Controllers/CustomerController';
+import FiscalDetailsFields from '@/components/FiscalDetailsFields.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -43,9 +45,14 @@ type Customer = {
 const props = defineProps<{
     customer: Customer;
     countries: Country[];
+    companyCountryIso: string | null;
 }>();
 
 const { t } = useI18n();
+
+const fiscalDetails = ref<Record<string, string>>({
+    ...(props.customer.fiscal_details ?? {}),
+});
 
 setLayoutProps({
     breadcrumbs: [
@@ -200,19 +207,25 @@ async function onDelete(): Promise<void> {
                     <InputError :message="errors.phone" />
                 </div>
                 <div class="grid gap-2">
-                    <Label for="vat_number">{{ t('customers.create.vatNumber') }}</Label>
+                    <Label for="vat_number">{{
+                        t('customers.create.vatNumber')
+                    }}</Label>
                     <Input
                         id="vat_number"
                         name="vat_number"
                         :default-value="customer.vat_number ?? undefined"
-                        :placeholder="t('customers.create.vatNumberPlaceholder')"
+                        :placeholder="
+                            t('customers.create.vatNumberPlaceholder')
+                        "
                     />
                     <InputError :message="errors.vat_number" />
                 </div>
             </div>
 
             <div class="grid gap-2">
-                <Label for="tax_code">{{ t('customers.create.taxCode') }}</Label>
+                <Label for="tax_code">{{
+                    t('customers.create.taxCode')
+                }}</Label>
                 <Input
                     id="tax_code"
                     name="tax_code"
@@ -221,6 +234,13 @@ async function onDelete(): Promise<void> {
                 />
                 <InputError :message="errors.tax_code" />
             </div>
+
+            <FiscalDetailsFields
+                v-model="fiscalDetails"
+                :iso-code="companyCountryIso"
+                kind="customer"
+                :errors="errors"
+            />
 
             <div class="flex items-center gap-4 pt-2">
                 <Button :disabled="processing" type="submit">{{

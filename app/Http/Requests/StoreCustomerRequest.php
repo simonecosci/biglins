@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\EInvoicing\CountryComplianceResolver;
+use App\Support\CurrentCompany;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreCustomerRequest extends FormRequest
@@ -28,7 +30,36 @@ class StoreCustomerRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:50'],
             'vat_number' => ['nullable', 'string', 'max:50'],
             'tax_code' => ['nullable', 'string', 'max:50'],
-            'fiscal_details' => ['nullable', 'array'],
+            ...$this->fiscalDetailsRules(),
         ];
+    }
+
+    /**
+     * @return array<string, array<mixed>>
+     */
+    private function fiscalDetailsRules(): array
+    {
+        $company = CurrentCompany::resolve();
+        $rules = ($company ? CountryComplianceResolver::forCompany($company) : CountryComplianceResolver::forIsoCode(null))->customerFiscalRules();
+
+        return [
+            // `array:` with an empty key list is invalid, so countries without rules accept only an empty object.
+            'fiscal_details' => $rules === []
+                ? ['nullable', 'array', 'max:0']
+                : ['nullable', 'array:'.implode(',', array_keys($rules))],
+            ...collect($rules)->mapWithKeys(fn (array $fieldRules, string $key): array => ["fiscal_details.{$key}" => $fieldRules])->all(),
+        ];
+    }
+
+    /**
+     * Blank fiscal detail inputs are submitted as empty strings: drop them.
+     */
+    protected function prepareForValidation(): void
+    {
+        if (is_array($this->input('fiscal_details'))) {
+            $this->merge([
+                'fiscal_details' => array_filter($this->input('fiscal_details'), fn ($value) => $value !== null && $value !== '') ?: null,
+            ]);
+        }
     }
 }

@@ -2,6 +2,7 @@
 
 use App\Enums\InvoiceType;
 use App\Models\Company;
+use App\Models\Country;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceRow;
@@ -1050,4 +1051,23 @@ test('invoice edit page shares the row expiration date as a plain date string', 
         ->component('invoices/Edit')
         ->where('invoice.rows.0.expiration_date', '2026-09-01')
     );
+});
+
+test('row vat exemption code must belong to the company country', function () {
+    $company = Company::factory()->create(['is_default' => true, 'country_id' => Country::factory()->italy()]);
+    $customer = Customer::factory()->create(['company_id' => $company->id]);
+
+    $this->actingAs(User::factory()->create())->post(route('invoices.store'), [
+        'invoice_date' => '2026-10-02',
+        'customer_id' => $customer->id,
+        'language' => 'it',
+        'rows' => [['description' => 'X', 'quantity' => 1, 'price' => 10, 'vat_rate' => 0, 'vat_exemption_code' => 'E1']],
+    ])->assertSessionHasErrors('rows.0.vat_exemption_code');
+});
+
+test('invoice create page exposes the company vat exemption codes', function () {
+    Company::factory()->create(['is_default' => true, 'country_id' => Country::factory()->spain()]);
+
+    $this->actingAs(User::factory()->create())->get(route('invoices.create'))
+        ->assertInertia(fn ($page) => $page->where('vatExemptionCodes', ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'N1', 'N2']));
 });

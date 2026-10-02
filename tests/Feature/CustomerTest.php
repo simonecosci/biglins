@@ -249,7 +249,7 @@ test('deleting a customer from another company is forbidden', function () {
 
 test('customer fiscal fields are stored', function () {
     $user = User::factory()->create();
-    $company = Company::factory()->create();
+    $company = Company::factory()->create(['is_default' => true, 'country_id' => Country::factory()->italy()]);
 
     $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('customers.store'), [
         'name' => 'Acme Corp',
@@ -262,4 +262,13 @@ test('customer fiscal fields are stored', function () {
     expect($customer->vat_number)->toBe('IT01234567890');
     expect($customer->tax_code)->toBe('RSSMRA80A01H501U');
     expect($customer->fiscal_details)->toBe(['pec' => 'a@pec.it']);
+});
+
+test('customer recipient code must be seven characters for italian companies', function () {
+    Company::factory()->create(['is_default' => true, 'country_id' => Country::factory()->italy()]);
+
+    $this->actingAs(User::factory()->create())->post(route('customers.store'), [
+        'name' => 'Bob',
+        'fiscal_details' => ['recipient_code' => 'ABC'],
+    ])->assertSessionHasErrors('fiscal_details.recipient_code');
 });

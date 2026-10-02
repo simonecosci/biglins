@@ -22,6 +22,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import VatExemptionSelect from '@/components/VatExemptionSelect.vue';
 import { confirmDialog } from '@/lib/confirmDialog';
 import { addDurationToDate } from '@/lib/productDuration';
 import { index } from '@/routes/invoices';
@@ -41,6 +42,7 @@ type InvoiceRow = {
     quantity: number;
     price: number;
     vat_rate: number;
+    vat_exemption_code: string | null;
     expiration_date: string | null;
     subscription_status: SubscriptionStatus;
 };
@@ -66,6 +68,7 @@ type InvoiceRowForm = {
     quantity: number;
     price: number;
     vat_rate: number;
+    vat_exemption_code: string | null;
     expiration_date: string | null;
     subscription_status?: SubscriptionStatus;
 };
@@ -73,6 +76,7 @@ type InvoiceRowForm = {
 const props = defineProps<{
     invoice: Invoice;
     customers: Customer[];
+    vatExemptionCodes: string[];
 }>();
 
 const { t } = useI18n();
@@ -97,6 +101,7 @@ const form = useForm({
         quantity: row.quantity,
         price: row.price,
         vat_rate: row.vat_rate,
+        vat_exemption_code: row.vat_exemption_code,
         expiration_date: row.expiration_date,
         subscription_status: row.subscription_status,
     })) as InvoiceRowForm[],
@@ -112,6 +117,7 @@ function addRow(): void {
         quantity: 1,
         price: 0,
         vat_rate: 0,
+        vat_exemption_code: null,
         expiration_date: null,
     });
     selectedProducts.value.push(undefined);
@@ -177,6 +183,8 @@ const total = computed(() =>
 
 function submit(): void {
     form.rows.forEach((row) => {
+        row.vat_exemption_code =
+            row.vat_rate === 0 ? row.vat_exemption_code : null;
         row.expiration_date ||= null;
     });
     form.put(InvoiceController.update(props.invoice.id).url);
@@ -464,6 +472,18 @@ const lastSent = computed(() => {
                         />
                         <InputError
                             :message="form.errors[`rows.${i}.vat_rate`]"
+                        />
+                        <VatExemptionSelect
+                            v-if="
+                                row.vat_rate === 0 && vatExemptionCodes.length
+                            "
+                            v-model="row.vat_exemption_code"
+                            :codes="vatExemptionCodes"
+                        />
+                        <InputError
+                            :message="
+                                form.errors[`rows.${i}.vat_exemption_code`]
+                            "
                         />
                     </div>
                     <div class="flex items-center justify-center pt-2">

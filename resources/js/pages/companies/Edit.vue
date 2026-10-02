@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/vue3';
+import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CompanyController from '@/actions/App/Http/Controllers/CompanyController';
+import FiscalDetailsFields from '@/components/FiscalDetailsFields.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -65,13 +67,25 @@ const form = useForm({
     city: props.company.city ?? '',
     province: props.company.province ?? '',
     country_id: props.company.country_id ?? '',
-    fiscal_details: (props.company.fiscal_details ?? {}) as Record<string, string>,
+    fiscal_details: (props.company.fiscal_details ?? {}) as Record<
+        string,
+        string
+    >,
     email: props.company.email ?? '',
     phone: props.company.phone ?? '',
     iban: props.company.iban ?? '',
     is_default: props.company.is_default,
     logo: null as File | null,
     remove_logo: false,
+});
+
+const countryIso = computed(
+    () =>
+        props.countries.find((c) => c.id === form.country_id)?.iso_code ?? null,
+);
+
+watch(countryIso, () => {
+    form.fiscal_details = {};
 });
 
 function onLogoChange(event: Event): void {
@@ -126,7 +140,9 @@ async function onDelete(): Promise<void> {
             </div>
 
             <div class="grid gap-2">
-                <Label for="vat_number">{{ t('companies.create.vatNumber') }}</Label>
+                <Label for="vat_number">{{
+                    t('companies.create.vatNumber')
+                }}</Label>
                 <Input
                     id="vat_number"
                     v-model="form.vat_number"
@@ -136,7 +152,9 @@ async function onDelete(): Promise<void> {
             </div>
 
             <div class="grid gap-2">
-                <Label for="tax_code">{{ t('companies.create.taxCode') }}</Label>
+                <Label for="tax_code">{{
+                    t('companies.create.taxCode')
+                }}</Label>
                 <Input
                     id="tax_code"
                     v-model="form.tax_code"
@@ -175,7 +193,9 @@ async function onDelete(): Promise<void> {
                     <InputError :message="form.errors.city" />
                 </div>
                 <div class="grid gap-2">
-                    <Label for="province">{{ t('companies.create.province') }}</Label>
+                    <Label for="province">{{
+                        t('companies.create.province')
+                    }}</Label>
                     <Input
                         id="province"
                         v-model="form.province"
@@ -205,6 +225,13 @@ async function onDelete(): Promise<void> {
                 </Select>
                 <InputError :message="form.errors.country_id" />
             </div>
+
+            <FiscalDetailsFields
+                v-model="form.fiscal_details"
+                :iso-code="countryIso"
+                kind="company"
+                :errors="form.errors"
+            />
 
             <div class="grid gap-2">
                 <Label for="email">{{ t('common.fields.email') }}</Label>

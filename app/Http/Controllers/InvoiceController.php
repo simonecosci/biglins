@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\EInvoicing\CountryComplianceResolver;
 use App\Enums\InvoiceType;
 use App\Http\Controllers\Concerns\ScopesToCurrentCompany;
 use App\Http\Requests\SendInvoiceRequest;
@@ -67,6 +68,7 @@ class InvoiceController extends Controller
         return Inertia::render('invoices/Create', [
             'customers' => Customer::query()->where('company_id', $currentCompany->id)->orderBy('name')->get(['id', 'name']),
             'nextNumber' => Invoice::nextNumber($currentCompany->id),
+            'vatExemptionCodes' => CountryComplianceResolver::forCompany($currentCompany)->vatExemptionCodes(),
             'duplicate' => $source ? [
                 // A customer from another company would not be selectable here, so it is only
                 // carried over when duplicating within the same company.
@@ -124,6 +126,7 @@ class InvoiceController extends Controller
         return Inertia::render('invoices/Edit', [
             'invoice' => $invoice,
             'customers' => Customer::query()->where('company_id', $invoice->company_id)->orderBy('name')->get(['id', 'name', 'email']),
+            'vatExemptionCodes' => CountryComplianceResolver::forCompany($invoice->company)->vatExemptionCodes(),
         ]);
     }
 

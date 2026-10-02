@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\EInvoicing\CountryComplianceResolver;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreCompanyRequest extends FormRequest
@@ -30,7 +31,7 @@ class StoreCompanyRequest extends FormRequest
             'iban' => ['nullable', 'string', 'max:50'],
             'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'is_default' => ['boolean'],
-            'fiscal_details' => ['nullable', 'array'],
+            ...$this->fiscalDetailsRules(),
         ];
     }
 
@@ -49,6 +50,26 @@ class StoreCompanyRequest extends FormRequest
             }
         }
 
+        if (is_array($this->input('fiscal_details'))) {
+            $normalized['fiscal_details'] = array_filter($this->input('fiscal_details'), fn ($value) => $value !== null && $value !== '') ?: null;
+        }
+
         $this->merge($normalized);
+    }
+
+    /**
+     * @return array<string, array<mixed>>
+     */
+    private function fiscalDetailsRules(): array
+    {
+        $fiscalRules = CountryComplianceResolver::forCountryId($this->input('country_id'))->companyFiscalRules();
+
+        return [
+            // `array:` with an empty key list is invalid, so countries without rules accept only an empty object.
+            'fiscal_details' => $fiscalRules === []
+                ? ['nullable', 'array', 'max:0']
+                : ['nullable', 'array:'.implode(',', array_keys($fiscalRules))],
+            ...collect($fiscalRules)->mapWithKeys(fn (array $rules, string $key): array => ["fiscal_details.{$key}" => $rules])->all(),
+        ];
     }
 }
