@@ -64,5 +64,7 @@
     "This invoice is already being submitted.": "Esta factura ya se está enviando.",
     "The invoice could not be submitted: :error": "No se pudo enviar la factura: :error",
     "Invoice issued and queued for submission.": "Factura emitida y en cola para su envío.",
-    "Invoice issued and submitted.": "Factura emitida y enviada."
+    "Invoice issued and submitted.": "Factura emitida y enviada.",
+    "Submission status updated.": "Estado del envío actualizado.",
+    "The provider is not reachable, try again later.": "El proveedor no está disponible, inténtalo más tarde."
 }

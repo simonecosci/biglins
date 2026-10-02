@@ -64,5 +64,7 @@
     "This invoice is already being submitted.": "Questa fattura è già in corso di invio.",
     "The invoice could not be submitted: :error": "Impossibile inviare la fattura: :error",
     "Invoice issued and queued for submission.": "Fattura emessa e in coda per l'invio.",
-    "Invoice issued and submitted.": "Fattura emessa e inviata."
+    "Invoice issued and submitted.": "Fattura emessa e inviata.",
+    "Submission status updated.": "Stato dell'invio aggiornato.",
+    "The provider is not reachable, try again later.": "Il provider non è raggiungibile, riprova più tardi."
 }

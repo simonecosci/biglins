@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\EInvoicing\CountryComplianceResolver;
+use App\EInvoicing\Enums\SubmissionStatus;
+use App\EInvoicing\SubmissionStatusRefresher;
 use App\Enums\InvoiceType;
 use App\Http\Controllers\Concerns\ScopesToCurrentCompany;
 use App\Http\Requests\SendInvoiceRequest;
@@ -20,6 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
@@ -117,6 +120,14 @@ class InvoiceController extends Controller
     public function edit(Invoice $invoice): Response
     {
         $this->authorizeCurrentCompany($invoice);
+
+        $latestSubmission = $invoice->latestSubmission;
+
+        if (config('nativephp-internal.running')
+            && $latestSubmission?->status === SubmissionStatus::Submitted
+            && Cache::add("einvoicing:refresh:{$latestSubmission->id}", true, 300)) {
+            rescue(fn () => app(SubmissionStatusRefresher::class)->refresh($latestSubmission), report: true);
+        }
 
         $invoice->load('rows');
 

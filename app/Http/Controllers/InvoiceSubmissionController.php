@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Actions\IssueInvoice;
 use App\EInvoicing\Enums\SubmissionStatus;
+use App\EInvoicing\Exceptions\TransientProviderException;
+use App\EInvoicing\SubmissionStatusRefresher;
 use App\Http\Controllers\Concerns\ScopesToCurrentCompany;
 use App\Models\Invoice;
 use Illuminate\Http\RedirectResponse;
@@ -26,6 +28,24 @@ class InvoiceSubmissionController extends Controller
             null => ['type' => 'success', 'message' => __('Invoice issued.')],
             default => ['type' => 'success', 'message' => __('Invoice issued and submitted.')],
         });
+
+        return to_route('invoices.edit', $invoice);
+    }
+
+    public function refresh(Invoice $invoice, SubmissionStatusRefresher $refresher): RedirectResponse
+    {
+        $this->authorizeCurrentCompany($invoice);
+
+        $submission = $invoice->latestSubmission;
+
+        if ($submission !== null) {
+            try {
+                $refresher->refresh($submission);
+                Inertia::flash('toast', ['type' => 'success', 'message' => __('Submission status updated.')]);
+            } catch (TransientProviderException) {
+                Inertia::flash('toast', ['type' => 'error', 'message' => __('The provider is not reachable, try again later.')]);
+            }
+        }
 
         return to_route('invoices.edit', $invoice);
     }
