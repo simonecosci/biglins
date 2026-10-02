@@ -19,6 +19,17 @@ class CountryFactory extends Factory
     {
         return [
             'name' => fake()->unique()->country(),
+            'iso_code' => null,
         ];
+    }
+
+    public function italy(): static
+    {
+        return $this->state(fn (): array => ['name' => 'Italy', 'iso_code' => 'IT']);
+    }
+
+    public function spain(): static
+    {
+        return $this->state(fn (): array => ['name' => 'Spain', 'iso_code' => 'ES']);
     }
 }

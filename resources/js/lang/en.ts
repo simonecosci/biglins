@@ -373,12 +373,16 @@ const messages = {
             newButton: 'New country',
             searchPlaceholder: 'Search countries...',
             column: 'Name',
+            columns: {
+                isoCode: 'ISO',
+            },
             empty: 'No countries found.',
         },
         create: {
             title: 'New country',
             description: 'Add a country to the list available to customers',
             namePlaceholder: 'Country name',
+            isoCode: 'ISO code',
         },
         edit: {
             title: 'Edit country',

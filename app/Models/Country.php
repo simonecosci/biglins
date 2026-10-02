@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\CountryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,10 +14,11 @@ use Illuminate\Support\Carbon;
 /**
  * @property string $id
  * @property string $name
+ * @property string|null $iso_code
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name'])]
+#[Fillable(['name', 'iso_code'])]
 class Country extends Model
 {
     /** @use HasFactory<CountryFactory> */
@@ -36,5 +38,15 @@ class Country extends Model
     public function companies(): HasMany
     {
         return $this->hasMany(Company::class);
+    }
+
+    /**
+     * @return Attribute<string|null, string|null>
+     */
+    protected function isoCode(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value): ?string => $value === null || $value === '' ? null : strtoupper($value),
+        );
     }
 }

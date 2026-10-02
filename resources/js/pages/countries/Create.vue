@@ -45,6 +45,16 @@ setLayoutProps({
                 <InputError :message="errors.name" />
             </div>
 
+            <div class="grid gap-2">
+                <Label for="iso_code">{{ t('countries.create.isoCode') }}</Label>
+                <Input
+                    id="iso_code"
+                    name="iso_code"
+                    maxlength="2"
+                />
+                <InputError :message="errors.iso_code" />
+            </div>
+
             <div class="flex items-center gap-4">
                 <Button :disabled="processing" type="submit">{{
                     t('common.actions.save')

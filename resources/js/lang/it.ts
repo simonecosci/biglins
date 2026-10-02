@@ -382,6 +382,9 @@ const messages: MessageSchema = {
             newButton: 'Nuovo paese',
             searchPlaceholder: 'Cerca paesi...',
             column: 'Nome',
+            columns: {
+                isoCode: 'ISO',
+            },
             empty: 'Nessun paese trovato.',
         },
         create: {
@@ -389,6 +392,7 @@ const messages: MessageSchema = {
             description:
                 'Aggiungi un paese alla lista disponibile per i clienti',
             namePlaceholder: 'Nome del paese',
+            isoCode: 'Codice ISO',
         },
         edit: {
             title: 'Modifica paese',
