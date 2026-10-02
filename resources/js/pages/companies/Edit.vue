@@ -18,6 +18,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { confirmDialog } from '@/lib/confirmDialog';
+import { fiscalFieldsFor } from '@/lib/fiscalFields';
 import { index } from '@/routes/companies';
 import type { BreadcrumbItem } from '@/types';
 
@@ -84,6 +85,10 @@ const countryIso = computed(
         props.countries.find((c) => c.id === form.country_id)?.iso_code ?? null,
 );
 
+const hasFiscalFields = computed(
+    () => fiscalFieldsFor(countryIso.value, 'company').length > 0,
+);
+
 watch(countryIso, () => {
     form.fiscal_details = {};
 });
@@ -103,9 +108,11 @@ function onLogoChange(event: Event): void {
  * method instead: the wire request is a POST with `_method=put`.
  */
 function submit(): void {
-    form.transform((data) => ({ ...data, _method: 'put' })).post(
-        CompanyController.update(props.company.id).url,
-    );
+    form.transform((data) => ({
+        ...data,
+        fiscal_details: hasFiscalFields.value ? data.fiscal_details : {},
+        _method: 'put',
+    })).post(CompanyController.update(props.company.id).url);
 }
 
 async function onDelete(): Promise<void> {

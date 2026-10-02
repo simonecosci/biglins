@@ -2,14 +2,15 @@
 
 namespace App\Http\Requests;
 
-use App\EInvoicing\CountryComplianceResolver;
+use App\Http\Requests\Concerns\ValidatesVatExemptionCodes;
 use App\Support\CurrentCompany;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\In;
 
 class StoreInvoiceRequest extends FormRequest
 {
+    use ValidatesVatExemptionCodes;
+
     public function authorize(): bool
     {
         return true;
@@ -42,16 +43,5 @@ class StoreInvoiceRequest extends FormRequest
             'rows.*.vat_exemption_code' => ['nullable', 'string', 'max:10', ...$this->vatExemptionCodeRule()],
             'rows.*.expiration_date' => ['nullable', 'date'],
         ];
-    }
-
-    /**
-     * @return list<In>
-     */
-    private function vatExemptionCodeRule(): array
-    {
-        $company = CurrentCompany::resolve();
-        $codes = $company ? CountryComplianceResolver::forCompany($company)->vatExemptionCodes() : [];
-
-        return $codes === [] ? [] : [Rule::in($codes)];
     }
 }

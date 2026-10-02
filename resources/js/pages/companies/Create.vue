@@ -17,6 +17,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { fiscalFieldsFor } from '@/lib/fiscalFields';
 import { index } from '@/routes/companies';
 import type { BreadcrumbItem } from '@/types';
 
@@ -60,6 +61,10 @@ const countryIso = computed(
         props.countries.find((c) => c.id === form.country_id)?.iso_code ?? null,
 );
 
+const hasFiscalFields = computed(
+    () => fiscalFieldsFor(countryIso.value, 'company').length > 0,
+);
+
 watch(countryIso, () => {
     form.fiscal_details = {};
 });
@@ -70,7 +75,10 @@ function onLogoChange(event: Event): void {
 }
 
 function submit(): void {
-    form.post(CompanyController.store().url);
+    form.transform((data) => ({
+        ...data,
+        fiscal_details: hasFiscalFields.value ? data.fiscal_details : {},
+    })).post(CompanyController.store().url);
 }
 </script>
 

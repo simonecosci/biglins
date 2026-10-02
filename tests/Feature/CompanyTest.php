@@ -488,3 +488,54 @@ test('unknown fiscal detail keys are rejected', function () {
         'fiscal_details' => ['tax_regime' => 'RF01', 'hack' => 'x'],
     ])->assertSessionHasErrors('fiscal_details');
 });
+
+test('company in a country without fiscal rules rejects fiscal details but saves without them', function () {
+    $country = Country::factory()->create(['iso_code' => 'FR']);
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->post(route('companies.store'), [
+        'name' => 'ACME',
+        'country_id' => $country->id,
+        'fiscal_details' => ['tax_regime' => 'RF01'],
+    ])->assertSessionHasErrors('fiscal_details');
+
+    $this->actingAs($user)->post(route('companies.store'), [
+        'name' => 'ACME',
+        'country_id' => $country->id,
+        'fiscal_details' => [],
+    ])->assertSessionHasNoErrors();
+
+    expect(Company::query()->where('name', 'ACME')->firstOrFail()->fiscal_details)->toBeNull();
+});
+
+test('blank fiscal detail values are stripped', function () {
+    $italy = Country::factory()->italy()->create();
+
+    $this->actingAs(User::factory()->create())->post(route('companies.store'), [
+        'name' => 'ACME',
+        'country_id' => $italy->id,
+        'fiscal_details' => ['tax_regime' => '', 'rea_office' => ''],
+    ])->assertSessionHasNoErrors();
+
+    expect(Company::query()->where('name', 'ACME')->firstOrFail()->fiscal_details)->toBeNull();
+});
+
+test('italian fiscal details are validated and stored when updating a company', function () {
+    $italy = Country::factory()->italy()->create();
+    $company = Company::factory()->create(['country_id' => $italy->id]);
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->put(route('companies.update', $company), [
+        'name' => 'ACME',
+        'country_id' => $italy->id,
+        'fiscal_details' => ['tax_regime' => 'RF99'],
+    ])->assertSessionHasErrors('fiscal_details.tax_regime');
+
+    $this->actingAs($user)->put(route('companies.update', $company), [
+        'name' => 'ACME',
+        'country_id' => $italy->id,
+        'fiscal_details' => ['tax_regime' => 'RF19'],
+    ])->assertSessionHasNoErrors();
+
+    expect($company->fresh()->fiscal_details)->toBe(['tax_regime' => 'RF19']);
+});

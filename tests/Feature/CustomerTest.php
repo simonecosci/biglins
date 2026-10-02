@@ -272,3 +272,12 @@ test('customer recipient code must be seven characters for italian companies', f
         'fiscal_details' => ['recipient_code' => 'ABC'],
     ])->assertSessionHasErrors('fiscal_details.recipient_code');
 });
+
+test('spanish customer id type must be a known value', function () {
+    Company::factory()->create(['is_default' => true, 'country_id' => Country::factory()->spain()]);
+
+    $this->actingAs(User::factory()->create())->post(route('customers.store'), [
+        'name' => 'Bob',
+        'fiscal_details' => ['id_type' => '99'],
+    ])->assertSessionHasErrors('fiscal_details.id_type');
+});
