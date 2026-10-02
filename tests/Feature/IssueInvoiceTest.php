@@ -5,6 +5,7 @@ use App\EInvoicing\Data\SubmissionResult;
 use App\EInvoicing\Enums\SubmissionStatus;
 use App\EInvoicing\Providers\FakeProvider;
 use App\Enums\InvoiceStatus;
+use App\Jobs\SubmitInvoice;
 use App\Models\Company;
 use App\Models\Country;
 use App\Models\EInvoicingIntegration;
@@ -12,6 +13,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceRow;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
 
 function draftWithRow(array $companyAttributes = []): Invoice
@@ -210,3 +212,38 @@ test('a draft that already has an open submission cannot be issued again', funct
     expect(FakeProvider::$sentInvoiceIds)->toBe([]);
     expect($invoice->fresh()->status)->toBe(InvoiceStatus::Draft);
 })->with([SubmissionStatus::Pending, SubmissionStatus::Submitted]);
+
+test('the desktop build submits inline because no queue workers run', function () {
+    config(['nativephp-internal.running' => true, 'queue.default' => 'database']);
+    $invoice = spanishDraft();
+    EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id]);
+
+    app(IssueInvoice::class)->handle($invoice);
+
+    expect($invoice->fresh()->latestSubmission->status)->toBe(SubmissionStatus::Submitted);
+    expect(FakeProvider::$sentInvoiceIds)->toBe([$invoice->id]);
+});
+
+test('outside the desktop build the submission is queued, not run', function () {
+    Queue::fake();
+    $invoice = spanishDraft();
+    EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id]);
+
+    app(IssueInvoice::class)->handle($invoice);
+
+    Queue::assertPushed(SubmitInvoice::class);
+    expect($invoice->fresh()->latestSubmission->status)->toBe(SubmissionStatus::Pending);
+    expect(FakeProvider::$sentInvoiceIds)->toBe([]);
+});
+
+test('an unexpected error during the inline desktop submission is recorded as a failure', function () {
+    config(['nativephp-internal.running' => true, 'queue.default' => 'database']);
+    $invoice = spanishDraft();
+    EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id]);
+    FakeProvider::queueSendResult(new RuntimeException('boom'));
+
+    app(IssueInvoice::class)->handle($invoice);
+
+    expect($invoice->fresh()->latestSubmission->status)->toBe(SubmissionStatus::Failed);
+    expect($invoice->fresh()->status)->toBe(InvoiceStatus::Draft);
+});

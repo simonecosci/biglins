@@ -10,8 +10,10 @@ use App\Jobs\SubmitInvoice;
 use App\Models\Company;
 use App\Models\EInvoicingIntegration;
 use App\Models\Invoice;
+use App\Models\InvoiceSubmission;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class IssueInvoice
 {
@@ -75,10 +77,30 @@ class IssueInvoice
         });
 
         if ($submission !== null) {
-            SubmitInvoice::dispatch($submission)->afterCommit();
+            $this->submit($submission);
         }
 
         return $issued->refresh();
+    }
+
+    /**
+     * The desktop build has no queue workers, so the submission runs inline there.
+     */
+    protected function submit(InvoiceSubmission $submission): void
+    {
+        if (! config('nativephp-internal.running')) {
+            SubmitInvoice::dispatch($submission)->afterCommit();
+
+            return;
+        }
+
+        try {
+            SubmitInvoice::dispatchSync($submission);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            (new SubmitInvoice($submission))->failed($exception);
+        }
     }
 
     protected function ensureSubmissionIsPossible(Company $company, CountryComplianceRules $rules): ?EInvoicingIntegration
