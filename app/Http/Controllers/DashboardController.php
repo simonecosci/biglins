@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ExpirationUrgency;
+use App\Enums\InvoiceStatus;
 use App\Models\Invoice;
 use App\Models\InvoiceRow;
 use App\Support\CurrentCompany;
@@ -21,6 +22,7 @@ class DashboardController extends Controller
 
         $yearToDateRevenue = Invoice::query()
             ->where('company_id', $currentCompanyId)
+            ->where('status', InvoiceStatus::Issued)
             ->whereBetween('invoice_date', [$today->copy()->startOfYear(), $today])
             ->with('rows')
             ->get()
