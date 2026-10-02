@@ -17,8 +17,12 @@ class CountryFactory extends Factory
      */
     public function definition(): array
     {
+        do {
+            $name = fake()->unique()->country();
+        } while (in_array($name, ['Italy', 'Spain'], true));
+
         return [
-            'name' => fake()->unique()->country(),
+            'name' => $name,
             'iso_code' => null,
         ];
     }
