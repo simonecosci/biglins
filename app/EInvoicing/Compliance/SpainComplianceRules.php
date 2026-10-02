@@ -6,7 +6,7 @@ use App\EInvoicing\Enums\SubmissionStatus;
 use App\Models\Invoice;
 use Illuminate\Validation\Rule;
 
-class SpainComplianceRules extends ItalyComplianceRules
+class SpainComplianceRules extends DefaultComplianceRules
 {
     /**
      * @var list<string>
@@ -34,9 +34,7 @@ class SpainComplianceRules extends ItalyComplianceRules
 
     public function validateForIssue(Invoice $invoice): array
     {
-        $errors = $invoice->rows->isEmpty()
-            ? ['rows' => __('The invoice must have at least one row.')]
-            : [];
+        $errors = parent::validateForIssue($invoice);
 
         if (blank($invoice->company->vat_number)) {
             $errors['company.vat_number'] = __('The company NIF is required.');
@@ -53,6 +51,11 @@ class SpainComplianceRules extends ItalyComplianceRules
         }
 
         return [...$errors, ...$this->exemptionCodeErrors($invoice)];
+    }
+
+    public function requiresSubmission(): bool
+    {
+        return true;
     }
 
     public function allowsRevisionAfter(SubmissionStatus $status): bool

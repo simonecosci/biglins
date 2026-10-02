@@ -4,7 +4,6 @@ namespace App\EInvoicing\Compliance;
 
 use App\EInvoicing\Enums\SubmissionStatus;
 use App\Models\Invoice;
-use App\Models\InvoiceRow;
 use Illuminate\Validation\Rule;
 
 class ItalyComplianceRules extends DefaultComplianceRules
@@ -89,21 +88,5 @@ class ItalyComplianceRules extends DefaultComplianceRules
     public function allowsRevisionAfter(SubmissionStatus $status): bool
     {
         return in_array($status, [SubmissionStatus::Failed, SubmissionStatus::Rejected], true);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function exemptionCodeErrors(Invoice $invoice): array
-    {
-        $errors = [];
-
-        $invoice->rows->values()->each(function (InvoiceRow $row, int $index) use (&$errors): void {
-            if ((float) $row->vat_rate === 0.0 && ! in_array($row->vat_exemption_code, $this->vatExemptionCodes(), true)) {
-                $errors["rows.{$index}.vat_exemption_code"] = __('Rows with a 0% VAT rate need a valid exemption code.');
-            }
-        });
-
-        return $errors;
     }
 }

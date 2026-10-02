@@ -39,13 +39,37 @@ function invoiceFor(Company $company, array $customerAttributes, array $rowAttri
 }
 
 test('resolver picks rules by iso code and falls back to default', function () {
-    expect(CountryComplianceResolver::forIsoCode('IT'))->toBeInstanceOf(ItalyComplianceRules::class);
-    expect(CountryComplianceResolver::forIsoCode('ES'))->toBeInstanceOf(SpainComplianceRules::class);
-    expect(CountryComplianceResolver::forIsoCode('FR'))->toBeInstanceOf(DefaultComplianceRules::class);
-    expect(CountryComplianceResolver::forIsoCode(null))->toBeInstanceOf(DefaultComplianceRules::class);
-    expect(CountryComplianceResolver::forCompany(Company::factory()->create(['country_id' => null])))
-        ->toBeInstanceOf(DefaultComplianceRules::class);
+    expect(get_class(CountryComplianceResolver::forIsoCode('IT')))->toBe(ItalyComplianceRules::class);
+    expect(get_class(CountryComplianceResolver::forIsoCode('ES')))->toBe(SpainComplianceRules::class);
+    expect(get_class(CountryComplianceResolver::forIsoCode('FR')))->toBe(DefaultComplianceRules::class);
+    expect(get_class(CountryComplianceResolver::forIsoCode(null)))->toBe(DefaultComplianceRules::class);
+    expect(get_class(CountryComplianceResolver::forCompany(Company::factory()->create(['country_id' => null]))))
+        ->toBe(DefaultComplianceRules::class);
+    expect(get_class(CountryComplianceResolver::forCompany(italianCompany())))->toBe(ItalyComplianceRules::class);
+    expect(get_class(CountryComplianceResolver::forCountryId(Country::factory()->spain()->create()->id)))->toBe(SpainComplianceRules::class);
 });
+
+test('submission status groups', function (SubmissionStatus $status, bool $awaiting) {
+    expect($status->isAwaitingAuthority())->toBe($awaiting);
+    expect($status->isFinal())->toBe(! $awaiting);
+})->with([
+    [SubmissionStatus::Pending, true],
+    [SubmissionStatus::Submitted, true],
+    [SubmissionStatus::Failed, false],
+    [SubmissionStatus::Rejected, false],
+    [SubmissionStatus::Accepted, false],
+    [SubmissionStatus::Delivered, false],
+    [SubmissionStatus::NotDelivered, false],
+]);
+
+test('italian company address fields are required', function (string $field) {
+    $company = italianCompany();
+    $company->update([$field => null]);
+
+    $invoice = invoiceFor($company, ['country_id' => $company->country_id, 'vat_number' => '09876543210', 'fiscal_details' => ['recipient_code' => 'ABC1234']]);
+
+    expect(array_keys((new ItalyComplianceRules)->validateForIssue($invoice)))->toBe(["company.{$field}"]);
+})->with(['address', 'zip', 'city']);
 
 test('submission and revision policy per country', function () {
     expect((new DefaultComplianceRules)->requiresSubmission())->toBeFalse();
