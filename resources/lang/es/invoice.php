@@ -16,5 +16,6 @@ return [
     'paid' => 'Pagada',
     'unpaid' => 'No pagada',
     'tax_id' => 'NIF',
+    'tax_code' => 'NIF',
     'iban' => 'IBAN',
 ];

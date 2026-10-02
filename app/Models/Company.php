@@ -14,20 +14,23 @@ use Illuminate\Support\Carbon;
 /**
  * @property string $id
  * @property string $name
- * @property string|null $tax_id
+ * @property string|null $vat_number
+ * @property string|null $tax_code
  * @property string|null $address
  * @property string|null $zip
  * @property string|null $city
+ * @property string|null $province
  * @property string|null $country_id
  * @property string|null $email
  * @property string|null $phone
  * @property string|null $iban
  * @property string|null $logo
  * @property bool $is_default
+ * @property array<string, mixed>|null $fiscal_details
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'tax_id', 'address', 'zip', 'city', 'country_id', 'email', 'phone', 'iban', 'logo', 'is_default'])]
+#[Fillable(['name', 'vat_number', 'tax_code', 'address', 'zip', 'city', 'province', 'country_id', 'email', 'phone', 'iban', 'logo', 'is_default', 'fiscal_details'])]
 class Company extends Model
 {
     /** @use HasFactory<CompanyFactory> */
@@ -40,6 +43,7 @@ class Company extends Model
     {
         return [
             'is_default' => 'boolean',
+            'fiscal_details' => 'array',
         ];
     }
 

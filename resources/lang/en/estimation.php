@@ -13,6 +13,7 @@ return [
     'subtotal' => 'Subtotal',
     'total' => 'Total',
     'tax_id' => 'Tax ID',
+    'tax_code' => 'Tax code',
     'iban' => 'IBAN',
     'proposal' => 'Proposal',
     'status_pending' => 'Pending',

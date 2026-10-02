@@ -21,6 +21,7 @@ import type { BreadcrumbItem } from '@/types';
 type Country = {
     id: string;
     name: string;
+    iso_code: string | null;
 };
 
 type Customer = {
@@ -34,7 +35,9 @@ type Customer = {
     email: string | null;
     web: string | null;
     phone: string | null;
-    nif: string | null;
+    vat_number: string | null;
+    tax_code: string | null;
+    fiscal_details: Record<string, string> | null;
 };
 
 const props = defineProps<{
@@ -197,15 +200,26 @@ async function onDelete(): Promise<void> {
                     <InputError :message="errors.phone" />
                 </div>
                 <div class="grid gap-2">
-                    <Label for="nif">{{ t('customers.create.taxId') }}</Label>
+                    <Label for="vat_number">{{ t('customers.create.vatNumber') }}</Label>
                     <Input
-                        id="nif"
-                        name="nif"
-                        :default-value="customer.nif ?? undefined"
-                        :placeholder="t('customers.create.taxIdPlaceholder')"
+                        id="vat_number"
+                        name="vat_number"
+                        :default-value="customer.vat_number ?? undefined"
+                        :placeholder="t('customers.create.vatNumberPlaceholder')"
                     />
-                    <InputError :message="errors.nif" />
+                    <InputError :message="errors.vat_number" />
                 </div>
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="tax_code">{{ t('customers.create.taxCode') }}</Label>
+                <Input
+                    id="tax_code"
+                    name="tax_code"
+                    :default-value="customer.tax_code ?? undefined"
+                    :placeholder="t('customers.create.taxCodePlaceholder')"
+                />
+                <InputError :message="errors.tax_code" />
             </div>
 
             <div class="flex items-center gap-4 pt-2">

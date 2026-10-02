@@ -65,7 +65,8 @@ class CreateCustomerTool extends Tool
             'email' => $schema->string()->format('email'),
             'web' => $schema->string()->format('uri'),
             'phone' => $schema->string(),
-            'nif' => $schema->string()->description('Tax identification number.'),
+            'vat_number' => $schema->string()->description('VAT number (partita IVA / NIF).'),
+            'tax_code' => $schema->string()->description('Tax code (codice fiscale) when different from the VAT number.'),
         ];
     }
 }

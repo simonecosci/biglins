@@ -20,6 +20,7 @@ import type { BreadcrumbItem } from '@/types';
 type Country = {
     id: string;
     name: string;
+    iso_code: string | null;
 };
 
 defineProps<{
@@ -158,14 +159,24 @@ setLayoutProps({
                     <InputError :message="errors.phone" />
                 </div>
                 <div class="grid gap-2">
-                    <Label for="nif">{{ t('customers.create.taxId') }}</Label>
+                    <Label for="vat_number">{{ t('customers.create.vatNumber') }}</Label>
                     <Input
-                        id="nif"
-                        name="nif"
-                        :placeholder="t('customers.create.taxIdPlaceholder')"
+                        id="vat_number"
+                        name="vat_number"
+                        :placeholder="t('customers.create.vatNumberPlaceholder')"
                     />
-                    <InputError :message="errors.nif" />
+                    <InputError :message="errors.vat_number" />
                 </div>
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="tax_code">{{ t('customers.create.taxCode') }}</Label>
+                <Input
+                    id="tax_code"
+                    name="tax_code"
+                    :placeholder="t('customers.create.taxCodePlaceholder')"
+                />
+                <InputError :message="errors.tax_code" />
             </div>
 
             <div class="flex items-center gap-4 pt-2">

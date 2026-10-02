@@ -22,21 +22,25 @@ import type { BreadcrumbItem } from '@/types';
 type Country = {
     id: string;
     name: string;
+    iso_code: string | null;
 };
 
 type Company = {
     id: string;
     name: string;
-    tax_id: string | null;
+    vat_number: string | null;
+    tax_code: string | null;
     address: string | null;
     zip: string | null;
     city: string | null;
+    province: string | null;
     country_id: string | null;
     email: string | null;
     phone: string | null;
     iban: string | null;
     logo: string | null;
     is_default: boolean;
+    fiscal_details: Record<string, string> | null;
 };
 
 const props = defineProps<{
@@ -54,11 +58,14 @@ setLayoutProps({
 
 const form = useForm({
     name: props.company.name,
-    tax_id: props.company.tax_id ?? '',
+    vat_number: props.company.vat_number ?? '',
+    tax_code: props.company.tax_code ?? '',
     address: props.company.address ?? '',
     zip: props.company.zip ?? '',
     city: props.company.city ?? '',
+    province: props.company.province ?? '',
     country_id: props.company.country_id ?? '',
+    fiscal_details: (props.company.fiscal_details ?? {}) as Record<string, string>,
     email: props.company.email ?? '',
     phone: props.company.phone ?? '',
     iban: props.company.iban ?? '',
@@ -119,13 +126,23 @@ async function onDelete(): Promise<void> {
             </div>
 
             <div class="grid gap-2">
-                <Label for="tax_id">{{ t('companies.create.taxId') }}</Label>
+                <Label for="vat_number">{{ t('companies.create.vatNumber') }}</Label>
                 <Input
-                    id="tax_id"
-                    v-model="form.tax_id"
-                    :placeholder="t('companies.create.taxIdPlaceholder')"
+                    id="vat_number"
+                    v-model="form.vat_number"
+                    :placeholder="t('companies.create.vatNumberPlaceholder')"
                 />
-                <InputError :message="form.errors.tax_id" />
+                <InputError :message="form.errors.vat_number" />
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="tax_code">{{ t('companies.create.taxCode') }}</Label>
+                <Input
+                    id="tax_code"
+                    v-model="form.tax_code"
+                    :placeholder="t('companies.create.taxCodePlaceholder')"
+                />
+                <InputError :message="form.errors.tax_code" />
             </div>
 
             <div class="grid gap-2">
@@ -138,7 +155,7 @@ async function onDelete(): Promise<void> {
                 <InputError :message="form.errors.address" />
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-3 gap-4">
                 <div class="grid gap-2">
                     <Label for="zip">{{ t('common.fields.zip') }}</Label>
                     <Input
@@ -156,6 +173,15 @@ async function onDelete(): Promise<void> {
                         :placeholder="t('companies.create.cityPlaceholder')"
                     />
                     <InputError :message="form.errors.city" />
+                </div>
+                <div class="grid gap-2">
+                    <Label for="province">{{ t('companies.create.province') }}</Label>
+                    <Input
+                        id="province"
+                        v-model="form.province"
+                        :placeholder="t('companies.create.provincePlaceholder')"
+                    />
+                    <InputError :message="form.errors.province" />
                 </div>
             </div>
 

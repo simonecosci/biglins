@@ -48,7 +48,7 @@
                     <strong>{{ $invoice->company->name }}</strong><br>
                     {{ $invoice->company->address }}<br>
                     {{ $invoice->company->zip }} {{ $invoice->company->city }}, {{ $invoice->company->country?->name }}<br>
-                    {{ __('invoice.tax_id') }}: {{ $invoice->company->tax_id }}<br>
+                    {{ __('invoice.tax_id') }}: {{ $invoice->company->vat_number }}<br>
                     @if($invoice->company->iban)
                         {{ __('invoice.iban') }}: {{ $invoice->company->iban }}<br>
                     @endif
@@ -68,8 +68,11 @@
                     @if($invoice->customer->country)
                         {{ $invoice->customer->country->name }}<br>
                     @endif
-                    @if($invoice->customer->nif)
-                        {{ __('invoice.tax_id') }}: {{ $invoice->customer->nif }}<br>
+                    @if($invoice->customer->vat_number)
+                        {{ __('invoice.tax_id') }}: {{ $invoice->customer->vat_number }}<br>
+                    @endif
+                    @if($invoice->customer->tax_code)
+                        {{ __('invoice.tax_code') }}: {{ $invoice->customer->tax_code }}<br>
                     @endif
                 </div>
             </td>

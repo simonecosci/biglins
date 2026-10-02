@@ -20,7 +20,10 @@ class CompanyFactory extends Factory
     {
         return [
             'name' => fake()->company(),
-            'tax_id' => fake()->numerify('########'),
+            'vat_number' => fake()->numerify('###########'),
+            'tax_code' => null,
+            'province' => null,
+            'fiscal_details' => null,
             'address' => fake()->streetAddress(),
             'zip' => fake()->postcode(),
             'city' => fake()->city(),

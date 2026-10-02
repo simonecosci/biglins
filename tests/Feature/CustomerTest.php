@@ -246,3 +246,20 @@ test('deleting a customer from another company is forbidden', function () {
     $response->assertForbidden();
     expect(Customer::query()->find($customer->id))->not->toBeNull();
 });
+
+test('customer fiscal fields are stored', function () {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+
+    $this->actingAs($user)->withSession(['current_company_id' => $company->id])->post(route('customers.store'), [
+        'name' => 'Acme Corp',
+        'vat_number' => 'IT01234567890',
+        'tax_code' => 'RSSMRA80A01H501U',
+        'fiscal_details' => ['pec' => 'a@pec.it'],
+    ])->assertSessionHasNoErrors()->assertRedirect(route('customers.index'));
+
+    $customer = Customer::query()->where('name', 'Acme Corp')->firstOrFail();
+    expect($customer->vat_number)->toBe('IT01234567890');
+    expect($customer->tax_code)->toBe('RSSMRA80A01H501U');
+    expect($customer->fiscal_details)->toBe(['pec' => 'a@pec.it']);
+});

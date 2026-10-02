@@ -13,6 +13,7 @@ return [
     'subtotal' => 'Subtotal',
     'total' => 'Total',
     'tax_id' => 'NIF',
+    'tax_code' => 'NIF',
     'iban' => 'IBAN',
     'proposal' => 'Propuesta',
     'status_pending' => 'Pendiente',

@@ -26,7 +26,9 @@ class StoreCustomerRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:255'],
             'web' => ['nullable', 'url', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
-            'nif' => ['nullable', 'string', 'max:50'],
+            'vat_number' => ['nullable', 'string', 'max:50'],
+            'tax_code' => ['nullable', 'string', 'max:50'],
+            'fiscal_details' => ['nullable', 'array'],
         ];
     }
 }
