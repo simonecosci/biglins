@@ -522,6 +522,7 @@ const messages = {
             confirmDelete: 'Delete this invoice? This cannot be undone.',
             deleteButton: 'Delete invoice',
             issueAndSubmitButton: 'Issue and submit',
+            saveBeforeIssue: 'Save your changes before issuing.',
             issueButton: 'Issue',
             confirmIssue:
                 'Once issued, the invoice gets its number and can no longer be changed. Continue?',

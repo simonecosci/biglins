@@ -137,6 +137,7 @@ class InvoiceController extends Controller
             && $latestSubmission?->status === SubmissionStatus::Submitted
             && Cache::add("einvoicing:refresh:{$latestSubmission->id}", true, 300)) {
             rescue(fn () => app(SubmissionStatusRefresher::class)->refresh($latestSubmission), report: true);
+            $invoice->refresh();
         }
 
         $invoice->load('rows');
@@ -224,6 +225,12 @@ class InvoiceController extends Controller
 
         if ($invoice->isLocked()) {
             Inertia::flash('toast', ['type' => 'error', 'message' => __('An issued invoice cannot be deleted.')]);
+
+            return to_route('invoices.edit', $invoice);
+        }
+
+        if ($invoice->number !== null) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('A numbered invoice cannot be deleted.')]);
 
             return to_route('invoices.edit', $invoice);
         }

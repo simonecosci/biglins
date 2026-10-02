@@ -5,6 +5,7 @@ use App\EInvoicing\Enums\SubmissionStatus;
 use App\EInvoicing\Exceptions\TransientProviderException;
 use App\EInvoicing\Providers\FakeProvider;
 use App\Models\Company;
+use App\Models\Country;
 use App\Models\Invoice;
 use App\Models\InvoiceSubmission;
 use App\Models\User;
@@ -60,4 +61,19 @@ test('the desktop build refreshes on open at most every five minutes', function 
 
     expect($submission->fresh()->provider_status)->toBe('processing');
     expect($submission->fresh()->status)->toBe(SubmissionStatus::Submitted);
+});
+
+test('the desktop edit page shows fresh invoice props after a rejection moves it back to draft', function () {
+    config(['nativephp-internal.running' => true]);
+    $company = Company::factory()->create(['is_default' => true, 'country_id' => Country::factory()->italy()]);
+    $invoice = Invoice::factory()->issued()->create(['company_id' => $company->id]);
+    InvoiceSubmission::factory()->for($invoice)->create(['status' => SubmissionStatus::Submitted]);
+    FakeProvider::queueStatusResult(new SubmissionResult(SubmissionStatus::Rejected, errorMessage: 'Scartata'));
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('invoices.edit', $invoice))
+        ->assertInertia(fn ($page) => $page
+            ->where('invoice.status', 'draft')
+            ->where('isLocked', false)
+        );
 });

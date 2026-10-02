@@ -540,6 +540,7 @@ const messages: MessageSchema = {
                 '¿Eliminar esta factura? Esta acción no se puede deshacer.',
             deleteButton: 'Eliminar factura',
             issueAndSubmitButton: 'Emitir y enviar',
+            saveBeforeIssue: 'Guarda los cambios antes de emitir.',
             issueButton: 'Emitir',
             confirmIssue:
                 'Una vez emitida, la factura recibe su número y ya no se puede modificar. ¿Continuar?',

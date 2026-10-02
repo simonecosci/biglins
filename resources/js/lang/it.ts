@@ -535,6 +535,7 @@ const messages: MessageSchema = {
                 "Eliminare questa fattura? L'azione non può essere annullata.",
             deleteButton: 'Elimina fattura',
             issueAndSubmitButton: 'Emetti e invia',
+            saveBeforeIssue: 'Salva le modifiche prima di emettere.',
             issueButton: 'Emetti',
             confirmIssue:
                 'Una volta emessa, la fattura riceve il suo numero e non può più essere modificata. Continuare?',

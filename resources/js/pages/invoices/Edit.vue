@@ -287,7 +287,7 @@ const lastSent = computed(() => {
                 type="button"
                 size="sm"
                 class="ml-2"
-                :disabled="issueForm.processing"
+                :disabled="issueForm.processing || form.isDirty"
                 @click="onIssue"
             >
                 <Send />
@@ -299,6 +299,12 @@ const lastSent = computed(() => {
                     )
                 }}
             </Button>
+            <span
+                v-if="invoice.status === 'draft' && form.isDirty"
+                class="ml-2 text-xs text-muted-foreground"
+            >
+                {{ t('invoices.edit.saveBeforeIssue') }}
+            </span>
             <SendEmailDialog
                 :send-url="InvoiceController.send(invoice.id).url"
                 :default-to="customerEmail"
@@ -623,7 +629,7 @@ const lastSent = computed(() => {
             </div>
         </form>
 
-        <div v-if="!isLocked" class="border-t pt-6">
+        <div v-if="!isLocked && !invoice.number" class="border-t pt-6">
             <Button variant="destructive" type="button" @click="onDelete">
                 {{ t('invoices.edit.deleteButton') }}
             </Button>
