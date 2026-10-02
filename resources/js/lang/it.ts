@@ -480,16 +480,17 @@ const messages: MessageSchema = {
             description: 'Gestisci le tue fatture',
             newButton: 'Nuova fattura',
             searchPlaceholder: 'Cerca per numero o cliente...',
+            statusFilter: {
+                label: 'Filtra per stato',
+                all: 'Tutti gli stati',
+                draft: 'Bozza',
+                issued: 'Emessa',
+            },
             columns: {
                 number: 'Numero',
                 date: 'Data',
                 customer: 'Cliente',
                 type: 'Tipo',
-                statusFilter: {
-                    all: 'Tutti gli stati',
-                    draft: 'Bozza',
-                    issued: 'Emessa',
-                },
                 paid: 'Pagata',
                 submission: 'Invio',
                 total: 'Totale',

@@ -2,6 +2,7 @@
 
 use App\EInvoicing\Enums\SubmissionStatus;
 use App\Models\Company;
+use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceSubmission;
 use App\Models\User;
@@ -22,7 +23,8 @@ test('edit exposes the submission history without qr and event payloads', functi
             ->where('submissions.0.error_message', '00404 duplicate')
             ->where('submissions.0.events.0.type', 'status_change')
             ->missing('submissions.0.qr_code')
-            ->missing('submissions.0.events.0.payload'));
+            ->missing('submissions.0.events.0.payload')
+            ->missing('invoice.latest_submission'));
 });
 
 test('index filters by status and shows the latest submission status', function () {
@@ -36,4 +38,27 @@ test('index filters by status and shows the latest submission status', function 
             ->where('invoices.data.0.latest_submission.status', 'accepted')
             ->missing('invoices.data.0.latest_submission.qr_code')
             ->where('filters.status', 'issued'));
+});
+
+test('index combines search and status filters', function () {
+    $customer = Customer::factory()->create(['company_id' => $this->company->id, 'name' => 'Acme Srl']);
+    Invoice::factory()->create(['company_id' => $this->company->id, 'customer_id' => $customer->id]);
+    Invoice::factory()->issued()->create(['company_id' => $this->company->id, 'customer_id' => $customer->id]);
+    Invoice::factory()->issued()->create(['company_id' => $this->company->id]);
+
+    $this->get(route('invoices.index', ['search' => 'Acme', 'status' => 'issued']))
+        ->assertInertia(fn ($page) => $page
+            ->has('invoices.data', 1)
+            ->where('invoices.data.0.status', 'issued')
+            ->where('filters.search', 'Acme'));
+});
+
+test('index ignores an invalid status filter', function () {
+    Invoice::factory()->create(['company_id' => $this->company->id]);
+    Invoice::factory()->issued()->create(['company_id' => $this->company->id]);
+
+    $this->get(route('invoices.index', ['status' => 'foo']))
+        ->assertInertia(fn ($page) => $page
+            ->has('invoices.data', 2)
+            ->where('filters.status', ''));
 });

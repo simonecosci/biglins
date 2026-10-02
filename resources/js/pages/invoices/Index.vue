@@ -102,7 +102,7 @@ function formatDate(date: string): string {
             <select
                 v-model="status"
                 class="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
-                :aria-label="t('invoices.index.statusFilter.all')"
+                :aria-label="t('invoices.index.statusFilter.label')"
                 @change="onSearch"
             >
                 <option value="">

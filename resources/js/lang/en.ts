@@ -468,16 +468,17 @@ const messages = {
             description: 'Manage your invoices',
             newButton: 'New invoice',
             searchPlaceholder: 'Search by number or customer...',
+            statusFilter: {
+                label: 'Filter by status',
+                all: 'All statuses',
+                draft: 'Draft',
+                issued: 'Issued',
+            },
             columns: {
                 number: 'Number',
                 date: 'Date',
                 customer: 'Customer',
                 type: 'Type',
-                statusFilter: {
-                    all: 'All statuses',
-                    draft: 'Draft',
-                    issued: 'Issued',
-                },
                 paid: 'Paid',
                 submission: 'Submission',
                 total: 'Total',

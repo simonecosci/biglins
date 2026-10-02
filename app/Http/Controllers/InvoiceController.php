@@ -53,7 +53,9 @@ class InvoiceController extends Controller
             ->paginate(15)
             ->withQueryString()
             ->through(fn (Invoice $invoice): array => [
-                ...$invoice->toArray(),
+                ...$invoice->withoutRelations()->toArray(),
+                'customer' => $invoice->customer,
+                'rows' => $invoice->rows,
                 'latest_submission' => $invoice->latestSubmission
                     ? ['status' => $invoice->latestSubmission->status->value]
                     : null,
@@ -130,7 +132,7 @@ class InvoiceController extends Controller
     {
         $this->authorizeCurrentCompany($invoice);
 
-        $latestSubmission = $invoice->latestSubmission;
+        $latestSubmission = $invoice->latestSubmission()->first();
 
         if (config('nativephp-internal.running')
             && $latestSubmission?->status === SubmissionStatus::Submitted
@@ -152,6 +154,7 @@ class InvoiceController extends Controller
             'submissions' => $invoice->submissions()
                 ->with('events:id,submission_id,type,received_at')
                 ->latest()
+                ->latest('id')
                 ->limit(20)
                 ->get(['id', 'invoice_id', 'status', 'provider_status', 'authority_id', 'error_message', 'submitted_at', 'completed_at', 'created_at']),
             'requiresSubmission' => CountryComplianceResolver::forCompany($invoice->company)->requiresSubmission(),

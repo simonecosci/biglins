@@ -6,6 +6,7 @@ use App\EInvoicing\Enums\EInvoicingDriver;
 use App\EInvoicing\Enums\SubmissionStatus;
 use Database\Factories\InvoiceSubmissionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -30,6 +31,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
+#[Hidden(['qr_code', 'payload_path'])]
 #[Fillable(['invoice_id', 'e_invoicing_integration_id', 'driver', 'status', 'provider_status', 'external_id', 'authority_id', 'qr_code', 'error_message', 'payload_path', 'submitted_at', 'completed_at'])]
 class InvoiceSubmission extends Model
 {
