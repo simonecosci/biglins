@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/vue3';
-import { Eye, FileText, Plus, Trash2 } from '@lucide/vue';
+import { Eye, FileText, Plus, Send, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import InvoiceController from '@/actions/App/Http/Controllers/InvoiceController';
+import InvoiceSubmissionController from '@/actions/App/Http/Controllers/InvoiceSubmissionController';
+import AlertError from '@/components/AlertError.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import NotePicker from '@/components/NotePicker.vue';
@@ -80,6 +82,7 @@ type InvoiceRowForm = {
 
 const props = defineProps<{
     invoice: Invoice;
+    isLocked: boolean;
     customers: Customer[];
     vatExemptionCodes: string[];
 }>();
@@ -198,6 +201,19 @@ function submit(): void {
     form.put(InvoiceController.update(props.invoice.id).url);
 }
 
+const issueForm = useForm({});
+
+async function onIssue(): Promise<void> {
+    if (await confirmDialog(t('invoices.edit.confirmIssue'))) {
+        issueForm.post(
+            InvoiceSubmissionController.issue(props.invoice.id).url,
+            {
+                preserveScroll: true,
+            },
+        );
+    }
+}
+
 async function onDelete(): Promise<void> {
     if (await confirmDialog(t('invoices.edit.confirmDelete'))) {
         router.delete(InvoiceController.destroy(props.invoice.id).url);
@@ -262,6 +278,17 @@ const lastSent = computed(() => {
                     <FileText />
                 </a>
             </Button>
+            <Button
+                v-if="invoice.status === 'draft'"
+                type="button"
+                size="sm"
+                class="ml-2"
+                :disabled="issueForm.processing"
+                @click="onIssue"
+            >
+                <Send />
+                {{ t('invoices.edit.issueButton') }}
+            </Button>
             <SendEmailDialog
                 :send-url="InvoiceController.send(invoice.id).url"
                 :default-to="customerEmail"
@@ -282,6 +309,15 @@ const lastSent = computed(() => {
             {{ lastSent }}
         </p>
 
+        <AlertError
+            v-if="Object.keys(issueForm.errors).length"
+            :errors="Object.values(issueForm.errors)"
+        />
+
+        <p v-if="isLocked" class="text-sm text-muted-foreground">
+            {{ t('invoices.edit.lockedNotice') }}
+        </p>
+
         <form class="space-y-4" @submit.prevent="submit">
             <div class="grid gap-4">
                 <div class="grid gap-2">
@@ -292,6 +328,7 @@ const lastSent = computed(() => {
                         id="invoice_date"
                         v-model="form.invoice_date"
                         type="date"
+                        :disabled="isLocked"
                     />
                     <InputError :message="form.errors.invoice_date" />
                 </div>
@@ -302,7 +339,7 @@ const lastSent = computed(() => {
                     <Label for="customer_id">{{
                         t('invoices.create.customer')
                     }}</Label>
-                    <Select v-model="form.customer_id">
+                    <Select v-model="form.customer_id" :disabled="isLocked">
                         <SelectTrigger id="customer_id" class="w-full">
                             <SelectValue
                                 :placeholder="
@@ -327,7 +364,7 @@ const lastSent = computed(() => {
                     <Label for="language">{{
                         t('invoices.create.language')
                     }}</Label>
-                    <Select v-model="form.language">
+                    <Select v-model="form.language" :disabled="isLocked">
                         <SelectTrigger id="language" class="w-full">
                             <SelectValue
                                 :placeholder="
@@ -348,7 +385,7 @@ const lastSent = computed(() => {
             <div class="grid grid-cols-2 gap-4">
                 <div class="grid gap-2">
                     <Label for="type">{{ t('invoices.create.type') }}</Label>
-                    <Select v-model="form.type">
+                    <Select v-model="form.type" :disabled="isLocked">
                         <SelectTrigger id="type" class="w-full">
                             <SelectValue
                                 :placeholder="t('invoices.create.selectType')"
@@ -394,6 +431,7 @@ const lastSent = computed(() => {
                         type="button"
                         variant="outline"
                         size="sm"
+                        :disabled="isLocked"
                         @click="addRow"
                     >
                         <Plus />
@@ -424,12 +462,14 @@ const lastSent = computed(() => {
                     class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_5rem_8rem_5rem_2.5rem] items-start gap-2"
                 >
                     <ProductPicker
+                        :disabled="isLocked"
                         :selected-label="productLabel(selectedProducts[i])"
                         @select="(product) => applyProduct(i, product)"
                     />
                     <div class="grid gap-1">
                         <Input
                             v-model="row.description"
+                            :disabled="isLocked"
                             class="md:text-base"
                             :placeholder="t('invoices.create.rowDescription')"
                         />
@@ -440,6 +480,7 @@ const lastSent = computed(() => {
                     <div class="grid gap-1">
                         <Input
                             v-model.number="row.quantity"
+                            :disabled="isLocked"
                             type="number"
                             step="0.01"
                             min="0.01"
@@ -452,6 +493,7 @@ const lastSent = computed(() => {
                     <div class="grid gap-1">
                         <Input
                             v-model.number="row.price"
+                            :disabled="isLocked"
                             type="number"
                             step="0.01"
                             min="0"
@@ -462,6 +504,7 @@ const lastSent = computed(() => {
                     <div class="grid gap-1">
                         <Input
                             v-model.number="row.vat_rate"
+                            :disabled="isLocked"
                             type="number"
                             step="0.01"
                             min="0"
@@ -478,6 +521,7 @@ const lastSent = computed(() => {
                                 row.vat_rate === 0 && vatExemptionCodes.length
                             "
                             v-model="row.vat_exemption_code"
+                            :disabled="isLocked"
                             :codes="vatExemptionCodes"
                         />
                         <InputError
@@ -489,6 +533,7 @@ const lastSent = computed(() => {
                     <div class="flex items-center justify-center pt-2">
                         <Checkbox
                             :model-value="row.expiration_date !== null"
+                            :disabled="isLocked"
                             :aria-label="t('invoices.create.rowIsSubscription')"
                             @update:model-value="
                                 (checked) => toggleSubscription(row, checked)
@@ -500,6 +545,7 @@ const lastSent = computed(() => {
                             <Input
                                 :model-value="row.expiration_date ?? undefined"
                                 type="date"
+                                :disabled="isLocked"
                                 @update:model-value="
                                     (value) =>
                                         (row.expiration_date = value
@@ -520,6 +566,7 @@ const lastSent = computed(() => {
                             :model-value="
                                 row.subscription_status !== 'cancelled'
                             "
+                            :disabled="isLocked"
                             :aria-label="
                                 t('invoices.create.rowSubscriptionActive')
                             "
@@ -533,7 +580,7 @@ const lastSent = computed(() => {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        :disabled="form.rows.length === 1"
+                        :disabled="isLocked || form.rows.length === 1"
                         @click="removeRow(i)"
                     >
                         <Trash2 />
@@ -560,7 +607,7 @@ const lastSent = computed(() => {
             </div>
         </form>
 
-        <div class="border-t pt-6">
+        <div v-if="!isLocked" class="border-t pt-6">
             <Button variant="destructive" type="button" @click="onDelete">
                 {{ t('invoices.edit.deleteButton') }}
             </Button>

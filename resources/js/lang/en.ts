@@ -487,6 +487,11 @@ const messages = {
             description: 'Update invoice {number}',
             confirmDelete: 'Delete this invoice? This cannot be undone.',
             deleteButton: 'Delete invoice',
+            issueButton: 'Issue',
+            confirmIssue:
+                'Once issued, the invoice gets its number and can no longer be changed. Continue?',
+            lockedNotice:
+                'This invoice has been issued: only the paid flag and the note can be changed.',
             send: 'Send by email',
         },
     },

@@ -56,5 +56,9 @@
     "Rows with a 0% VAT rate need a valid exemption code.": "Las líneas con tipo de IVA del 0% requieren un código de exención válido.",
     "The company NIF is required.": "El NIF de la empresa es obligatorio.",
     "The customer tax identifier is required.": "El identificador fiscal del cliente es obligatorio.",
-    "A foreign customer needs an identifier type.": "Un cliente extranjero necesita un tipo de identificador."
+    "A foreign customer needs an identifier type.": "Un cliente extranjero necesita un tipo de identificador.",
+    "Invoice issued.": "Factura emitida.",
+    "Only draft invoices can be issued.": "Solo se pueden emitir facturas en borrador.",
+    "An issued invoice cannot be deleted.": "Una factura emitida no se puede eliminar.",
+    "Configure electronic invoicing for this company before issuing invoices.": "Configura la facturación electrónica de esta empresa antes de emitir facturas."
 }

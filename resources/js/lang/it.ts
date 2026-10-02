@@ -500,6 +500,11 @@ const messages: MessageSchema = {
             confirmDelete:
                 "Eliminare questa fattura? L'azione non può essere annullata.",
             deleteButton: 'Elimina fattura',
+            issueButton: 'Emetti',
+            confirmIssue:
+                'Una volta emessa, la fattura riceve il suo numero e non può più essere modificata. Continuare?',
+            lockedNotice:
+                'Questa fattura è stata emessa: possono essere modificati solo lo stato di pagamento e la nota.',
             send: 'Invia via email',
         },
     },

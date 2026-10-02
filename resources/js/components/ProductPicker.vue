@@ -41,6 +41,7 @@ type PaginatedProducts = {
 
 defineProps<{
     selectedLabel?: string | null;
+    disabled?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -126,6 +127,7 @@ function choose(product: ProductResult): void {
                         type="button"
                         variant="outline"
                         size="icon"
+                        :disabled="disabled"
                         @click="open = true"
                     >
                         <span class="sr-only">{{

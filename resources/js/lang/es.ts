@@ -505,6 +505,11 @@ const messages: MessageSchema = {
             confirmDelete:
                 '¿Eliminar esta factura? Esta acción no se puede deshacer.',
             deleteButton: 'Eliminar factura',
+            issueButton: 'Emitir',
+            confirmIssue:
+                'Una vez emitida, la factura recibe su número y ya no se puede modificar. ¿Continuar?',
+            lockedNotice:
+                'Esta factura ha sido emitida: solo se pueden modificar el estado de pago y la nota.',
             send: 'Enviar por email',
         },
     },

@@ -126,6 +126,7 @@ class InvoiceController extends Controller
 
         return Inertia::render('invoices/Edit', [
             'invoice' => $invoice,
+            'isLocked' => $invoice->isLocked(),
             'customers' => Customer::query()->where('company_id', $invoice->company_id)->orderBy('name')->get(['id', 'name', 'email']),
             'vatExemptionCodes' => CountryComplianceResolver::forCompany($invoice->company)->vatExemptionCodes(),
         ]);
@@ -134,6 +135,14 @@ class InvoiceController extends Controller
     public function update(UpdateInvoiceRequest $request, Invoice $invoice): RedirectResponse
     {
         $this->authorizeCurrentCompany($invoice);
+
+        if ($invoice->isLocked()) {
+            $invoice->update($request->safe()->only(['paid', 'note']));
+
+            Inertia::flash('toast', ['type' => 'success', 'message' => __('Invoice updated.')]);
+
+            return to_route('invoices.edit', $invoice);
+        }
 
         DB::transaction(function () use ($request, $invoice) {
             $invoice->update($request->safe()->except('rows'));
@@ -184,6 +193,12 @@ class InvoiceController extends Controller
     public function destroy(Invoice $invoice): RedirectResponse
     {
         $this->authorizeCurrentCompany($invoice);
+
+        if ($invoice->isLocked()) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('An issued invoice cannot be deleted.')]);
+
+            return to_route('invoices.edit', $invoice);
+        }
 
         $invoice->delete();
 
