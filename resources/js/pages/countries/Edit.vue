@@ -66,7 +66,9 @@ async function onDelete(): Promise<void> {
             </div>
 
             <div class="grid gap-2">
-                <Label for="iso_code">{{ t('countries.create.isoCode') }}</Label>
+                <Label for="iso_code">{{
+                    t('countries.create.isoCode')
+                }}</Label>
                 <Input
                     id="iso_code"
                     name="iso_code"

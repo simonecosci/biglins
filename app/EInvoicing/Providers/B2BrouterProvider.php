@@ -101,7 +101,8 @@ class B2BrouterProvider implements EInvoicingProvider
     private function resultFromInvoice(array $invoice, ?string $isoCode, string $document, bool $tolerateTaxReportFailure = false): SubmissionResult
     {
         $taxReport = null;
-        $taxReportId = collect($invoice['tax_report_ids'] ?? [])->last();
+        $taxReportIds = $invoice['tax_report_ids'] ?? [];
+        $taxReportId = is_array($taxReportIds) ? array_last($taxReportIds) : null;
 
         if ($taxReportId !== null) {
             try {
@@ -114,9 +115,11 @@ class B2BrouterProvider implements EInvoicingProvider
             }
         }
 
-        $taxReportErrors = collect($taxReport['errors'] ?? [])
-            ->map(fn (array $error): string => trim(($error['code'] ?? '').' '.($error['description'] ?? '')))
-            ->implode('; ');
+        $taxReportErrorList = $taxReport['errors'] ?? [];
+        $taxReportErrors = implode('; ', array_map(
+            fn (array $error): string => trim(($error['code'] ?? '').' '.($error['description'] ?? '')),
+            is_array($taxReportErrorList) ? $taxReportErrorList : [],
+        ));
 
         return new SubmissionResult(
             status: StatusMapper::map($invoice['state'] ?? null, $taxReport['state'] ?? null, $isoCode),

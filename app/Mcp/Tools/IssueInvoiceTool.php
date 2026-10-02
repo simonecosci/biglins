@@ -32,8 +32,8 @@ class IssueInvoiceTool extends Tool
             return Response::error($e->validator->errors()->first());
         }
 
-        $company = Company::query()->findOrFail($data['company_id']);
-        $invoice = Invoice::query()->findOrFail($data['invoice_id']);
+        $company = Company::query()->findOrFail((string) $data['company_id']);
+        $invoice = Invoice::query()->findOrFail((string) $data['invoice_id']);
 
         return CurrentCompany::runningAs($company, function () use ($invoice): Response|ResponseFactory {
             try {

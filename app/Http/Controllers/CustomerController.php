@@ -46,7 +46,7 @@ class CustomerController extends Controller
         }
 
         return Inertia::render('customers/Create', [
-            'companyCountryIso' => CurrentCompany::resolve()?->country?->iso_code,
+            'companyCountryIso' => CurrentCompany::resolve()->country?->iso_code,
             'countries' => Country::query()->orderBy('name')->get(['id', 'name', 'iso_code']),
         ]);
     }
@@ -75,7 +75,7 @@ class CustomerController extends Controller
 
         return Inertia::render('customers/Edit', [
             'customer' => $customer,
-            'companyCountryIso' => CurrentCompany::resolve()?->country?->iso_code,
+            'companyCountryIso' => CurrentCompany::resolve()->country?->iso_code,
             'countries' => Country::query()->orderBy('name')->get(['id', 'name', 'iso_code']),
         ]);
     }

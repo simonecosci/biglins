@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\EInvoicing\Enums\EInvoicingDriver;
 use App\EInvoicing\Enums\SubmissionStatus;
+use Carbon\CarbonImmutable;
 use Database\Factories\InvoiceSubmissionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -26,8 +27,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $qr_code
  * @property string|null $error_message
  * @property string|null $payload_path
- * @property Carbon|null $submitted_at
- * @property Carbon|null $completed_at
+ * @property CarbonImmutable|null $submitted_at
+ * @property CarbonImmutable|null $completed_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */

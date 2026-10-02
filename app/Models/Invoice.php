@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\InvoiceStatus;
 use App\Enums\InvoiceType;
+use Carbon\CarbonImmutable;
 use Database\Factories\InvoiceFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -20,14 +21,14 @@ use Illuminate\Support\Carbon;
  * @property string|null $number
  * @property InvoiceType $type
  * @property InvoiceStatus $status
- * @property Carbon|null $issued_at
- * @property Carbon $invoice_date
+ * @property CarbonImmutable|null $issued_at
+ * @property CarbonImmutable $invoice_date
  * @property bool $paid
  * @property string $customer_id
  * @property string $company_id
  * @property string|null $note
  * @property string $language
- * @property Carbon|null $sent_at
+ * @property CarbonImmutable|null $sent_at
  * @property string|null $sent_to
  * @property-read float $subtotal
  * @property-read float $vat_total

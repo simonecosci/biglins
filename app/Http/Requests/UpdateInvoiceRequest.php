@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ValidatesVatExemptionCodes;
+use App\Models\Invoice;
 use App\Support\CurrentCompany;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -21,7 +22,9 @@ class UpdateInvoiceRequest extends FormRequest
      */
     public function rules(): array
     {
-        if ($this->route('invoice')?->isLocked()) {
+        $invoice = $this->route('invoice');
+
+        if ($invoice instanceof Invoice && $invoice->isLocked()) {
             return [
                 'paid' => ['boolean'],
                 'note' => ['nullable', 'string'],
