@@ -60,5 +60,9 @@
     "Invoice issued.": "Factura emitida.",
     "Only draft invoices can be issued.": "Solo se pueden emitir facturas en borrador.",
     "An issued invoice cannot be deleted.": "Una factura emitida no se puede eliminar.",
-    "Configure electronic invoicing for this company before issuing invoices.": "Configura la facturación electrónica de esta empresa antes de emitir facturas."
+    "Configure electronic invoicing for this company before issuing invoices.": "Configura la facturación electrónica de esta empresa antes de emitir facturas.",
+    "This invoice is already being submitted.": "Esta factura ya se está enviando.",
+    "The invoice could not be submitted: :error": "No se pudo enviar la factura: :error",
+    "Invoice issued and queued for submission.": "Factura emitida y en cola para su envío.",
+    "Invoice issued and submitted.": "Factura emitida y enviada."
 }

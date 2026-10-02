@@ -4,8 +4,11 @@ namespace App\Actions;
 
 use App\EInvoicing\Contracts\CountryComplianceRules;
 use App\EInvoicing\CountryComplianceResolver;
+use App\EInvoicing\Enums\SubmissionStatus;
 use App\Enums\InvoiceStatus;
+use App\Jobs\SubmitInvoice;
 use App\Models\Company;
+use App\Models\EInvoicingIntegration;
 use App\Models\Invoice;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -28,9 +31,9 @@ class IssueInvoice
             throw ValidationException::withMessages($errors);
         }
 
-        $this->ensureSubmissionIsPossible($invoice->company, $rules);
+        $integration = $this->ensureSubmissionIsPossible($invoice->company, $rules);
 
-        return DB::transaction(function () use ($invoice, $rules): Invoice {
+        [$issued, $submission] = DB::transaction(function () use ($invoice, $rules, $integration): array {
             Company::query()->whereKey($invoice->company_id)->lockForUpdate()->first();
 
             $locked = Invoice::query()
@@ -49,21 +52,49 @@ class IssueInvoice
                 throw ValidationException::withMessages($errors);
             }
 
+            $alreadySubmitting = $locked->submissions()
+                ->whereIn('status', [SubmissionStatus::Pending, SubmissionStatus::Submitted])
+                ->exists();
+
+            if ($alreadySubmitting) {
+                throw ValidationException::withMessages(['invoice' => __('This invoice is already being submitted.')]);
+            }
+
             $locked->number ??= Invoice::nextNumber($locked->company_id);
             $locked->status = InvoiceStatus::Issued;
             $locked->issued_at = now();
             $locked->save();
 
-            return $locked;
+            $submission = $integration === null ? null : $locked->submissions()->create([
+                'e_invoicing_integration_id' => $integration->id,
+                'driver' => $integration->driver,
+                'status' => SubmissionStatus::Pending,
+            ]);
+
+            return [$locked, $submission];
         });
+
+        if ($submission !== null) {
+            SubmitInvoice::dispatch($submission)->afterCommit();
+        }
+
+        return $issued->refresh();
     }
 
-    protected function ensureSubmissionIsPossible(Company $company, CountryComplianceRules $rules): void
+    protected function ensureSubmissionIsPossible(Company $company, CountryComplianceRules $rules): ?EInvoicingIntegration
     {
-        if ($rules->requiresSubmission()) {
+        if (! $rules->requiresSubmission()) {
+            return null;
+        }
+
+        $integration = $company->eInvoicingIntegration;
+
+        if ($integration === null || ! $integration->is_active || ! $integration->supportsCountry($company->country?->iso_code)) {
             throw ValidationException::withMessages([
                 'einvoicing' => __('Configure electronic invoicing for this company before issuing invoices.'),
             ]);
         }
+
+        return $integration;
     }
 }

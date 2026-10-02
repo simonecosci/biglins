@@ -1,9 +1,13 @@
 <?php
 
 use App\Actions\IssueInvoice;
+use App\EInvoicing\Data\SubmissionResult;
+use App\EInvoicing\Enums\SubmissionStatus;
+use App\EInvoicing\Providers\FakeProvider;
 use App\Enums\InvoiceStatus;
 use App\Models\Company;
 use App\Models\Country;
+use App\Models\EInvoicingIntegration;
 use App\Models\Invoice;
 use App\Models\InvoiceRow;
 use App\Models\User;
@@ -29,6 +33,7 @@ test('issuing a draft in a country without rules assigns number and locks it', f
     expect($issued->number)->toBe('2026-0001');
     expect($issued->issued_at->toDateTimeString())->toBe('2026-10-02 10:00:00');
     expect($issued->isLocked())->toBeTrue();
+    expect($issued->submissions()->count())->toBe(0);
 
     Carbon::setTestNow();
 });
@@ -129,4 +134,62 @@ test('issue route rejects an already issued invoice', function () {
     $this->actingAs(User::factory()->create())
         ->post(route('invoices.issue', $invoice))
         ->assertSessionHasErrors('invoice');
+});
+
+function spanishDraft(): Invoice
+{
+    $spain = Country::factory()->spain()->create();
+    $company = Company::factory()->create(['is_default' => true, 'country_id' => $spain->id, 'vat_number' => 'B12345678']);
+    $invoice = Invoice::factory()->create(['company_id' => $company->id]);
+    $invoice->customer->update(['vat_number' => 'B87654321', 'country_id' => $spain->id]);
+    InvoiceRow::factory()->for($invoice)->create(['vat_rate' => 21]);
+
+    return $invoice;
+}
+
+test('issuing with an active integration creates and sends a submission', function () {
+    $invoice = spanishDraft();
+    EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id]);
+
+    app(IssueInvoice::class)->handle($invoice);
+
+    expect($invoice->fresh()->latestSubmission->status)->toBe(SubmissionStatus::Submitted);
+    expect(FakeProvider::$sentInvoiceIds)->toBe([$invoice->id]);
+});
+
+test('an inactive integration is not enough', function () {
+    $invoice = spanishDraft();
+    EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id, 'is_active' => false]);
+
+    expect(fn () => app(IssueInvoice::class)->handle($invoice))->toThrow(ValidationException::class);
+});
+
+test('a failed submission can be retried by issuing again with the same number', function () {
+    $invoice = spanishDraft();
+    EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id]);
+    FakeProvider::queueSendResult(SubmissionResult::failed('Bad payload'));
+
+    app(IssueInvoice::class)->handle($invoice);
+    $number = $invoice->fresh()->number;
+    expect($invoice->fresh()->status)->toBe(InvoiceStatus::Draft);
+
+    app(IssueInvoice::class)->handle($invoice->fresh());
+
+    expect($invoice->fresh()->number)->toBe($number);
+    expect($invoice->submissions()->count())->toBe(2);
+    expect($invoice->fresh()->latestSubmission->status)->toBe(SubmissionStatus::Submitted);
+});
+
+test('issue route reports a failed synchronous submission', function () {
+    $invoice = spanishDraft();
+    EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id]);
+    FakeProvider::queueSendResult(SubmissionResult::failed('Bad payload'));
+
+    $this->actingAs(User::factory()->create())
+        ->post(route('invoices.issue', $invoice))
+        ->assertRedirect(route('invoices.edit', $invoice));
+
+    expect($invoice->fresh()->latestSubmission->status)->toBe(SubmissionStatus::Failed);
+    expect(session('inertia.flash_data.toast.type'))->toBe('error');
+    expect(session('inertia.flash_data.toast.message'))->toContain('Bad payload');
 });
