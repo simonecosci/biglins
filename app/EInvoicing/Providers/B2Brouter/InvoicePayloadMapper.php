@@ -57,11 +57,12 @@ class InvoicePayloadMapper
         ];
 
         if (filled($vatNumber)) {
-            $hasCountryPrefix = $customerIso !== null && str_starts_with(strtoupper($vatNumber), $customerIso);
+            $vatPrefix = $customerIso === 'GR' ? 'EL' : $customerIso;
+            $hasCountryPrefix = $vatPrefix !== null && str_starts_with(strtoupper($vatNumber), $vatPrefix);
 
             $contact['tin_value'] = match (true) {
                 $customerIso === 'IT', $customerIso === null, $hasCountryPrefix => $vatNumber,
-                default => $customerIso.$vatNumber,
+                default => $vatPrefix.$vatNumber,
             };
             $contact['tin_scheme'] = match ($customerIso) {
                 'IT' => '9906',

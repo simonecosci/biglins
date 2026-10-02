@@ -91,3 +91,9 @@ test('spanish credit note keeps negative amounts without the credit note flag', 
     expect($payload)->not->toHaveKey('is_credit_note');
     expect($payload['invoice_lines_attributes'][0]['price'])->toBe(-50.0);
 });
+
+test('greek vat numbers use the EL prefix', function (string $vatNumber) {
+    $payload = mappedInvoice('ES', ['iso' => 'GR', 'vat_number' => $vatNumber], [['vat_rate' => 21]]);
+
+    expect($payload['contact']['tin_value'])->toBe('EL123456789');
+})->with(['123456789', 'EL123456789']);

@@ -40,7 +40,13 @@ class B2BrouterProvider implements EInvoicingProvider
             return SubmissionResult::failed($this->errorMessage($response), $response->body());
         }
 
-        return $this->resultFromInvoice($response->json('invoice') ?? [], $invoice->company->country?->iso_code, $response->body());
+        $invoiceData = $response->json('invoice') ?? [];
+
+        if (! isset($invoiceData['id'])) {
+            return SubmissionResult::failed('B2Brouter returned no invoice id.', $response->body());
+        }
+
+        return $this->resultFromInvoice($invoiceData, $invoice->company->country?->iso_code, $response->body(), tolerateTaxReportFailure: true);
     }
 
     public function fetchStatus(InvoiceSubmission $submission): SubmissionResult
@@ -92,14 +98,20 @@ class B2BrouterProvider implements EInvoicingProvider
     /**
      * @param  array<string, mixed>  $invoice
      */
-    private function resultFromInvoice(array $invoice, ?string $isoCode, string $document): SubmissionResult
+    private function resultFromInvoice(array $invoice, ?string $isoCode, string $document, bool $tolerateTaxReportFailure = false): SubmissionResult
     {
         $taxReport = null;
         $taxReportId = collect($invoice['tax_report_ids'] ?? [])->last();
 
         if ($taxReportId !== null) {
-            $taxReportResponse = $this->call(fn (PendingRequest $http): Response => $http->get("/tax_reports/{$taxReportId}"));
-            $taxReport = $taxReportResponse->successful() ? $taxReportResponse->json('tax_report') : null;
+            try {
+                $taxReportResponse = $this->call(fn (PendingRequest $http): Response => $http->get("/tax_reports/{$taxReportId}"));
+                $taxReport = $taxReportResponse->successful() ? $taxReportResponse->json('tax_report') : null;
+            } catch (TransientProviderException $exception) {
+                if (! $tolerateTaxReportFailure) {
+                    throw $exception;
+                }
+            }
         }
 
         $taxReportErrors = collect($taxReport['errors'] ?? [])
@@ -130,9 +142,13 @@ class B2BrouterProvider implements EInvoicingProvider
         }
 
         parse_str(str_replace(',', '&', (string) $request->header('X-B2Brouter-Signature')), $parts);
-        $expected = hash_hmac('sha256', ($parts['t'] ?? '').'.'.$request->getContent(), $signingSecret);
+        if (! is_string($parts['t'] ?? null) || ! is_string($parts['s'] ?? null)) {
+            throw new InvalidWebhookSignature('Invalid B2Brouter signature.');
+        }
 
-        if (! isset($parts['s']) || ! hash_equals($expected, (string) $parts['s'])) {
+        $expected = hash_hmac('sha256', $parts['t'].'.'.$request->getContent(), $signingSecret);
+
+        if (! hash_equals($expected, $parts['s'])) {
             throw new InvalidWebhookSignature('Invalid B2Brouter signature.');
         }
     }

@@ -69,7 +69,7 @@ test('send creates the invoice with send_after_import and reads the qr', functio
 });
 
 test('staging uses the staging host', function () {
-    Http::fake(['api-staging.b2brouter.net/*' => Http::response(b2brouterFixture('invoice-created-it'), 201)]);
+    Http::fake(['api-staging.b2brouter.net/*' => Http::response(['invoice' => ['id' => 1, 'state' => 'sending', 'tax_report_ids' => []]], 201)]);
 
     expect(b2brouter(EInvoicingEnvironment::Staging)->send(spanishIssuedInvoice())->status)->toBe(SubmissionStatus::Submitted);
 });
@@ -161,5 +161,53 @@ test('test connection checks the account', function () {
     Http::fake(['api.b2brouter.net/accounts/42' => Http::sequence()->push(['account' => ['id' => 42]])->push(b2brouterFixture('error-401'), 401)]);
 
     expect(b2brouter()->testConnection())->toBeTrue();
+    expect(b2brouter()->testConnection())->toBeFalse();
+});
+
+test('a failing tax report fetch after creation keeps the created invoice', function () {
+    Http::fake([
+        'api.b2brouter.net/accounts/42/invoices' => Http::response(b2brouterFixture('invoice-created-es'), 201),
+        'api.b2brouter.net/tax_reports/91' => Http::response('', 503),
+    ]);
+
+    $result = b2brouter()->send(spanishIssuedInvoice());
+
+    expect($result->status)->toBe(SubmissionStatus::Submitted);
+    expect($result->externalId)->toBe('4711');
+});
+
+test('a create response without invoice id fails', function () {
+    Http::fake(['*' => Http::response(['invoice' => ['state' => 'sending']], 201)]);
+
+    $result = b2brouter()->send(spanishIssuedInvoice());
+
+    expect($result->status)->toBe(SubmissionStatus::Failed);
+    expect($result->errorMessage)->toBe('B2Brouter returned no invoice id.');
+});
+
+test('missing or garbled signature headers are invalid', function (?string $header) {
+    $server = $header === null ? [] : ['HTTP_X_B2BROUTER_SIGNATURE' => $header];
+    $request = Request::create('/', 'POST', server: $server, content: '{}');
+
+    expect(fn () => b2brouter()->parseWebhook($request, b2brouterIntegration()))->toThrow(InvalidWebhookSignature::class);
+})->with([[null], ['t=1,s[]=x'], ['garbage']]);
+
+test('fetch status keeps the previous status on client errors', function () {
+    Http::fake(['api.b2brouter.net/invoices/5001' => Http::response(b2brouterFixture('error-401'), 401)]);
+    $company = Company::factory()->create(['country_id' => Country::factory()->italy()]);
+    $submission = InvoiceSubmission::factory()
+        ->for(Invoice::factory()->issued()->create(['company_id' => $company->id]))
+        ->create(['external_id' => '5001', 'driver' => EInvoicingDriver::B2Brouter, 'status' => SubmissionStatus::Submitted, 'provider_status' => 'sending']);
+
+    $result = b2brouter()->fetchStatus($submission);
+
+    expect($result->status)->toBe(SubmissionStatus::Submitted);
+    expect($result->providerStatus)->toBe('sending');
+    expect($result->errorMessage)->toBe('Invalid API key');
+});
+
+test('test connection is false on connection failure', function () {
+    Http::fake(['*' => Http::failedConnection()]);
+
     expect(b2brouter()->testConnection())->toBeFalse();
 });
