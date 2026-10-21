@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { Form, Head, Link, setLayoutProps } from '@inertiajs/vue3';
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CustomerController from '@/actions/App/Http/Controllers/CustomerController';
+import FiscalDetailsFields from '@/components/FiscalDetailsFields.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -20,13 +22,17 @@ import type { BreadcrumbItem } from '@/types';
 type Country = {
     id: string;
     name: string;
+    iso_code: string | null;
 };
 
 defineProps<{
     countries: Country[];
+    companyCountryIso: string | null;
 }>();
 
 const { t } = useI18n();
+
+const fiscalDetails = ref<Record<string, string>>({});
 
 setLayoutProps({
     breadcrumbs: [
@@ -158,15 +164,38 @@ setLayoutProps({
                     <InputError :message="errors.phone" />
                 </div>
                 <div class="grid gap-2">
-                    <Label for="nif">{{ t('customers.create.taxId') }}</Label>
+                    <Label for="vat_number">{{
+                        t('customers.create.vatNumber')
+                    }}</Label>
                     <Input
-                        id="nif"
-                        name="nif"
-                        :placeholder="t('customers.create.taxIdPlaceholder')"
+                        id="vat_number"
+                        name="vat_number"
+                        :placeholder="
+                            t('customers.create.vatNumberPlaceholder')
+                        "
                     />
-                    <InputError :message="errors.nif" />
+                    <InputError :message="errors.vat_number" />
                 </div>
             </div>
+
+            <div class="grid gap-2">
+                <Label for="tax_code">{{
+                    t('customers.create.taxCode')
+                }}</Label>
+                <Input
+                    id="tax_code"
+                    name="tax_code"
+                    :placeholder="t('customers.create.taxCodePlaceholder')"
+                />
+                <InputError :message="errors.tax_code" />
+            </div>
+
+            <FiscalDetailsFields
+                v-model="fiscalDetails"
+                :iso-code="companyCountryIso"
+                kind="customer"
+                :errors="errors"
+            />
 
             <div class="flex items-center gap-4 pt-2">
                 <Button :disabled="processing" type="submit">{{

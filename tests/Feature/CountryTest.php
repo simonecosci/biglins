@@ -2,6 +2,7 @@
 
 use App\Models\Country;
 use App\Models\User;
+use App\Support\CountryIsoCodes;
 use Database\Seeders\CountrySeeder;
 use Illuminate\Database\QueryException;
 
@@ -103,4 +104,37 @@ test('country can be deleted', function () {
 
     $response->assertRedirect(route('countries.index'));
     expect(Country::query()->find($country->id))->toBeNull();
+});
+
+test('country iso codes map known names', function () {
+    expect(CountryIsoCodes::forName('Italy'))->toBe('IT');
+    expect(CountryIsoCodes::forName('Spain'))->toBe('ES');
+    expect(CountryIsoCodes::forName('Narnia'))->toBeNull();
+});
+
+test('a country can be stored with an iso code', function () {
+    $this->actingAs(User::factory()->create())
+        ->post(route('countries.store'), ['name' => 'Testland', 'iso_code' => 'tl'])
+        ->assertRedirect(route('countries.index'));
+
+    expect(Country::query()->where('name', 'Testland')->value('iso_code'))->toBe('TL');
+});
+
+test('country iso code must be two letters and unique', function () {
+    Country::factory()->create(['iso_code' => 'IT']);
+
+    $this->actingAs(User::factory()->create())
+        ->post(route('countries.store'), ['name' => 'Other', 'iso_code' => 'IT'])
+        ->assertSessionHasErrors('iso_code');
+
+    $this->actingAs(User::factory()->create())
+        ->post(route('countries.store'), ['name' => 'Other', 'iso_code' => 'ITA'])
+        ->assertSessionHasErrors('iso_code');
+});
+
+test('the country seeder fills iso codes', function () {
+    $this->seed(CountrySeeder::class);
+
+    expect(Country::query()->where('name', 'Italy')->value('iso_code'))->toBe('IT');
+    expect(Country::query()->whereNull('iso_code')->count())->toBe(0);
 });

@@ -12,6 +12,7 @@ import type { BreadcrumbItem } from '@/types';
 type Country = {
     id: string;
     name: string;
+    iso_code: string | null;
 };
 
 type PaginationLink = {
@@ -80,6 +81,9 @@ setLayoutProps({
                         <th class="px-4 py-2 font-medium">
                             {{ t('countries.index.column') }}
                         </th>
+                        <th class="px-4 py-2 font-medium">
+                            {{ t('countries.index.columns.isoCode') }}
+                        </th>
                         <th class="px-4 py-2"></th>
                     </tr>
                 </thead>
@@ -90,6 +94,9 @@ setLayoutProps({
                         class="border-t"
                     >
                         <td class="px-4 py-2">{{ country.name }}</td>
+                        <td class="px-4 py-2">
+                            {{ country.iso_code ?? '—' }}
+                        </td>
                         <td class="px-4 py-2 text-right">
                             <Button
                                 as-child
@@ -105,7 +112,7 @@ setLayoutProps({
                     </tr>
                     <tr v-if="countries.data.length === 0">
                         <td
-                            colspan="2"
+                            colspan="3"
                             class="px-4 py-6 text-center text-muted-foreground"
                         >
                             {{ t('countries.index.empty') }}

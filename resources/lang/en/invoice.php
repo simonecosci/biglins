@@ -16,5 +16,7 @@ return [
     'paid' => 'Paid',
     'unpaid' => 'Unpaid',
     'tax_id' => 'Tax ID',
+    'tax_code' => 'Tax code',
     'iban' => 'IBAN',
+    'draft' => 'Draft',
 ];

@@ -74,6 +74,7 @@ class CreateEstimationTool extends Tool
                     'quantity' => $schema->number()->required(),
                     'price' => $schema->number()->required(),
                     'vat_rate' => $schema->number()->required(),
+                    'vat_exemption_code' => $schema->string()->description('VAT exemption code, required when vat_rate is 0 (IT: N1–N7, ES: E1–E6, N1, N2).'),
                     'note' => $schema->string(),
                 ])
             )->description('Line items, at least one required.')->required(),

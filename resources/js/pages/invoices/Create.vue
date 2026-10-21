@@ -21,6 +21,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import VatExemptionSelect from '@/components/VatExemptionSelect.vue';
 import { confirmDialog } from '@/lib/confirmDialog';
 import { addDurationToDate } from '@/lib/productDuration';
 import { index } from '@/routes/invoices';
@@ -36,12 +37,13 @@ type InvoiceRowForm = {
     quantity: number;
     price: number;
     vat_rate: number;
+    vat_exemption_code: string | null;
     expiration_date: string | null;
 };
 
 const props = defineProps<{
     customers: Customer[];
-    nextNumber: string;
+    vatExemptionCodes: string[];
     duplicate: {
         customer_id: string;
         note: string | null;
@@ -60,7 +62,6 @@ setLayoutProps({
 });
 
 const form = useForm({
-    number: props.nextNumber,
     invoice_date: new Date().toISOString().slice(0, 10),
     paid: false,
     customer_id: props.duplicate?.customer_id ?? '',
@@ -73,6 +74,7 @@ const form = useForm({
             quantity: 1,
             price: 0,
             vat_rate: 0,
+            vat_exemption_code: null,
             expiration_date: null,
         },
     ],
@@ -88,6 +90,7 @@ function addRow(): void {
         quantity: 1,
         price: 0,
         vat_rate: 0,
+        vat_exemption_code: null,
         expiration_date: null,
     });
     selectedProducts.value.push(undefined);
@@ -146,6 +149,8 @@ const total = computed(() =>
 
 function submit(): void {
     form.rows.forEach((row) => {
+        row.vat_exemption_code =
+            row.vat_rate === 0 ? row.vat_exemption_code : null;
         row.expiration_date ||= null;
     });
     form.post(InvoiceController.store().url);
@@ -162,18 +167,7 @@ function submit(): void {
         />
 
         <form class="space-y-4" @submit.prevent="submit">
-            <div class="grid grid-cols-2 gap-4">
-                <div class="grid gap-2">
-                    <Label for="number">{{
-                        t('invoices.create.number')
-                    }}</Label>
-                    <Input
-                        id="number"
-                        v-model="form.number"
-                        placeholder="2026-0001"
-                    />
-                    <InputError :message="form.errors.number" />
-                </div>
+            <div class="grid gap-4">
                 <div class="grid gap-2">
                     <Label for="invoice_date">{{
                         t('invoices.create.date')
@@ -359,6 +353,18 @@ function submit(): void {
                         />
                         <InputError
                             :message="form.errors[`rows.${i}.vat_rate`]"
+                        />
+                        <VatExemptionSelect
+                            v-if="
+                                row.vat_rate === 0 && vatExemptionCodes.length
+                            "
+                            v-model="row.vat_exemption_code"
+                            :codes="vatExemptionCodes"
+                        />
+                        <InputError
+                            :message="
+                                form.errors[`rows.${i}.vat_exemption_code`]
+                            "
                         />
                     </div>
                     <div class="flex items-center justify-center pt-2">

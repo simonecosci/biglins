@@ -2,12 +2,15 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidatesVatExemptionCodes;
 use App\Support\CurrentCompany;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class StoreEstimationRequest extends FormRequest
 {
+    use ValidatesVatExemptionCodes;
+
     public function authorize(): bool
     {
         return true;
@@ -32,6 +35,7 @@ class StoreEstimationRequest extends FormRequest
             'rows.*.quantity' => ['required', 'numeric', 'min:0.01'],
             'rows.*.price' => ['required', 'numeric', 'min:0'],
             'rows.*.vat_rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            'rows.*.vat_exemption_code' => ['nullable', 'string', 'max:10', ...$this->vatExemptionCodeRule()],
             'rows.*.note' => ['nullable', 'string', 'max:255'],
         ];
     }

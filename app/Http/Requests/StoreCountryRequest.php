@@ -12,6 +12,13 @@ class StoreCountryRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'iso_code' => $this->filled('iso_code') ? strtoupper($this->string('iso_code')->toString()) : null,
+        ]);
+    }
+
     /**
      * @return array<string, array<mixed>>
      */
@@ -19,6 +26,7 @@ class StoreCountryRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255', Rule::unique('countries', 'name')],
+            'iso_code' => ['nullable', 'string', 'size:2', 'alpha', Rule::unique('countries', 'iso_code')],
         ];
     }
 }

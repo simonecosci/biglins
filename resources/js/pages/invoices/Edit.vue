@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/vue3';
-import { Eye, FileText, Plus, Trash2 } from '@lucide/vue';
+import { Eye, FileText, Plus, Send, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import InvoiceController from '@/actions/App/Http/Controllers/InvoiceController';
+import InvoiceSubmissionController from '@/actions/App/Http/Controllers/InvoiceSubmissionController';
+import AlertError from '@/components/AlertError.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import InvoiceSubmissionPanel from '@/components/InvoiceSubmissionPanel.vue';
+import type { Submission } from '@/components/InvoiceSubmissionPanel.vue';
 import NotePicker from '@/components/NotePicker.vue';
 import type { PickedNote } from '@/components/NotePicker.vue';
 import ProductPicker from '@/components/ProductPicker.vue';
 import type { PickedProduct } from '@/components/ProductPicker.vue';
 import SendEmailDialog from '@/components/SendEmailDialog.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -22,7 +27,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import VatExemptionSelect from '@/components/VatExemptionSelect.vue';
 import { confirmDialog } from '@/lib/confirmDialog';
+import { invoiceStatusVariant } from '@/lib/invoiceStatus';
+import type { InvoiceStatus } from '@/lib/invoiceStatus';
 import { addDurationToDate } from '@/lib/productDuration';
 import { index } from '@/routes/invoices';
 import type { BreadcrumbItem } from '@/types';
@@ -41,13 +49,16 @@ type InvoiceRow = {
     quantity: number;
     price: number;
     vat_rate: number;
+    vat_exemption_code: string | null;
     expiration_date: string | null;
     subscription_status: SubscriptionStatus;
 };
 
 type Invoice = {
     id: string;
-    number: string;
+    number: string | null;
+    status: InvoiceStatus;
+    issued_at: string | null;
     invoice_date: string;
     paid: boolean;
     customer_id: string;
@@ -66,13 +77,18 @@ type InvoiceRowForm = {
     quantity: number;
     price: number;
     vat_rate: number;
+    vat_exemption_code: string | null;
     expiration_date: string | null;
     subscription_status?: SubscriptionStatus;
 };
 
 const props = defineProps<{
     invoice: Invoice;
+    isLocked: boolean;
     customers: Customer[];
+    vatExemptionCodes: string[];
+    submissions: Submission[];
+    requiresSubmission: boolean;
 }>();
 
 const { t } = useI18n();
@@ -83,8 +99,11 @@ setLayoutProps({
     ] satisfies BreadcrumbItem[],
 });
 
+const displayNumber = computed(
+    () => props.invoice.number ?? t('invoices.status.draft'),
+);
+
 const form = useForm({
-    number: props.invoice.number,
     invoice_date: props.invoice.invoice_date,
     paid: props.invoice.paid,
     customer_id: props.invoice.customer_id,
@@ -97,6 +116,7 @@ const form = useForm({
         quantity: row.quantity,
         price: row.price,
         vat_rate: row.vat_rate,
+        vat_exemption_code: row.vat_exemption_code,
         expiration_date: row.expiration_date,
         subscription_status: row.subscription_status,
     })) as InvoiceRowForm[],
@@ -112,6 +132,7 @@ function addRow(): void {
         quantity: 1,
         price: 0,
         vat_rate: 0,
+        vat_exemption_code: null,
         expiration_date: null,
     });
     selectedProducts.value.push(undefined);
@@ -177,9 +198,24 @@ const total = computed(() =>
 
 function submit(): void {
     form.rows.forEach((row) => {
+        row.vat_exemption_code =
+            row.vat_rate === 0 ? row.vat_exemption_code : null;
         row.expiration_date ||= null;
     });
     form.put(InvoiceController.update(props.invoice.id).url);
+}
+
+const issueForm = useForm({});
+
+async function onIssue(): Promise<void> {
+    if (await confirmDialog(t('invoices.edit.confirmIssue'))) {
+        issueForm.post(
+            InvoiceSubmissionController.issue(props.invoice.id).url,
+            {
+                preserveScroll: true,
+            },
+        );
+    }
 }
 
 async function onDelete(): Promise<void> {
@@ -214,11 +250,14 @@ const lastSent = computed(() => {
         <Heading
             :title="t('invoices.edit.title')"
             :description="
-                t('invoices.edit.description', { number: invoice.number })
+                t('invoices.edit.description', { number: displayNumber })
             "
         />
 
-        <div class="flex gap-1">
+        <div class="flex items-center gap-1">
+            <Badge :variant="invoiceStatusVariant(invoice.status)">
+                {{ t(`invoices.status.${invoice.status}`) }}
+            </Badge>
             <Button
                 as-child
                 variant="ghost"
@@ -243,39 +282,66 @@ const lastSent = computed(() => {
                     <FileText />
                 </a>
             </Button>
+            <Button
+                v-if="invoice.status === 'draft'"
+                type="button"
+                size="sm"
+                class="ml-2"
+                :disabled="issueForm.processing || form.isDirty"
+                @click="onIssue"
+            >
+                <Send />
+                {{
+                    t(
+                        requiresSubmission
+                            ? 'invoices.edit.issueAndSubmitButton'
+                            : 'invoices.edit.issueButton',
+                    )
+                }}
+            </Button>
+            <span
+                v-if="invoice.status === 'draft' && form.isDirty"
+                class="ml-2 text-xs text-muted-foreground"
+            >
+                {{ t('invoices.edit.saveBeforeIssue') }}
+            </span>
             <SendEmailDialog
                 :send-url="InvoiceController.send(invoice.id).url"
                 :default-to="customerEmail"
                 :default-subject="
                     t('sendEmailDialog.invoiceDefaultSubject', {
-                        number: invoice.number,
+                        number: displayNumber,
                     })
                 "
                 :default-message="
                     t('sendEmailDialog.invoiceDefaultMessage', {
-                        number: invoice.number,
+                        number: displayNumber,
                     })
                 "
             />
         </div>
 
+        <InvoiceSubmissionPanel
+            :invoice-id="invoice.id"
+            :invoice-status="invoice.status"
+            :submissions="submissions"
+        />
+
         <p v-if="lastSent" class="text-sm text-muted-foreground">
             {{ lastSent }}
         </p>
 
+        <AlertError
+            v-if="Object.keys(issueForm.errors).length"
+            :errors="Object.values(issueForm.errors)"
+        />
+
+        <p v-if="isLocked" class="text-sm text-muted-foreground">
+            {{ t('invoices.edit.lockedNotice') }}
+        </p>
+
         <form class="space-y-4" @submit.prevent="submit">
-            <div class="grid grid-cols-2 gap-4">
-                <div class="grid gap-2">
-                    <Label for="number">{{
-                        t('invoices.create.number')
-                    }}</Label>
-                    <Input
-                        id="number"
-                        v-model="form.number"
-                        placeholder="2026-0001"
-                    />
-                    <InputError :message="form.errors.number" />
-                </div>
+            <div class="grid gap-4">
                 <div class="grid gap-2">
                     <Label for="invoice_date">{{
                         t('invoices.create.date')
@@ -284,6 +350,7 @@ const lastSent = computed(() => {
                         id="invoice_date"
                         v-model="form.invoice_date"
                         type="date"
+                        :disabled="isLocked"
                     />
                     <InputError :message="form.errors.invoice_date" />
                 </div>
@@ -294,7 +361,7 @@ const lastSent = computed(() => {
                     <Label for="customer_id">{{
                         t('invoices.create.customer')
                     }}</Label>
-                    <Select v-model="form.customer_id">
+                    <Select v-model="form.customer_id" :disabled="isLocked">
                         <SelectTrigger id="customer_id" class="w-full">
                             <SelectValue
                                 :placeholder="
@@ -319,7 +386,7 @@ const lastSent = computed(() => {
                     <Label for="language">{{
                         t('invoices.create.language')
                     }}</Label>
-                    <Select v-model="form.language">
+                    <Select v-model="form.language" :disabled="isLocked">
                         <SelectTrigger id="language" class="w-full">
                             <SelectValue
                                 :placeholder="
@@ -340,7 +407,7 @@ const lastSent = computed(() => {
             <div class="grid grid-cols-2 gap-4">
                 <div class="grid gap-2">
                     <Label for="type">{{ t('invoices.create.type') }}</Label>
-                    <Select v-model="form.type">
+                    <Select v-model="form.type" :disabled="isLocked">
                         <SelectTrigger id="type" class="w-full">
                             <SelectValue
                                 :placeholder="t('invoices.create.selectType')"
@@ -386,6 +453,7 @@ const lastSent = computed(() => {
                         type="button"
                         variant="outline"
                         size="sm"
+                        :disabled="isLocked"
                         @click="addRow"
                     >
                         <Plus />
@@ -416,12 +484,14 @@ const lastSent = computed(() => {
                     class="grid grid-cols-[2.5rem_1fr_6rem_8rem_6rem_5rem_8rem_5rem_2.5rem] items-start gap-2"
                 >
                     <ProductPicker
+                        :disabled="isLocked"
                         :selected-label="productLabel(selectedProducts[i])"
                         @select="(product) => applyProduct(i, product)"
                     />
                     <div class="grid gap-1">
                         <Input
                             v-model="row.description"
+                            :disabled="isLocked"
                             class="md:text-base"
                             :placeholder="t('invoices.create.rowDescription')"
                         />
@@ -432,6 +502,7 @@ const lastSent = computed(() => {
                     <div class="grid gap-1">
                         <Input
                             v-model.number="row.quantity"
+                            :disabled="isLocked"
                             type="number"
                             step="0.01"
                             min="0.01"
@@ -444,6 +515,7 @@ const lastSent = computed(() => {
                     <div class="grid gap-1">
                         <Input
                             v-model.number="row.price"
+                            :disabled="isLocked"
                             type="number"
                             step="0.01"
                             min="0"
@@ -454,6 +526,7 @@ const lastSent = computed(() => {
                     <div class="grid gap-1">
                         <Input
                             v-model.number="row.vat_rate"
+                            :disabled="isLocked"
                             type="number"
                             step="0.01"
                             min="0"
@@ -465,10 +538,24 @@ const lastSent = computed(() => {
                         <InputError
                             :message="form.errors[`rows.${i}.vat_rate`]"
                         />
+                        <VatExemptionSelect
+                            v-if="
+                                row.vat_rate === 0 && vatExemptionCodes.length
+                            "
+                            v-model="row.vat_exemption_code"
+                            :disabled="isLocked"
+                            :codes="vatExemptionCodes"
+                        />
+                        <InputError
+                            :message="
+                                form.errors[`rows.${i}.vat_exemption_code`]
+                            "
+                        />
                     </div>
                     <div class="flex items-center justify-center pt-2">
                         <Checkbox
                             :model-value="row.expiration_date !== null"
+                            :disabled="isLocked"
                             :aria-label="t('invoices.create.rowIsSubscription')"
                             @update:model-value="
                                 (checked) => toggleSubscription(row, checked)
@@ -480,6 +567,7 @@ const lastSent = computed(() => {
                             <Input
                                 :model-value="row.expiration_date ?? undefined"
                                 type="date"
+                                :disabled="isLocked"
                                 @update:model-value="
                                     (value) =>
                                         (row.expiration_date = value
@@ -500,6 +588,7 @@ const lastSent = computed(() => {
                             :model-value="
                                 row.subscription_status !== 'cancelled'
                             "
+                            :disabled="isLocked"
                             :aria-label="
                                 t('invoices.create.rowSubscriptionActive')
                             "
@@ -513,7 +602,7 @@ const lastSent = computed(() => {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        :disabled="form.rows.length === 1"
+                        :disabled="isLocked || form.rows.length === 1"
                         @click="removeRow(i)"
                     >
                         <Trash2 />
@@ -540,7 +629,7 @@ const lastSent = computed(() => {
             </div>
         </form>
 
-        <div class="border-t pt-6">
+        <div v-if="!isLocked && !invoice.number" class="border-t pt-6">
             <Button variant="destructive" type="button" @click="onDelete">
                 {{ t('invoices.edit.deleteButton') }}
             </Button>

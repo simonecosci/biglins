@@ -2,10 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\EInvoicing\CountryComplianceResolver;
+use App\Http\Requests\Concerns\ValidatesFiscalDetails;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreCompanyRequest extends FormRequest
 {
+    use ValidatesFiscalDetails;
+
     public function authorize(): bool
     {
         return true;
@@ -18,16 +22,19 @@ class StoreCompanyRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'tax_id' => ['nullable', 'string', 'max:50'],
+            'vat_number' => ['nullable', 'string', 'max:50'],
+            'tax_code' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:255'],
             'zip' => ['nullable', 'string', 'max:20'],
             'city' => ['nullable', 'string', 'max:255'],
+            'province' => ['nullable', 'string', 'max:10'],
             'country_id' => ['nullable', 'uuid', 'exists:countries,id'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'iban' => ['nullable', 'string', 'max:50'],
             'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'is_default' => ['boolean'],
+            ...$this->fiscalDetailsRules(CountryComplianceResolver::forCountryId($this->input('country_id'))->companyFiscalRules()),
         ];
     }
 
@@ -40,12 +47,12 @@ class StoreCompanyRequest extends FormRequest
     {
         $normalized = [];
 
-        foreach (['tax_id', 'address', 'zip', 'city', 'country_id', 'email', 'phone', 'iban'] as $field) {
+        foreach (['vat_number', 'tax_code', 'address', 'zip', 'city', 'province', 'country_id', 'email', 'phone', 'iban'] as $field) {
             if ($this->has($field)) {
                 $normalized[$field] = $this->input($field) ?: null;
             }
         }
 
-        $this->merge($normalized);
+        $this->merge([...$normalized, ...$this->withoutBlankFiscalDetails()]);
     }
 }

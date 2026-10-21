@@ -31,7 +31,9 @@ class CustomerFactory extends Factory
             'email' => fake()->unique()->companyEmail(),
             'web' => fake()->url(),
             'phone' => fake()->phoneNumber(),
-            'nif' => fake()->numerify('########'),
+            'vat_number' => fake()->numerify('########'),
+            'tax_code' => null,
+            'fiscal_details' => null,
         ];
     }
 }
