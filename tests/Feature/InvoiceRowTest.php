@@ -64,3 +64,9 @@ test('subscription factory state produces a row with an expiration date', functi
     expect($row->expiration_date)->not->toBeNull();
     expect($row->subscription_status)->toBe(SubscriptionStatus::Active);
 });
+
+test('invoice rows store the vat exemption code', function () {
+    $row = InvoiceRow::factory()->create(['vat_rate' => 0, 'vat_exemption_code' => 'N3.1']);
+
+    expect($row->fresh()->vat_exemption_code)->toBe('N3.1');
+});

@@ -14,6 +14,7 @@ import type { BreadcrumbItem } from '@/types';
 type Country = {
     id: string;
     name: string;
+    iso_code: string | null;
 };
 
 const props = defineProps<{
@@ -62,6 +63,19 @@ async function onDelete(): Promise<void> {
                     :placeholder="t('countries.create.namePlaceholder')"
                 />
                 <InputError :message="errors.name" />
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="iso_code">{{
+                    t('countries.create.isoCode')
+                }}</Label>
+                <Input
+                    id="iso_code"
+                    name="iso_code"
+                    maxlength="2"
+                    :default-value="country.iso_code ?? ''"
+                />
+                <InputError :message="errors.iso_code" />
             </div>
 
             <div class="flex items-center gap-4">

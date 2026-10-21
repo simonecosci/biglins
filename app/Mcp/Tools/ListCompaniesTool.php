@@ -34,13 +34,13 @@ class ListCompaniesTool extends Tool
         $companies = Company::query()
             ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('tax_id', 'like', "%{$search}%")
+                    ->orWhere('vat_number', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             }))
             ->orderByDesc('is_default')
             ->orderBy('name')
             ->limit(50)
-            ->get(['id', 'name', 'tax_id', 'email', 'city', 'country_id', 'is_default']);
+            ->get(['id', 'name', 'vat_number', 'email', 'city', 'country_id', 'is_default']);
 
         return Response::structured([
             'companies' => $companies->toArray(),
