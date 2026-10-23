@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Company;
 use App\Models\Estimation;
 use App\Models\EstimationRow;
 use App\Models\User;
@@ -59,6 +60,18 @@ test('guests are redirected to the login page when previewing an estimation', fu
 
     $this->get(route('estimations.preview', $estimation))->assertRedirect(route('login'));
 });
+
+test('previewing or downloading an estimation from another company is forbidden', function (string $routeName) {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $otherCompany = Company::factory()->create();
+    $estimation = Estimation::factory()->create(['company_id' => $otherCompany->id]);
+    EstimationRow::factory()->create(['estimation_id' => $estimation->id]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->get(route($routeName, $estimation));
+
+    $response->assertForbidden();
+})->with(['estimations.preview', 'estimations.pdf']);
 
 test('estimation preview renders as html', function () {
     $user = User::factory()->create();
