@@ -244,6 +244,8 @@ class InvoiceController extends Controller
 
     public function preview(Invoice $invoice): View
     {
+        $this->authorizeCurrentCompany($invoice);
+
         App::setLocale($invoice->language);
 
         return view('invoices.template', [
@@ -253,6 +255,8 @@ class InvoiceController extends Controller
 
     public function pdf(Invoice $invoice): HttpResponse
     {
+        $this->authorizeCurrentCompany($invoice);
+
         return InvoicePdf::render($invoice)->download(InvoicePdf::filename($invoice));
     }
 

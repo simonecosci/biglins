@@ -754,6 +754,18 @@ test('guests are redirected to the login page when downloading an invoice pdf', 
     $this->get(route('invoices.pdf', $invoice))->assertRedirect(route('login'));
 });
 
+test('previewing or downloading an invoice from another company is forbidden', function (string $routeName) {
+    $user = User::factory()->create();
+    $company = Company::factory()->create();
+    $otherCompany = Company::factory()->create();
+    $invoice = Invoice::factory()->create(['company_id' => $otherCompany->id]);
+    InvoiceRow::factory()->create(['invoice_id' => $invoice->id]);
+
+    $response = $this->actingAs($user)->withSession(['current_company_id' => $company->id])->get(route($routeName, $invoice));
+
+    $response->assertForbidden();
+})->with(['invoices.preview', 'invoices.pdf']);
+
 test('invoice preview renders the italian locale label', function () {
     $user = User::factory()->create();
     $invoice = Invoice::factory()->create(['language' => 'it']);
