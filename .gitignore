@@ -34,3 +34,4 @@ yarn-error.log
 /.superpowers
 /.worktrees
 /.mcp.json
+/graphify-out
