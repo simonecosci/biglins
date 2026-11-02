@@ -127,6 +127,8 @@
 }
 
 .dark {
+    /* Native controls (e.g. <select> option lists) follow the dark theme instead of the browser's light default. */
+    color-scheme: dark;
     --background: hsl(0 0% 3.9%);
     --foreground: hsl(0 0% 98%);
     --card: hsl(0 0% 3.9%);
