@@ -53,12 +53,17 @@ const form = useForm({
     phone: '',
     iban: '',
     is_default: false,
+    einvoicing_enabled: false,
     logo: null as File | null,
 });
 
 const countryIso = computed(
     () =>
         props.countries.find((c) => c.id === form.country_id)?.iso_code ?? null,
+);
+
+const supportsEInvoicing = computed(() =>
+    ['IT', 'ES'].includes(countryIso.value ?? ''),
 );
 
 const hasFiscalFields = computed(
@@ -247,6 +252,21 @@ function submit(): void {
                 <Label for="is_default">{{
                     t('companies.create.defaultCompany')
                 }}</Label>
+            </div>
+
+            <div v-if="supportsEInvoicing" class="grid gap-1">
+                <div class="flex items-center gap-2">
+                    <Checkbox
+                        id="einvoicing_enabled"
+                        v-model="form.einvoicing_enabled"
+                    />
+                    <Label for="einvoicing_enabled">{{
+                        t('companies.create.eInvoicingEnabled')
+                    }}</Label>
+                </div>
+                <p class="text-xs text-muted-foreground">
+                    {{ t('companies.create.eInvoicingEnabledHint') }}
+                </p>
             </div>
 
             <div class="flex items-center gap-4 pt-2">

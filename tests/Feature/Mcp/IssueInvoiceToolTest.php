@@ -20,10 +20,9 @@ test('issue_invoice issues a draft', function () {
     expect($invoice->fresh()->status)->toBe(InvoiceStatus::Issued);
 });
 
-test('issue_invoice returns compliance errors', function () {
-    $company = Company::factory()->create(['country_id' => Country::factory()->italy(), 'vat_number' => null]);
+test('issue_invoice returns the issue errors', function () {
+    $company = Company::factory()->create(['country_id' => Country::factory()->italy()]);
     $invoice = Invoice::factory()->create(['company_id' => $company->id]);
-    InvoiceRow::factory()->for($invoice)->create();
 
     BiglinsServer::tool(IssueInvoiceTool::class, ['company_id' => $company->id, 'invoice_id' => $invoice->id])
         ->assertHasErrors();

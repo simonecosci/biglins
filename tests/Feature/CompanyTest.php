@@ -105,6 +105,18 @@ test('company can be updated', function () {
     expect($company->fresh()->name)->toBe('New Name');
 });
 
+test('electronic invoicing can be switched on and off for a company', function (bool $enabled) {
+    $user = User::factory()->create();
+    $company = Company::factory()->create(['einvoicing_enabled' => ! $enabled]);
+
+    $this->actingAs($user)->put(route('companies.update', $company), [
+        'name' => $company->name,
+        'einvoicing_enabled' => $enabled,
+    ])->assertSessionHasNoErrors();
+
+    expect($company->fresh()->einvoicing_enabled)->toBe($enabled);
+})->with([true, false]);
+
 test('updating a company without sending is_default preserves its current default status', function () {
     $user = User::factory()->create();
     $company = Company::factory()->create(['is_default' => true]);

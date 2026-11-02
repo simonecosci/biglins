@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\EInvoicing\CountryComplianceResolver;
 use Database\Factories\CompanyFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -27,11 +28,12 @@ use Illuminate\Support\Carbon;
  * @property string|null $iban
  * @property string|null $logo
  * @property bool $is_default
+ * @property bool $einvoicing_enabled
  * @property array<string, mixed>|null $fiscal_details
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'vat_number', 'tax_code', 'address', 'zip', 'city', 'province', 'country_id', 'email', 'phone', 'iban', 'logo', 'is_default', 'fiscal_details'])]
+#[Fillable(['name', 'vat_number', 'tax_code', 'address', 'zip', 'city', 'province', 'country_id', 'email', 'phone', 'iban', 'logo', 'is_default', 'einvoicing_enabled', 'fiscal_details'])]
 class Company extends Model
 {
     /** @use HasFactory<CompanyFactory> */
@@ -44,8 +46,17 @@ class Company extends Model
     {
         return [
             'is_default' => 'boolean',
+            'einvoicing_enabled' => 'boolean',
             'fiscal_details' => 'array',
         ];
+    }
+
+    /**
+     * Whether invoices of this company can be sent to the tax authority (SDI, VERI*FACTU).
+     */
+    public function usesElectronicInvoicing(): bool
+    {
+        return $this->einvoicing_enabled && CountryComplianceResolver::forCompany($this)->requiresSubmission();
     }
 
     /**

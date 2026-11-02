@@ -62,6 +62,7 @@ setLayoutProps({
 });
 
 const form = useForm({
+    number: '',
     invoice_date: new Date().toISOString().slice(0, 10),
     paid: false,
     customer_id: props.duplicate?.customer_id ?? '',
@@ -153,7 +154,10 @@ function submit(): void {
             row.vat_rate === 0 ? row.vat_exemption_code : null;
         row.expiration_date ||= null;
     });
-    form.post(InvoiceController.store().url);
+    form.transform((data) => ({
+        ...data,
+        number: data.number.trim() || null,
+    })).post(InvoiceController.store().url);
 }
 </script>
 
@@ -167,7 +171,19 @@ function submit(): void {
         />
 
         <form class="space-y-4" @submit.prevent="submit">
-            <div class="grid gap-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="grid gap-2">
+                    <Label for="number">{{
+                        t('invoices.create.number')
+                    }}</Label>
+                    <Input
+                        id="number"
+                        v-model="form.number"
+                        :placeholder="t('invoices.create.numberPlaceholder')"
+                    />
+                    <InputError :message="form.errors.number" />
+                </div>
+
                 <div class="grid gap-2">
                     <Label for="invoice_date">{{
                         t('invoices.create.date')

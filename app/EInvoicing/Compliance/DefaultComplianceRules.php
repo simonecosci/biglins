@@ -30,7 +30,13 @@ class DefaultComplianceRules implements CountryComplianceRules
             return ['rows' => __('The invoice must have at least one row.')];
         }
 
-        return [];
+        // Rows are locked once issued, so what the submission needs from them can only be fixed now.
+        return $invoice->company->usesElectronicInvoicing() ? $this->exemptionCodeErrors($invoice) : [];
+    }
+
+    public function validateForSubmission(Invoice $invoice): array
+    {
+        return $this->validateForIssue($invoice);
     }
 
     public function requiresSubmission(): bool

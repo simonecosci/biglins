@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\EInvoicing\Enums\SubmissionStatus;
 use App\Enums\InvoiceStatus;
 use App\Enums\InvoiceType;
 use Carbon\CarbonImmutable;
@@ -85,6 +86,17 @@ class Invoice extends Model
     public function isLocked(): bool
     {
         return $this->status === InvoiceStatus::Issued;
+    }
+
+    /**
+     * Whether a submission to the tax authority is in progress or went through. Failed and
+     * rejected submissions do not count: the invoice can be corrected and sent again.
+     */
+    public function hasBeenSubmitted(): bool
+    {
+        return $this->submissions()
+            ->whereNotIn('status', [SubmissionStatus::Failed, SubmissionStatus::Rejected])
+            ->exists();
     }
 
     public function displayNumber(): string

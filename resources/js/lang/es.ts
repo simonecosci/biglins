@@ -369,6 +369,9 @@ const messages: MessageSchema = {
             ibanPlaceholder: 'IBAN de la cuenta bancaria',
             logo: 'Logotipo',
             defaultCompany: 'Empresa predeterminada para nuevas facturas',
+            eInvoicingEnabled: 'Facturación electrónica (SDI / VERI*FACTU)',
+            eInvoicingEnabledHint:
+                'Si está desactivada, las facturas solo se emiten y nunca se envían a la autoridad fiscal.',
         },
         edit: {
             title: 'Editar empresa',
@@ -531,6 +534,7 @@ const messages: MessageSchema = {
             rowExpirationDate: 'Fecha de vencimiento',
             rowSubscriptionActive: 'Activo',
             total: 'Total: {amount}',
+            numberPlaceholder: 'Se asigna automáticamente al emitir',
             confirmRemoveRow: '¿Eliminar esta línea?',
         },
         edit: {
@@ -539,13 +543,17 @@ const messages: MessageSchema = {
             confirmDelete:
                 '¿Eliminar esta factura? Esta acción no se puede deshacer.',
             deleteButton: 'Eliminar factura',
-            issueAndSubmitButton: 'Emitir y enviar',
+            submitButton: 'Enviar electrónicamente',
+            confirmSubmit:
+                'La factura se enviará a la autoridad fiscal (SDI / VERI*FACTU). ¿Continuar?',
+            issueErrorsTitle: 'No se puede emitir la factura',
+            submitErrorsTitle: 'No se puede enviar la factura electrónica',
             saveBeforeIssue: 'Guarda los cambios antes de emitir.',
             issueButton: 'Emitir',
             confirmIssue:
-                'Una vez emitida, la factura recibe su número y ya no se puede modificar. ¿Continuar?',
+                'Una vez emitida, la factura recibe su número (si no lo has introducido) y ya no se puede modificar. No se envía nada a la autoridad fiscal. ¿Continuar?',
             lockedNotice:
-                'Esta factura ha sido emitida: solo se pueden modificar el estado de pago y la nota.',
+                'Esta factura ha sido emitida: solo se pueden modificar el número (hasta que se envíe electrónicamente), el estado de pago y la nota.',
             send: 'Enviar por email',
         },
     },
@@ -561,13 +569,12 @@ const messages: MessageSchema = {
             not_delivered: 'No entregada',
         },
         alerts: {
-            failed: 'El proveedor rechazó la factura antes de que llegara a la autoridad fiscal. Corrige los datos y emítela de nuevo.',
+            failed: 'El proveedor rechazó la factura antes de que llegara a la autoridad fiscal. Corrige los datos, emítela de nuevo y envíala.',
             rejected: 'La autoridad fiscal rechazó la factura.',
             not_delivered:
                 'La factura se emitió pero no pudo entregarse: está disponible en el área fiscal del cliente. Envíale una copia de cortesía por correo.',
         },
         refresh: 'Actualizar estado',
-        retry: 'Reintentar',
         authorityId: 'ID de la autoridad',
     },
     estimations: {

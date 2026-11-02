@@ -44,6 +44,7 @@ type Company = {
     iban: string | null;
     logo: string | null;
     is_default: boolean;
+    einvoicing_enabled: boolean;
     fiscal_details: Record<string, string> | null;
 };
 
@@ -77,6 +78,7 @@ const form = useForm({
     phone: props.company.phone ?? '',
     iban: props.company.iban ?? '',
     is_default: props.company.is_default,
+    einvoicing_enabled: props.company.einvoicing_enabled,
     logo: null as File | null,
     remove_logo: false,
 });
@@ -84,6 +86,10 @@ const form = useForm({
 const countryIso = computed(
     () =>
         props.countries.find((c) => c.id === form.country_id)?.iso_code ?? null,
+);
+
+const supportsEInvoicing = computed(() =>
+    ['IT', 'ES'].includes(countryIso.value ?? ''),
 );
 
 const hasFiscalFields = computed(
@@ -308,6 +314,21 @@ async function onDelete(): Promise<void> {
                 <Label for="is_default">{{
                     t('companies.create.defaultCompany')
                 }}</Label>
+            </div>
+
+            <div v-if="supportsEInvoicing" class="grid gap-1">
+                <div class="flex items-center gap-2">
+                    <Checkbox
+                        id="einvoicing_enabled"
+                        v-model="form.einvoicing_enabled"
+                    />
+                    <Label for="einvoicing_enabled">{{
+                        t('companies.create.eInvoicingEnabled')
+                    }}</Label>
+                </div>
+                <p class="text-xs text-muted-foreground">
+                    {{ t('companies.create.eInvoicingEnabledHint') }}
+                </p>
             </div>
 
             <div class="flex items-center gap-4 pt-2">

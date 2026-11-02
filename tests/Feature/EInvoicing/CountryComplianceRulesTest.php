@@ -68,7 +68,7 @@ test('italian company address fields are required', function (string $field) {
 
     $invoice = invoiceFor($company, ['country_id' => $company->country_id, 'vat_number' => '09876543210', 'fiscal_details' => ['recipient_code' => 'ABC1234']]);
 
-    expect(array_keys((new ItalyComplianceRules)->validateForIssue($invoice)))->toBe(["company.{$field}"]);
+    expect(array_keys((new ItalyComplianceRules)->validateForSubmission($invoice)))->toBe(["company.{$field}"]);
 })->with(['address', 'zip', 'city']);
 
 test('submission and revision policy per country', function () {
@@ -95,7 +95,7 @@ test('italian invoices validate', function (array $customer, array $row, array $
         ?? Country::factory()->create(['iso_code' => $customer['country']])->id;
     unset($customer['country']);
 
-    $errors = (new ItalyComplianceRules)->validateForIssue(invoiceFor($company, $customer, $row));
+    $errors = (new ItalyComplianceRules)->validateForSubmission(invoiceFor($company, $customer, $row));
 
     expect(array_keys($errors))->toEqualCanonicalizing($expectedErrorKeys);
 })->with([
@@ -117,7 +117,7 @@ test('italian company data is required', function () {
 
     $invoice = invoiceFor($company, ['country_id' => $company->country_id, 'vat_number' => '09876543210', 'fiscal_details' => ['recipient_code' => 'ABC1234']]);
 
-    expect(array_keys((new ItalyComplianceRules)->validateForIssue($invoice)))
+    expect(array_keys((new ItalyComplianceRules)->validateForSubmission($invoice)))
         ->toEqualCanonicalizing(['company.vat_number', 'company.province', 'company.fiscal_details.tax_regime']);
 });
 
@@ -127,7 +127,7 @@ test('spanish invoices validate', function (array $customer, array $row, array $
         ?? Country::factory()->create(['iso_code' => $customer['country']])->id;
     unset($customer['country']);
 
-    $errors = (new SpainComplianceRules)->validateForIssue(invoiceFor($company, $customer, $row));
+    $errors = (new SpainComplianceRules)->validateForSubmission(invoiceFor($company, $customer, $row));
 
     expect(array_keys($errors))->toEqualCanonicalizing($expectedErrorKeys);
 })->with([
@@ -145,7 +145,7 @@ test('spanish company needs a nif', function () {
 
     $invoice = invoiceFor($company, ['country_id' => $company->country_id, 'vat_number' => 'B87654321']);
 
-    expect(array_keys((new SpainComplianceRules)->validateForIssue($invoice)))->toBe(['company.vat_number']);
+    expect(array_keys((new SpainComplianceRules)->validateForSubmission($invoice)))->toBe(['company.vat_number']);
 });
 
 test('default rules only require at least one row', function () {

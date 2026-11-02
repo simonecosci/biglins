@@ -364,6 +364,9 @@ const messages: MessageSchema = {
             ibanPlaceholder: 'IBAN del conto bancario',
             logo: 'Logo',
             defaultCompany: 'Azienda predefinita per le nuove fatture',
+            eInvoicingEnabled: 'Fatturazione elettronica (SDI / VERI*FACTU)',
+            eInvoicingEnabledHint:
+                "Se disattivata, le fatture vengono solo emesse e mai inviate all'autorità fiscale.",
         },
         edit: {
             title: 'Modifica azienda',
@@ -526,6 +529,7 @@ const messages: MessageSchema = {
             rowExpirationDate: 'Data di scadenza',
             rowSubscriptionActive: 'Attivo',
             total: 'Totale: {amount}',
+            numberPlaceholder: "Assegnato automaticamente all'emissione",
             confirmRemoveRow: 'Rimuovere questa riga?',
         },
         edit: {
@@ -534,13 +538,17 @@ const messages: MessageSchema = {
             confirmDelete:
                 "Eliminare questa fattura? L'azione non può essere annullata.",
             deleteButton: 'Elimina fattura',
-            issueAndSubmitButton: 'Emetti e invia',
+            submitButton: 'Invia elettronicamente',
+            confirmSubmit:
+                "La fattura verrà inviata all'autorità fiscale (SDI / VERI*FACTU). Continuare?",
+            issueErrorsTitle: 'Impossibile emettere la fattura',
+            submitErrorsTitle: 'Impossibile inviare la fattura elettronica',
             saveBeforeIssue: 'Salva le modifiche prima di emettere.',
             issueButton: 'Emetti',
             confirmIssue:
-                'Una volta emessa, la fattura riceve il suo numero e non può più essere modificata. Continuare?',
+                "Una volta emessa, la fattura riceve il suo numero (se non l'hai inserito) e non può più essere modificata. Non viene inviato nulla all'autorità fiscale. Continuare?",
             lockedNotice:
-                'Questa fattura è stata emessa: possono essere modificati solo lo stato di pagamento e la nota.',
+                'Questa fattura è stata emessa: possono essere modificati solo il numero (finché non viene inviata elettronicamente), lo stato di pagamento e la nota.',
             send: 'Invia via email',
         },
     },
@@ -556,13 +564,12 @@ const messages: MessageSchema = {
             not_delivered: 'Non consegnata',
         },
         alerts: {
-            failed: "Il provider ha rifiutato la fattura prima che raggiungesse l'autorità fiscale. Correggi i dati ed emettila di nuovo.",
+            failed: "Il provider ha rifiutato la fattura prima che raggiungesse l'autorità fiscale. Correggi i dati, emettila di nuovo e inviala.",
             rejected: "L'autorità fiscale ha scartato la fattura.",
             not_delivered:
                 "La fattura è stata emessa ma non è stato possibile consegnarla: è disponibile nell'area fiscale del cliente. Invia una copia di cortesia via email.",
         },
         refresh: 'Aggiorna stato',
-        retry: 'Riprova',
         authorityId: 'ID autorità',
     },
     estimations: {

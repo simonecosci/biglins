@@ -356,6 +356,9 @@ const messages = {
             ibanPlaceholder: 'Bank account IBAN',
             logo: 'Logo',
             defaultCompany: 'Default company for new invoices',
+            eInvoicingEnabled: 'Electronic invoicing (SDI / VERI*FACTU)',
+            eInvoicingEnabledHint:
+                'When off, invoices are only issued and never sent to the tax authority.',
         },
         edit: {
             title: 'Edit company',
@@ -514,6 +517,7 @@ const messages = {
             rowExpirationDate: 'Expiration date',
             rowSubscriptionActive: 'Active',
             total: 'Total: {amount}',
+            numberPlaceholder: 'Assigned automatically when issued',
             confirmRemoveRow: 'Remove this row?',
         },
         edit: {
@@ -521,13 +525,17 @@ const messages = {
             description: 'Update invoice {number}',
             confirmDelete: 'Delete this invoice? This cannot be undone.',
             deleteButton: 'Delete invoice',
-            issueAndSubmitButton: 'Issue and submit',
+            submitButton: 'Send electronically',
+            confirmSubmit:
+                'The invoice will be sent to the tax authority (SDI / VERI*FACTU). Continue?',
+            issueErrorsTitle: 'The invoice cannot be issued',
+            submitErrorsTitle: 'The invoice cannot be sent electronically',
             saveBeforeIssue: 'Save your changes before issuing.',
             issueButton: 'Issue',
             confirmIssue:
-                'Once issued, the invoice gets its number and can no longer be changed. Continue?',
+                'Once issued, the invoice gets its number (unless you entered one) and can no longer be changed. Nothing is sent to the tax authority. Continue?',
             lockedNotice:
-                'This invoice has been issued: only the paid flag and the note can be changed.',
+                'This invoice has been issued: only the number (until it is sent electronically), the paid flag and the note can be changed.',
             send: 'Send by email',
         },
     },
@@ -543,13 +551,12 @@ const messages = {
             not_delivered: 'Not delivered',
         },
         alerts: {
-            failed: 'The provider refused the invoice before it reached the tax authority. Fix the data and issue it again.',
+            failed: 'The provider refused the invoice before it reached the tax authority. Fix the data, issue it again and send it.',
             rejected: 'The tax authority rejected the invoice.',
             not_delivered:
                 "The invoice was issued but could not be delivered: it is available in the customer's tax area. Send them a courtesy copy by email.",
         },
         refresh: 'Refresh status',
-        retry: 'Retry',
         authorityId: 'Authority ID',
     },
     estimations: {

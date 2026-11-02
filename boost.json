@@ -8,8 +8,10 @@
     "nightwatch": false,
     "sail": false,
     "skills": [
+        "infer-conventions",
         "fortify-development",
         "laravel-best-practices",
+        "testing-best-practices",
         "mcp-development",
         "passport-development",
         "wayfinder-development",

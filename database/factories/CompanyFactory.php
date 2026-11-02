@@ -33,6 +33,12 @@ class CompanyFactory extends Factory
             'iban' => 'ES'.fake()->numerify('##################'),
             'logo' => null,
             'is_default' => false,
+            'einvoicing_enabled' => false,
         ];
+    }
+
+    public function eInvoicingEnabled(): static
+    {
+        return $this->state(fn (): array => ['einvoicing_enabled' => true]);
     }
 }

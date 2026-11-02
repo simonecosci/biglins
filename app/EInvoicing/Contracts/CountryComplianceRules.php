@@ -33,6 +33,14 @@ interface CountryComplianceRules
      */
     public function validateForIssue(Invoice $invoice): array;
 
+    /**
+     * Check that the issued invoice (with company.country, customer.country and rows loaded)
+     * carries everything the tax authority needs.
+     *
+     * @return array<string, string> field path => translated message
+     */
+    public function validateForSubmission(Invoice $invoice): array;
+
     public function requiresSubmission(): bool;
 
     public function allowsRevisionAfter(SubmissionStatus $status): bool;

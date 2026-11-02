@@ -230,6 +230,8 @@ class EstimationController extends Controller
 
     public function preview(Estimation $estimation): View
     {
+        $this->authorizeCurrentCompany($estimation);
+
         App::setLocale($estimation->language);
 
         return view('estimations.template', [
@@ -240,6 +242,8 @@ class EstimationController extends Controller
 
     public function pdf(Estimation $estimation): HttpResponse
     {
+        $this->authorizeCurrentCompany($estimation);
+
         App::setLocale($estimation->language);
 
         return Pdf::loadView('estimations.template', [

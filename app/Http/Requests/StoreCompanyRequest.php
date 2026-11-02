@@ -34,6 +34,7 @@ class StoreCompanyRequest extends FormRequest
             'iban' => ['nullable', 'string', 'max:50'],
             'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'is_default' => ['boolean'],
+            'einvoicing_enabled' => ['boolean'],
             ...$this->fiscalDetailsRules(CountryComplianceResolver::forCountryId($this->input('country_id'))->companyFiscalRules()),
         ];
     }
