@@ -168,6 +168,11 @@
     * {
         @apply border-border outline-ring/50;
     }
+    /* Selects use a transparent background, so the option list would fall back to the browser's white popup. */
+    select option,
+    select optgroup {
+        @apply bg-popover text-popover-foreground;
+    }
     body {
         @apply bg-background text-foreground;
     }
