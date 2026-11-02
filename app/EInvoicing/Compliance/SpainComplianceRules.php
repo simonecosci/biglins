@@ -32,9 +32,9 @@ class SpainComplianceRules extends DefaultComplianceRules
         return ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'N1', 'N2'];
     }
 
-    public function validateForIssue(Invoice $invoice): array
+    public function validateForSubmission(Invoice $invoice): array
     {
-        $errors = parent::validateForIssue($invoice);
+        $errors = parent::validateForSubmission($invoice);
 
         if (blank($invoice->company->vat_number)) {
             $errors['company.vat_number'] = __('The company NIF is required.');

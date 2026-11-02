@@ -157,7 +157,8 @@ class InvoiceController extends Controller
                 ->latest('id')
                 ->limit(20)
                 ->get(['id', 'invoice_id', 'status', 'provider_status', 'authority_id', 'error_message', 'submitted_at', 'completed_at', 'created_at']),
-            'requiresSubmission' => CountryComplianceResolver::forCompany($invoice->company)->requiresSubmission(),
+            'usesElectronicInvoicing' => $invoice->company->usesElectronicInvoicing(),
+            'isNumberEditable' => ! $invoice->hasBeenSubmitted(),
         ]);
     }
 
@@ -166,7 +167,7 @@ class InvoiceController extends Controller
         $this->authorizeCurrentCompany($invoice);
 
         if ($invoice->isLocked()) {
-            $invoice->update($request->safe()->only(['paid', 'note']));
+            $invoice->update($request->safe()->only(['number', 'paid', 'note']));
 
             Inertia::flash('toast', ['type' => 'success', 'message' => __('Invoice updated.')]);
 
@@ -229,8 +230,8 @@ class InvoiceController extends Controller
             return to_route('invoices.edit', $invoice);
         }
 
-        if ($invoice->number !== null) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => __('A numbered invoice cannot be deleted.')]);
+        if ($invoice->submissions()->exists()) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('An invoice sent electronically cannot be deleted.')]);
 
             return to_route('invoices.edit', $invoice);
         }

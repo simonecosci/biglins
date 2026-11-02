@@ -57,19 +57,35 @@ test('drafts do not consume numbers', function () {
     Carbon::setTestNow();
 });
 
-test('the number cannot be set from the create form', function () {
+test('a number entered in the create form is kept', function () {
     $company = Company::factory()->create(['is_default' => true]);
     $customer = Customer::factory()->create(['company_id' => $company->id]);
 
     $this->actingAs(User::factory()->create())->withSession(['current_company_id' => $company->id])->post(route('invoices.store'), [
-        'number' => '2026-9999',
+        'number' => 'A/2026/15',
         'invoice_date' => '2026-10-02',
         'customer_id' => $customer->id,
         'language' => 'en',
         'rows' => [['description' => 'X', 'quantity' => 1, 'price' => 10, 'vat_rate' => 22]],
-    ]);
+    ])->assertSessionHasNoErrors();
 
-    expect(Invoice::query()->firstOrFail()->number)->toBeNull();
+    expect(Invoice::query()->firstOrFail()->number)->toBe('A/2026/15');
+});
+
+test('the number of a draft can be changed from the edit form', function () {
+    $company = Company::factory()->create(['is_default' => true]);
+    $invoice = Invoice::factory()->create(['company_id' => $company->id]);
+    $row = InvoiceRow::factory()->for($invoice)->create();
+
+    $this->actingAs(User::factory()->create())->put(route('invoices.update', $invoice), [
+        'number' => '2026-0100',
+        'invoice_date' => '2026-10-02',
+        'customer_id' => $invoice->customer_id,
+        'language' => 'en',
+        'rows' => [['id' => $row->id, 'description' => 'X', 'quantity' => 1, 'price' => 10, 'vat_rate' => 22]],
+    ])->assertSessionHasNoErrors();
+
+    expect($invoice->fresh()->number)->toBe('2026-0100');
 });
 
 test('draft pdf filename does not depend on a number', function () {
@@ -547,7 +563,7 @@ test('invoice create page only lists customers for the current company', functio
     );
 });
 
-test('a number posted to the create form is ignored even when already used', function () {
+test('a number already used by the same company is rejected', function () {
     $user = User::factory()->create();
     $company = Company::factory()->create();
     $customer = Customer::factory()->create(['company_id' => $company->id]);
@@ -563,8 +579,8 @@ test('a number posted to the create form is ignored even when already used', fun
         ],
     ]);
 
-    $response->assertSessionHasNoErrors();
-    expect(Invoice::query()->where('customer_id', $customer->id)->firstOrFail()->number)->toBeNull();
+    $response->assertSessionHasErrors('number');
+    expect(Invoice::query()->where('customer_id', $customer->id)->exists())->toBeFalse();
 });
 
 test('updating an invoice syncs its rows: adds, updates and removes', function () {

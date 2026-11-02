@@ -12,6 +12,7 @@ use App\Mcp\Tools\ListEstimationsTool;
 use App\Mcp\Tools\ListInvoicesTool;
 use App\Mcp\Tools\SendEstimationEmailTool;
 use App\Mcp\Tools\SendInvoiceEmailTool;
+use App\Mcp\Tools\SubmitInvoiceTool;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -19,7 +20,7 @@ use Laravel\Mcp\Server\Attributes\Version;
 
 #[Name('Biglins')]
 #[Version('1.0.0')]
-#[Instructions('Manage customers, estimations, and invoices for a Biglins company, and send them by email. Every tool except list_companies takes an explicit company_id — use list_companies to discover it, and list_customers/list_estimations/list_invoices to discover existing records before creating new ones. Invoices are created as drafts without a number; use issue_invoice to number, lock and (in Italy and Spain) submit them.')]
+#[Instructions('Manage customers, estimations, and invoices for a Biglins company, and send them by email. Every tool except list_companies takes an explicit company_id — use list_companies to discover it, and list_customers/list_estimations/list_invoices to discover existing records before creating new ones. Invoices are created as drafts, optionally with a number; use issue_invoice to number and lock them, then, for companies with electronic invoicing enabled, submit_invoice to send them to the tax authority.')]
 class BiglinsServer extends Server
 {
     protected array $tools = [
@@ -31,6 +32,7 @@ class BiglinsServer extends Server
         ListInvoicesTool::class,
         CreateInvoiceTool::class,
         IssueInvoiceTool::class,
+        SubmitInvoiceTool::class,
         SendEstimationEmailTool::class,
         SendInvoiceEmailTool::class,
     ];

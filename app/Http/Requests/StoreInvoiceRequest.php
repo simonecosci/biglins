@@ -22,6 +22,7 @@ class StoreInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'number' => ['nullable', 'string', 'max:50', Rule::unique('invoices', 'number')->where('company_id', CurrentCompany::resolve()?->id)],
             'type' => ['sometimes', 'string', Rule::in(['invoice', 'credit_note'])],
             'invoice_date' => ['required', 'date'],
             'paid' => ['boolean'],

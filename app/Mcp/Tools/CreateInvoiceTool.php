@@ -74,6 +74,7 @@ class CreateInvoiceTool extends Tool
         return [
             'company_id' => $schema->string()->description('UUID of the company to create the invoice under.')->required(),
             'customer_id' => $schema->string()->description('UUID of an existing customer belonging to the company.')->required(),
+            'number' => $schema->string()->description('Invoice number. Leave empty to have the next one assigned when the invoice is issued.'),
             'type' => $schema->string()->enum(['invoice', 'credit_note'])->description('Defaults to invoice.'),
             'invoice_date' => $schema->string()->format('date')->description('YYYY-MM-DD.')->required(),
             'note' => $schema->string(),

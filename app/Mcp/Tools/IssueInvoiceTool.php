@@ -18,7 +18,7 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tool;
 
 #[Name('issue_invoice')]
-#[Description('Issue a draft invoice: assigns its number, locks it and, for companies in Italy or Spain, submits it to the tax authority through the configured e-invoicing provider.')]
+#[Description('Issue a draft invoice: keeps its number or assigns the next one, and locks it. It does not send anything to the tax authority, use submit_invoice for that.')]
 class IssueInvoiceTool extends Tool
 {
     public function handle(Request $request): Response|ResponseFactory
@@ -42,8 +42,6 @@ class IssueInvoiceTool extends Tool
                 return Response::error(collect($e->errors())->flatten()->implode(' '));
             }
 
-            $submission = $invoice->latestSubmission;
-
             return Response::structured([
                 'invoice' => [
                     'id' => $invoice->id,
@@ -51,10 +49,6 @@ class IssueInvoiceTool extends Tool
                     'status' => $invoice->status->value,
                     'issued_at' => $invoice->issued_at?->toIso8601String(),
                 ],
-                'submission' => $submission ? [
-                    'status' => $submission->status->value,
-                    'error_message' => $submission->error_message,
-                ] : null,
             ]);
         });
     }

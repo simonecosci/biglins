@@ -35,6 +35,7 @@ class UpdateCompanyRequest extends FormRequest
             'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'remove_logo' => ['nullable', 'boolean'],
             'is_default' => ['boolean'],
+            'einvoicing_enabled' => ['boolean'],
             ...$this->fiscalDetailsRules(CountryComplianceResolver::forCountryId($this->input('country_id'))->companyFiscalRules()),
         ];
     }

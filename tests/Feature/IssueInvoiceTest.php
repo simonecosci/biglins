@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\IssueInvoice;
+use App\Actions\SubmitElectronicInvoice;
 use App\EInvoicing\Data\SubmissionResult;
 use App\EInvoicing\Enums\SubmissionStatus;
 use App\EInvoicing\Providers\FakeProvider;
@@ -21,6 +22,25 @@ function draftWithRow(array $companyAttributes = []): Invoice
     $company = Company::factory()->create(['is_default' => true, 'country_id' => Country::factory()->create(['iso_code' => 'FR']), ...$companyAttributes]);
     $invoice = Invoice::factory()->create(['company_id' => $company->id]);
     InvoiceRow::factory()->for($invoice)->create(['vat_rate' => 20]);
+
+    return $invoice;
+}
+
+function spanishDraft(): Invoice
+{
+    $spain = Country::factory()->spain()->create();
+    $company = Company::factory()->eInvoicingEnabled()->create(['is_default' => true, 'country_id' => $spain->id, 'vat_number' => 'B12345678']);
+    $invoice = Invoice::factory()->create(['company_id' => $company->id]);
+    $invoice->customer->update(['vat_number' => 'B87654321', 'country_id' => $spain->id]);
+    InvoiceRow::factory()->for($invoice)->create(['vat_rate' => 21]);
+
+    return $invoice;
+}
+
+function spanishIssued(): Invoice
+{
+    $invoice = app(IssueInvoice::class)->handle(spanishDraft());
+    EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id]);
 
     return $invoice;
 }
@@ -72,32 +92,48 @@ test('issuing an issued invoice is rejected without a new number', function () {
     expect(Invoice::query()->whereNotNull('number')->count())->toBe(1);
 });
 
-test('compliance errors prevent issuing', function () {
-    $company = Company::factory()->create(['country_id' => Country::factory()->italy(), 'vat_number' => null]);
+test('issuing does not run the electronic invoicing checks when the company has it disabled', function () {
+    $spain = Country::factory()->spain()->create();
+    $company = Company::factory()->create(['country_id' => $spain->id, 'vat_number' => null]);
     $invoice = Invoice::factory()->create(['company_id' => $company->id]);
-    InvoiceRow::factory()->for($invoice)->create();
+    $invoice->customer->update(['vat_number' => 'FR12345678901', 'country_id' => Country::factory()->create(['iso_code' => 'FR'])->id, 'fiscal_details' => null]);
+    InvoiceRow::factory()->for($invoice)->create(['vat_rate' => 0, 'vat_exemption_code' => null]);
+
+    $issued = app(IssueInvoice::class)->handle($invoice);
+
+    expect($issued->status)->toBe(InvoiceStatus::Issued);
+    expect($issued->submissions()->count())->toBe(0);
+});
+
+test('with electronic invoicing enabled, zero rated rows need an exemption code before issuing', function () {
+    $invoice = spanishDraft();
+    $invoice->rows()->update(['vat_rate' => 0, 'vat_exemption_code' => null]);
 
     try {
         app(IssueInvoice::class)->handle($invoice);
         $this->fail('Expected a validation exception');
     } catch (ValidationException $exception) {
-        expect($exception->errors())->toHaveKey('company.vat_number');
+        expect(array_keys($exception->errors()))->toBe(['rows.0.vat_exemption_code']);
     }
 
     expect($invoice->fresh()->status)->toBe(InvoiceStatus::Draft);
-    expect($invoice->fresh()->number)->toBeNull();
 });
 
-test('countries that need a submission require an active integration', function () {
-    $company = Company::factory()->create([
-        'country_id' => Country::factory()->spain(), 'vat_number' => 'B12345678',
-    ]);
-    $invoice = Invoice::factory()->create(['company_id' => $company->id]);
-    $invoice->customer->update(['vat_number' => 'B87654321', 'country_id' => $company->country_id]);
-    InvoiceRow::factory()->for($invoice)->create(['vat_rate' => 21]);
+test('with electronic invoicing enabled, customer data is not checked when issuing', function () {
+    $invoice = spanishDraft();
+    $invoice->customer->update(['vat_number' => null]);
 
-    expect(fn () => app(IssueInvoice::class)->handle($invoice))
-        ->toThrow(ValidationException::class, __('Configure electronic invoicing for this company before issuing invoices.'));
+    expect(app(IssueInvoice::class)->handle($invoice)->status)->toBe(InvoiceStatus::Issued);
+});
+
+test('issuing never sends the invoice electronically', function () {
+    $invoice = spanishDraft();
+    EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id]);
+
+    app(IssueInvoice::class)->handle($invoice);
+
+    expect($invoice->submissions()->count())->toBe(0);
+    expect(FakeProvider::$sentInvoiceIds)->toBe([]);
 });
 
 test('issue route issues the current company invoice', function () {
@@ -138,71 +174,89 @@ test('issue route rejects an already issued invoice', function () {
         ->assertSessionHasErrors('invoice');
 });
 
-function spanishDraft(): Invoice
-{
-    $spain = Country::factory()->spain()->create();
-    $company = Company::factory()->create(['is_default' => true, 'country_id' => $spain->id, 'vat_number' => 'B12345678']);
-    $invoice = Invoice::factory()->create(['company_id' => $company->id]);
-    $invoice->customer->update(['vat_number' => 'B87654321', 'country_id' => $spain->id]);
-    InvoiceRow::factory()->for($invoice)->create(['vat_rate' => 21]);
+test('electronic invoicing is off by default for new companies', function () {
+    expect(Company::factory()->create()->fresh()->einvoicing_enabled)->toBeFalse();
+});
 
-    return $invoice;
-}
+test('sending an issued invoice creates and sends a submission', function () {
+    $invoice = spanishIssued();
 
-test('issuing with an active integration creates and sends a submission', function () {
-    $invoice = spanishDraft();
-    EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id]);
-
-    app(IssueInvoice::class)->handle($invoice);
+    app(SubmitElectronicInvoice::class)->handle($invoice);
 
     expect($invoice->fresh()->latestSubmission->status)->toBe(SubmissionStatus::Submitted);
     expect(FakeProvider::$sentInvoiceIds)->toBe([$invoice->id]);
 });
 
-test('an inactive integration is not enough', function () {
-    $invoice = spanishDraft();
-    EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id, 'is_active' => false]);
-
-    expect(fn () => app(IssueInvoice::class)->handle($invoice))->toThrow(ValidationException::class);
-});
-
-test('a failed submission can be retried by issuing again with the same number', function () {
+test('a draft cannot be sent electronically', function () {
     $invoice = spanishDraft();
     EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id]);
+
+    expect(fn () => app(SubmitElectronicInvoice::class)->handle($invoice))
+        ->toThrow(ValidationException::class, __('Issue the invoice before sending it electronically.'));
+    expect($invoice->submissions()->count())->toBe(0);
+});
+
+test('invoices of a company without electronic invoicing cannot be sent', function () {
+    $invoice = spanishIssued();
+    $invoice->company->update(['einvoicing_enabled' => false]);
+
+    expect(fn () => app(SubmitElectronicInvoice::class)->handle($invoice))
+        ->toThrow(ValidationException::class, __('Electronic invoicing is not enabled for this company.'));
+    expect($invoice->submissions()->count())->toBe(0);
+});
+
+test('sending runs the country checks and returns them without submitting', function () {
+    $invoice = spanishIssued();
+    $invoice->customer->update(['country_id' => Country::factory()->create(['iso_code' => 'FR'])->id, 'fiscal_details' => null]);
+
+    try {
+        app(SubmitElectronicInvoice::class)->handle($invoice);
+        $this->fail('Expected a validation exception');
+    } catch (ValidationException $exception) {
+        expect($exception->errors())->toHaveKey('customer.fiscal_details.id_type');
+    }
+
+    expect($invoice->submissions()->count())->toBe(0);
+    expect($invoice->fresh()->status)->toBe(InvoiceStatus::Issued);
+});
+
+test('sending requires a configured integration', function () {
+    $invoice = app(IssueInvoice::class)->handle(spanishDraft());
+
+    expect(fn () => app(SubmitElectronicInvoice::class)->handle($invoice))
+        ->toThrow(ValidationException::class, __('Configure electronic invoicing for this company before sending invoices.'));
+});
+
+test('an inactive integration is not enough', function () {
+    $invoice = spanishIssued();
+    $invoice->company->eInvoicingIntegration->update(['is_active' => false]);
+
+    expect(fn () => app(SubmitElectronicInvoice::class)->handle($invoice))->toThrow(ValidationException::class);
+});
+
+test('after a failed submission the invoice is issued again with the same number and resent', function () {
+    $invoice = spanishIssued();
+    $number = $invoice->number;
     FakeProvider::queueSendResult(SubmissionResult::failed('Bad payload'));
 
-    app(IssueInvoice::class)->handle($invoice);
-    $number = $invoice->fresh()->number;
+    app(SubmitElectronicInvoice::class)->handle($invoice);
     expect($invoice->fresh()->status)->toBe(InvoiceStatus::Draft);
 
     app(IssueInvoice::class)->handle($invoice->fresh());
+    app(SubmitElectronicInvoice::class)->handle($invoice->fresh());
 
     expect($invoice->fresh()->number)->toBe($number);
     expect($invoice->submissions()->count())->toBe(2);
     expect($invoice->fresh()->latestSubmission->status)->toBe(SubmissionStatus::Submitted);
 });
 
-test('issue route reports a failed synchronous submission', function () {
-    $invoice = spanishDraft();
-    EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id]);
-    FakeProvider::queueSendResult(SubmissionResult::failed('Bad payload'));
-
-    $this->actingAs(User::factory()->create())
-        ->post(route('invoices.issue', $invoice))
-        ->assertRedirect(route('invoices.edit', $invoice));
-
-    expect($invoice->fresh()->latestSubmission->status)->toBe(SubmissionStatus::Failed);
-    expect(session('inertia.flash_data.toast.type'))->toBe('error');
-    expect(session('inertia.flash_data.toast.message'))->toContain('Bad payload');
-});
-
-test('a draft that already has an open submission cannot be issued again', function (SubmissionStatus $status) {
-    $invoice = spanishDraft();
-    $integration = EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id]);
+test('an invoice already sent electronically cannot be sent again', function (SubmissionStatus $status) {
+    $invoice = spanishIssued();
+    $integration = $invoice->company->eInvoicingIntegration;
     $invoice->submissions()->create(['e_invoicing_integration_id' => $integration->id, 'driver' => $integration->driver, 'status' => $status]);
 
     try {
-        app(IssueInvoice::class)->handle($invoice);
+        app(SubmitElectronicInvoice::class)->handle($invoice);
         $this->fail('Expected a validation exception.');
     } catch (ValidationException $exception) {
         expect($exception->errors())->toHaveKey('invoice');
@@ -210,15 +264,66 @@ test('a draft that already has an open submission cannot be issued again', funct
 
     expect($invoice->submissions()->count())->toBe(1);
     expect(FakeProvider::$sentInvoiceIds)->toBe([]);
-    expect($invoice->fresh()->status)->toBe(InvoiceStatus::Draft);
-})->with([SubmissionStatus::Pending, SubmissionStatus::Submitted]);
+})->with([SubmissionStatus::Pending, SubmissionStatus::Submitted, SubmissionStatus::Accepted]);
+
+test('submit route sends the current company invoice', function () {
+    $invoice = spanishIssued();
+
+    $this->actingAs(User::factory()->create())
+        ->post(route('invoices.submit', $invoice))
+        ->assertRedirect(route('invoices.edit', $invoice));
+
+    expect($invoice->fresh()->latestSubmission->status)->toBe(SubmissionStatus::Submitted);
+});
+
+test('submit route returns the country checks to the page', function () {
+    $invoice = spanishIssued();
+    $invoice->customer->update(['vat_number' => null]);
+
+    $this->actingAs(User::factory()->create())
+        ->post(route('invoices.submit', $invoice))
+        ->assertSessionHasErrors('customer.vat_number');
+});
+
+test('submit route refuses invoices of another company', function () {
+    $invoice = spanishIssued();
+    Company::query()->update(['is_default' => false]);
+    Company::factory()->create(['is_default' => true]);
+
+    $this->actingAs(User::factory()->create())
+        ->post(route('invoices.submit', $invoice))
+        ->assertForbidden();
+
+    expect($invoice->submissions()->count())->toBe(0);
+});
+
+test('submit route reports a failed synchronous submission', function () {
+    $invoice = spanishIssued();
+    FakeProvider::queueSendResult(SubmissionResult::failed('Bad payload'));
+
+    $this->actingAs(User::factory()->create())
+        ->post(route('invoices.submit', $invoice))
+        ->assertRedirect(route('invoices.edit', $invoice));
+
+    expect($invoice->fresh()->latestSubmission->status)->toBe(SubmissionStatus::Failed);
+    expect(session('inertia.flash_data.toast.type'))->toBe('error');
+    expect(session('inertia.flash_data.toast.message'))->toContain('Bad payload');
+});
+
+test('the edit page offers electronic sending only when the company has it enabled', function (bool $enabled) {
+    $invoice = spanishIssued();
+    $invoice->company->update(['einvoicing_enabled' => $enabled]);
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('invoices.edit', $invoice))
+        ->assertInertia(fn ($page) => $page->where('usesElectronicInvoicing', $enabled));
+})->with([true, false]);
 
 test('the desktop build submits inline because no queue workers run', function () {
     config(['nativephp-internal.running' => true, 'queue.default' => 'database']);
-    $invoice = spanishDraft();
-    EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id]);
+    $invoice = spanishIssued();
 
-    app(IssueInvoice::class)->handle($invoice);
+    app(SubmitElectronicInvoice::class)->handle($invoice);
 
     expect($invoice->fresh()->latestSubmission->status)->toBe(SubmissionStatus::Submitted);
     expect(FakeProvider::$sentInvoiceIds)->toBe([$invoice->id]);
@@ -226,10 +331,9 @@ test('the desktop build submits inline because no queue workers run', function (
 
 test('outside the desktop build the submission is queued, not run', function () {
     Queue::fake();
-    $invoice = spanishDraft();
-    EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id]);
+    $invoice = spanishIssued();
 
-    app(IssueInvoice::class)->handle($invoice);
+    app(SubmitElectronicInvoice::class)->handle($invoice);
 
     Queue::assertPushed(SubmitInvoice::class);
     expect($invoice->fresh()->latestSubmission->status)->toBe(SubmissionStatus::Pending);
@@ -238,11 +342,10 @@ test('outside the desktop build the submission is queued, not run', function () 
 
 test('an unexpected error during the inline desktop submission is recorded as a failure', function () {
     config(['nativephp-internal.running' => true, 'queue.default' => 'database']);
-    $invoice = spanishDraft();
-    EInvoicingIntegration::factory()->create(['company_id' => $invoice->company_id]);
+    $invoice = spanishIssued();
     FakeProvider::queueSendResult(new RuntimeException('boom'));
 
-    app(IssueInvoice::class)->handle($invoice);
+    app(SubmitElectronicInvoice::class)->handle($invoice);
 
     expect($invoice->fresh()->latestSubmission->status)->toBe(SubmissionStatus::Failed);
     expect($invoice->fresh()->status)->toBe(InvoiceStatus::Draft);

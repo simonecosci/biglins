@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/vue3';
-import { Eye, FileText, Plus, Send, Trash2 } from '@lucide/vue';
+import { Eye, FileText, Plus, Send, Stamp, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import InvoiceController from '@/actions/App/Http/Controllers/InvoiceController';
@@ -88,7 +88,8 @@ const props = defineProps<{
     customers: Customer[];
     vatExemptionCodes: string[];
     submissions: Submission[];
-    requiresSubmission: boolean;
+    usesElectronicInvoicing: boolean;
+    isNumberEditable: boolean;
 }>();
 
 const { t } = useI18n();
@@ -104,6 +105,7 @@ const displayNumber = computed(
 );
 
 const form = useForm({
+    number: props.invoice.number ?? '',
     invoice_date: props.invoice.invoice_date,
     paid: props.invoice.paid,
     customer_id: props.invoice.customer_id,
@@ -202,15 +204,40 @@ function submit(): void {
             row.vat_rate === 0 ? row.vat_exemption_code : null;
         row.expiration_date ||= null;
     });
-    form.put(InvoiceController.update(props.invoice.id).url);
+    form.transform((data) => ({
+        ...data,
+        number: data.number.trim() || null,
+    })).put(InvoiceController.update(props.invoice.id).url);
 }
 
 const issueForm = useForm({});
+const submitForm = useForm({});
+
+const canSubmit = computed(() => {
+    const latest = props.submissions[0];
+
+    return (
+        props.usesElectronicInvoicing &&
+        props.invoice.status === 'issued' &&
+        (!latest || ['failed', 'rejected'].includes(latest.status))
+    );
+});
 
 async function onIssue(): Promise<void> {
     if (await confirmDialog(t('invoices.edit.confirmIssue'))) {
         issueForm.post(
             InvoiceSubmissionController.issue(props.invoice.id).url,
+            {
+                preserveScroll: true,
+            },
+        );
+    }
+}
+
+async function onSubmit(): Promise<void> {
+    if (await confirmDialog(t('invoices.edit.confirmSubmit'))) {
+        submitForm.post(
+            InvoiceSubmissionController.submit(props.invoice.id).url,
             {
                 preserveScroll: true,
             },
@@ -290,14 +317,19 @@ const lastSent = computed(() => {
                 :disabled="issueForm.processing || form.isDirty"
                 @click="onIssue"
             >
+                <Stamp />
+                {{ t('invoices.edit.issueButton') }}
+            </Button>
+            <Button
+                v-if="canSubmit"
+                type="button"
+                size="sm"
+                class="ml-2"
+                :disabled="submitForm.processing || form.isDirty"
+                @click="onSubmit"
+            >
                 <Send />
-                {{
-                    t(
-                        requiresSubmission
-                            ? 'invoices.edit.issueAndSubmitButton'
-                            : 'invoices.edit.issueButton',
-                    )
-                }}
+                {{ t('invoices.edit.submitButton') }}
             </Button>
             <span
                 v-if="invoice.status === 'draft' && form.isDirty"
@@ -323,7 +355,6 @@ const lastSent = computed(() => {
 
         <InvoiceSubmissionPanel
             :invoice-id="invoice.id"
-            :invoice-status="invoice.status"
             :submissions="submissions"
         />
 
@@ -333,7 +364,14 @@ const lastSent = computed(() => {
 
         <AlertError
             v-if="Object.keys(issueForm.errors).length"
+            :title="t('invoices.edit.issueErrorsTitle')"
             :errors="Object.values(issueForm.errors)"
+        />
+
+        <AlertError
+            v-if="Object.keys(submitForm.errors).length"
+            :title="t('invoices.edit.submitErrorsTitle')"
+            :errors="Object.values(submitForm.errors)"
         />
 
         <p v-if="isLocked" class="text-sm text-muted-foreground">
@@ -341,7 +379,20 @@ const lastSent = computed(() => {
         </p>
 
         <form class="space-y-4" @submit.prevent="submit">
-            <div class="grid gap-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="grid gap-2">
+                    <Label for="number">{{
+                        t('invoices.create.number')
+                    }}</Label>
+                    <Input
+                        id="number"
+                        v-model="form.number"
+                        :disabled="!isNumberEditable"
+                        :placeholder="t('invoices.create.numberPlaceholder')"
+                    />
+                    <InputError :message="form.errors.number" />
+                </div>
+
                 <div class="grid gap-2">
                     <Label for="invoice_date">{{
                         t('invoices.create.date')
@@ -629,7 +680,7 @@ const lastSent = computed(() => {
             </div>
         </form>
 
-        <div v-if="!isLocked && !invoice.number" class="border-t pt-6">
+        <div v-if="!isLocked && !submissions.length" class="border-t pt-6">
             <Button variant="destructive" type="button" @click="onDelete">
                 {{ t('invoices.edit.deleteButton') }}
             </Button>

@@ -43,9 +43,9 @@ class ItalyComplianceRules extends DefaultComplianceRules
         ];
     }
 
-    public function validateForIssue(Invoice $invoice): array
+    public function validateForSubmission(Invoice $invoice): array
     {
-        $errors = parent::validateForIssue($invoice);
+        $errors = parent::validateForSubmission($invoice);
         $company = $invoice->company;
         $customer = $invoice->customer;
 

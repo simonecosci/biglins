@@ -24,14 +24,21 @@ class UpdateInvoiceRequest extends FormRequest
     {
         $invoice = $this->route('invoice');
 
+        $uniqueNumber = Rule::unique('invoices', 'number')
+            ->where('company_id', $invoice instanceof Invoice ? $invoice->company_id : null)
+            ->ignore($invoice instanceof Invoice ? $invoice->id : null);
+
         if ($invoice instanceof Invoice && $invoice->isLocked()) {
             return [
+                // The number is part of what the tax authority received, so it is frozen once submitted.
+                ...($invoice->hasBeenSubmitted() ? [] : ['number' => ['sometimes', 'required', 'string', 'max:50', $uniqueNumber]]),
                 'paid' => ['boolean'],
                 'note' => ['nullable', 'string'],
             ];
         }
 
         return [
+            'number' => ['nullable', 'string', 'max:50', $uniqueNumber],
             'type' => ['sometimes', 'string', Rule::in(['invoice', 'credit_note'])],
             'invoice_date' => ['required', 'date'],
             'paid' => ['boolean'],

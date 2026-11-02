@@ -6,7 +6,7 @@ import InvoiceSubmissionController from '@/actions/App/Http/Controllers/InvoiceS
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import type { InvoiceStatus, SubmissionStatus } from '@/lib/invoiceStatus';
+import type { SubmissionStatus } from '@/lib/invoiceStatus';
 import { submissionStatusVariant } from '@/lib/invoiceStatus';
 
 export type Submission = {
@@ -23,7 +23,6 @@ export type Submission = {
 
 const props = defineProps<{
     invoiceId: string;
-    invoiceStatus: InvoiceStatus;
     submissions: Submission[];
 }>();
 
@@ -49,14 +48,6 @@ function refresh(): void {
         { preserveScroll: true },
     );
 }
-
-function retry(): void {
-    router.post(
-        InvoiceSubmissionController.issue(props.invoiceId).url,
-        {},
-        { preserveScroll: true },
-    );
-}
 </script>
 
 <template>
@@ -76,15 +67,6 @@ function retry(): void {
                     @click="refresh"
                 >
                     {{ t('invoiceSubmissions.refresh') }}
-                </Button>
-                <Button
-                    v-if="
-                        invoiceStatus === 'draft' && latest.status === 'failed'
-                    "
-                    size="sm"
-                    @click="retry"
-                >
-                    {{ t('invoiceSubmissions.retry') }}
                 </Button>
             </div>
         </div>

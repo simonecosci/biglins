@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\IssueInvoice;
+use App\Actions\SubmitElectronicInvoice;
 use App\EInvoicing\Enums\SubmissionStatus;
 use App\EInvoicing\Exceptions\TransientProviderException;
 use App\EInvoicing\SubmissionStatusRefresher;
@@ -19,14 +20,24 @@ class InvoiceSubmissionController extends Controller
     {
         $this->authorizeCurrentCompany($invoice);
 
-        $invoice = $issueInvoice->handle($invoice);
+        $issueInvoice->handle($invoice);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Invoice issued.')]);
+
+        return to_route('invoices.edit', $invoice);
+    }
+
+    public function submit(Invoice $invoice, SubmitElectronicInvoice $submitElectronicInvoice): RedirectResponse
+    {
+        $this->authorizeCurrentCompany($invoice);
+
+        $invoice = $submitElectronicInvoice->handle($invoice);
         $submission = $invoice->latestSubmission;
 
         Inertia::flash('toast', match ($submission?->status) {
             SubmissionStatus::Failed => ['type' => 'error', 'message' => __('The invoice could not be submitted: :error', ['error' => $submission->error_message])],
-            SubmissionStatus::Pending => ['type' => 'success', 'message' => __('Invoice issued and queued for submission.')],
-            null => ['type' => 'success', 'message' => __('Invoice issued.')],
-            default => ['type' => 'success', 'message' => __('Invoice issued and submitted.')],
+            SubmissionStatus::Pending => ['type' => 'success', 'message' => __('Invoice queued for electronic submission.')],
+            default => ['type' => 'success', 'message' => __('Invoice sent electronically.')],
         });
 
         return to_route('invoices.edit', $invoice);
